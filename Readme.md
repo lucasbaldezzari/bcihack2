@@ -1,5 +1,7 @@
 # Repositorio  Hackathon BCI 2022/2023
 
+HAckathon de BCI para comandar dispositivos utilizando Imaginería Motora.
+
 El siguiente repositorio será utilizado para almacenar bibliografía, set de datos, firmware, hardware, imágenes, entre otros recursos correspondiente al hackathon de BCI 2022/2023 de la UTEC, Uruguay.
 
 ## Talleres
