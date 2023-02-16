@@ -19,3 +19,5 @@ El siguiente repositorio será utilizado para almacenar bibliografía, set de da
 
 - [x] Taller 1: Introducción a las Interfaces Cerebro Computadora.
 - [x] Taller 2: Introducción al Machine Learning.
+- [ ] Taller 3: Principios de EEG. Adquisición y registro de EEG. Visualización. Pre procesamiento.
+- [ ] Taller 4: Principios de Imaginería Motora. Princpios de los potenciales de Sincronización y Desincronización relacionados a eventos (ERD/ERS). Procesamiento y visualización de ERD/ERS.
