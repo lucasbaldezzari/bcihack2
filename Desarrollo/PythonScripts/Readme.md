@@ -2,19 +2,30 @@
 
 En esta sección se encuentra el código fuente de los diferentes scripts en python para implemetar la ICC.
 
+La siguiente imágen muestra el diagrama de bloques V1.0 de la BCI.
+
+![Diagrama de bloques](modules.png)
+
 A continuación se resume lo contenido dentro de cada directorio.
 
 La versión de python a utilizar será *>= 3.10.1*
 
 ## CoreModule
 
+Este módulo es el gestor y administrador de los principales procesos de la BCI, entre los que podemos destacar la escritura/lectura de datos -EEG, clasificadores-, gestión/escritura/lectura de eventos relevantes, procesamiento de EEG (online), gestión de las diferentes etapas de un trial.
+Se comunica con todos los módulos.
+
+Este módulo es el encargado de gestionar los siguientes procesos,
+
+- Gestión de los trials. Temporización de cada etapa de un trial -tiempo para mostrar qué tarea debe ejecutar la persona, tiempo de estimulación, tiempo de descanso-.	
+
+
 ### Responsable
 
 - Lucas Baldezzari 
 
-**TODO**
+### Dependencias
 
-- Resumen -> (*Lucas*)
 - Dependencias necesarias para ejecutar, probar y correr la GUI-> (*Lucas*)
 
 ## GUIModule

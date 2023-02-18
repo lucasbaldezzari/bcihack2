@@ -14,6 +14,11 @@ import sys
 import argparse
 import logging
 
+a = 10
+
+if a is not 10:
+    print("Holis")
+
 import brainflow
 from brainflow.board_shim import BoardShim, BrainFlowInputParams, BoardIds
 
