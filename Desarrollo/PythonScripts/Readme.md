@@ -37,7 +37,15 @@ Este módulo es el encargado de gestionar los siguientes procesos,
 **TODO**
 
 - Resumen -> (*Lucas*)
-- Dependencias necesarias para ejecutar, probar y correr la GUI-> (*Emi*)
+- Dependencias necesarias para ejecutar, probar y correr la GUI-> (*Emi*) a la fecha 24/02/2023:
+- python==3.9.7
+- pip
+- pip:
+  - PyQT5==5.15.6
+  - pyqtgraph==0.13.1
+  - numpy==1.20.3
+  - brainflow==5.0.0
+  - scipy==1.7.1
 
 ## SignalModule 
 
