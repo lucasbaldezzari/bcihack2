@@ -6,9 +6,6 @@ import numpy as np
 from PyQt5 import uic
 import time
 import pyqtgraph as pg
-from pyqtgraph import PlotWidget
-import pickle
-import os
 import sys
 
 import argparse
@@ -16,16 +13,12 @@ import logging
 
 a = 10
 
-if a is not 10:
+if a != 10:
     print("Holis")
 
-import brainflow
 from brainflow.board_shim import BoardShim, BrainFlowInputParams, BoardIds
 
-from scipy.signal import windows
-
 import fileAdmin as fa
-import pyautogui
 from DataThread import DataThread as DT
 
 

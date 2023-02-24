@@ -35,7 +35,6 @@ import numpy as np
 # from pyqtgraph.Qt import QtGui, QtCore
 
 from brainflow.board_shim import BoardShim, BrainFlowInputParams, BoardIds
-from ArduinoCommunication import ArduinoCommunication as AC
 
 from DataThread import DataThread as DT    
 import fileAdmin as fa
