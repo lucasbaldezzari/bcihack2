@@ -11,11 +11,6 @@ import sys
 import argparse
 import logging
 
-a = 10
-
-if a != 10:
-    print("Holis")
-
 from brainflow.board_shim import BoardShim, BrainFlowInputParams, BoardIds
 
 import fileAdmin as fa
