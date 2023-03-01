@@ -122,7 +122,7 @@ def main():
     eeglogger.addData(newData[:16])
 
     print("Guardando datos...")
-    eeglogger.saveData("subject1.npy", "/recordedEEG")
+    eeglogger.saveData(fileName = "subject1.npy", path = "recordedEEG/") #guardamos los datos en un archivo .npy
 
     print("Detener la adquisición de datos")
     eeglogger.stopBoard()
