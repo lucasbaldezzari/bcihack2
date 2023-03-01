@@ -4,7 +4,7 @@ En esta sección se encuentra el código fuente de los diferentes scripts en pyt
 
 La siguiente imágen muestra el diagrama de bloques V1.0 de la BCI.
 
-![Diagrama de bloques](modules.png)
+![Diagrama de bloques](bloques.png)
 
 A continuación se resume lo contenido dentro de cada directorio.
 
