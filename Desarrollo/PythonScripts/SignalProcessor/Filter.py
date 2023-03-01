@@ -1,10 +1,8 @@
 import numpy as np
-from scipy import signal
-from scipy.signal import butter, lfilter, freqz, filtfilt, iirnotch, iirfilter
+from scipy.signal import butter, filtfilt, iirnotch
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.utils.validation import check_array, check_is_fitted
 
-class SignalProcessor(BaseEstimator, TransformerMixin):
+class Filter(BaseEstimator, TransformerMixin):
     """Clase para procesar señales provenientes del generador de señales (openBCI boards). Las señales que entran son un numpy array en la forma
     [canales, muestras]. La idea es aplicar un filtro pasa banda y un filtro notch a la señal a todo el array."""
     def __init__(self, sample_rate):
@@ -45,9 +43,9 @@ def main():
 
     # signal.shape
 
-    signalpros = SignalProcessor(sample_rate=250)
-    signalpros.fit(lowcut=1.0, highcut=36.0, notch_freq=50.0, notch_width=2.0)
-    signalFiltered = signalpros.transform(signal)
+    filtro = Filter(sample_rate=250)
+    filtro.fit(lowcut=1.0, highcut=36.0, notch_freq=50.0, notch_width=2.0)
+    signalFiltered = filtro.transform(signal)
     # signalFiltered = signalpros.fit_transform(signal,highcut=36.0, notch_freq=50.0, notch_width=2.0)
 
 
