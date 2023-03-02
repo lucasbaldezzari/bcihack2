@@ -20,7 +20,7 @@ Este módulo es el encargado de gestionar los siguientes procesos,
 
 #### Responsable
 
-[x] Lucas Baldezzari
+- [x] Lucas Baldezzari
 
 ## Bloque de adquisición de señal - EEGLogger Block
 
@@ -30,7 +30,7 @@ Esta gestión se hace con la clase *[EEGLogger.py](https://github.com/lucasbalde
 
 #### Responsable
 
-[x] Lucas Baldezzari 
+- [x] Lucas Baldezzari 
 
 ## Bloque de procesamiento de señal - Signal Processor Block
 
@@ -44,7 +44,7 @@ Se encarga de,
 
 #### Responsable
 
-[x] Lucas Baldezzari 
+- [x] Lucas Baldezzari 
 
 **TODO**
 
@@ -53,8 +53,9 @@ Se encarga de,
 ## GUI Block
 
 ### Responsables
-[x] Emiliano Álvarez
-[x] Lucas Baldezzari
+
+- [x] Emiliano Álvarez
+- [x] Lucas Baldezzari
 
 **TODO**
 
