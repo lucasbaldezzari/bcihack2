@@ -50,6 +50,14 @@ Se encarga de,
 
 - Resumen -> (*Lucas*)
 
+## Bloque para transmitir/recibir mensajes- Messenger Block
+
+Bloque para comunicación entre PC y el ejecutor (que será un brazo robótico y una silla de ruedas). Los comandos obtenidos por el bloque de clasificación son enviados al dispositivo a controlar. El bloque de mensajería tambien puede recibir mensajes desde el dispositivo controlado.
+
+#### Responsable
+
+- [x] Lucas Baldezzari 
+
 ## GUI Block
 
 ### Responsables
