@@ -1,4 +1,3 @@
 __descartados/
 
-#ignore Talleres folder
-talleres/
+__talleres/
