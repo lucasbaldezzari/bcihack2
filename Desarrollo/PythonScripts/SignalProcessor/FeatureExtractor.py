@@ -28,11 +28,11 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
         #NOTA: Debemos evaluar si implementamos un CSP para seleccionar los mejores canales y luego aplicamos la transformada de Hilbert
 
         #Aplicamos la transformada de Hilbert
-        analytic_signal = hilbert(signal, axis=1) #trnasformada de Hilbert
-        power = np.abs(analytic_signal)**2 #Calculamos la potencia de la señal
-        power_alpha = power[:, 8:13].mean(axis=1) #Potencia media en la banda alfa
-        power_beta = power[:, 13:30].mean(axis=1) #Potencia media en la banda beta
-        features = np.vstack((power_alpha, power_beta)).T #apilamos las características
+        transformedSignal = hilbert(signal, axis=1) #trnasformada de Hilbert
+        power = np.abs(transformedSignal)**2 #Calculamos la potencia de la señal
+        alphaPower = power[:, 8:13].mean(axis=1) #Potencia media en la banda alfa
+        betaPower = power[:, 13:30].mean(axis=1) #Potencia media en la banda beta
+        features = np.vstack((alphaPower, betaPower)).T #apilamos las características
 
         return features
 
