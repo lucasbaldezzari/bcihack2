@@ -2,7 +2,7 @@
 
 En esta sección se encuentra el código fuente de los diferentes scripts en python para implemetar la ICC.
 
-La siguiente imágen muestra el diagrama de bloques V1.0 de la BCI.
+La siguiente imágen muestra el diagrama de bloques V1.4 de la BCI.
 
 ![Diagrama de bloques](bloques.png)
 
