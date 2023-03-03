@@ -1,5 +1,12 @@
 # Repositorio  Hackathon BCI 2022/2023
 
+#### Credits
+
+```diff
++ Please, if you will use scripts, information or anything from this repository, please give us some credits.
++ We will appreciate it!
+```
+
 ## Resumen proyecto
 Haackathon de BCI para comandar dispositivos utilizando Imaginería Motora.
 
