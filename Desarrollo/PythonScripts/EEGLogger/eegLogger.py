@@ -36,7 +36,7 @@ class EEGLogger():
         self.board.stop_stream()
         self.board.release_session()
     
-    def getSamples(self, sampleLength = 6):
+    def getData(self, sampleLength = 6):
         """Obtenemos algunas muestras de la placa. La cantidad de muestras que devuelve el método depende del timeLength y de la frecuencia
         de muestro de la placa. 
         Los datos se entregan en un numpy array de forma [canales, muestras]. Los datos están en microvolts.
@@ -116,7 +116,7 @@ def main():
     print("Debemos esperar para completar el buffer")
     time.sleep(trialDuration) #esperamos a que se adquieran los datos
 
-    newData = eeglogger.getSamples(trialDuration)
+    newData = eeglogger.getData(trialDuration)
     # print(newData)
     print("Forma del array de datos [canales, muestras]: ",newData.shape)
     eeglogger.addData(newData[:16])

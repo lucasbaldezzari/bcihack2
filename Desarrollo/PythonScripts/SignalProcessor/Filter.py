@@ -46,8 +46,6 @@ def main():
     with open('testsignal.npy', 'rb') as f:
         signal = np.load(f)
 
-    # signal.shape
-
     filtro = Filter()
     filtro.fit(lowcut=1.0, highcut=36.0, notch_freq=50.0, notch_width=2.0, sample_rate=250.0)
     signalFiltered = filtro.transform(signal)
@@ -58,6 +56,9 @@ def main():
     plt.plot(signal[11,:])
     plt.plot(signalFiltered[11,:])
     plt.show()
+
+    with open("testsignal_filtered.npy", "wb") as f:
+        np.save(f, signalFiltered)
 
 
 if __name__ == "__main__":

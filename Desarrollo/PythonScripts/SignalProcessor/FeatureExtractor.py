@@ -39,3 +39,19 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
     def csp_filter(self, signal):
         """TODO: Implementar el filtro CSP para seleccionar los mejores canales y luego aplicar la transformada de Hilbert."""
         pass
+
+def main():
+
+    with open("testsignal_filtered.npy", "rb") as f:
+        signal = np.load(f)
+
+    featureExtractor = FeatureExtractor() #instanciamos el extractor de características
+
+    features = featureExtractor.fit_transform(signal)
+
+    with open("testing_features.npy", "wb") as f:
+        np.save(f, features)
+
+
+if __name__ == '__main__':
+    main()
