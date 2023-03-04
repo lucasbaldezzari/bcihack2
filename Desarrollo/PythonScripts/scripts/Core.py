@@ -1,5 +1,8 @@
-from EEGLogger import eegLogger
-from SignalProcessor import Filter, FeatureExtractor, Classifier
+from EEGLogger.eegLogger import eegLogger
+
+from SignalProcessor.Filter import Filter
+from SignalProcessor.FeatureExtractor import FeatureExtractor
+from SignalProcessor.Classifier import Classifier
 
 class Core():
     """Clase para manejar el procesamiento de los datos y la clasificación. Esta clase es la clase principal del sistema.

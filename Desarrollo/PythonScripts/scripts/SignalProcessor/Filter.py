@@ -40,6 +40,7 @@ class Filter(BaseEstimator, TransformerMixin):
         signal = filtfilt(self.b, self.a, signal, axis=1) #aplicamos el filtro pasa banda
         signal = filtfilt(self.b_notch, self.a_notch, signal, axis=1) #aplicamos el filtro notch
         return signal
+    
 
 def main():
 

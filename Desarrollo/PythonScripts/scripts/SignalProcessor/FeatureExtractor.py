@@ -1,6 +1,7 @@
 import numpy as np
-from scipy.signal import hilbert, filtfilt, butter
+from scipy.signal import hilbert
 from sklearn.base import BaseEstimator, TransformerMixin
+from matplotlib import mlab
 
 class FeatureExtractor(BaseEstimator, TransformerMixin):
     """La clase para extraer características de desincronización relacionada con eventos (ERD) y sincronización relacionada con eventos (ERS) de señales EEG.
@@ -12,8 +13,10 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
     Por ejemplo, se puede implementar ICA para eliminar las componentes de ruido de la señal y luego aplicar la transformada de Hilbertm, o bien
     implementar CSP para extraer las componentes de interés de la señal y luego aplicar la transformada de Hilbert."""
 
-    def __init__(self):
+    def __init__(self, method = "hilbert"):
         """No se inicializan atributos."""
+
+        self.method = method
         pass
 
     def fit(self, X = None, y=None):
@@ -27,14 +30,30 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
 
         #NOTA: Debemos evaluar si implementamos un CSP para seleccionar los mejores canales y luego aplicamos la transformada de Hilbert
 
-        #Aplicamos la transformada de Hilbert
-        transformedSignal = hilbert(signal, axis=1) #trnasformada de Hilbert
-        power = np.abs(transformedSignal)**2 #Calculamos la potencia de la señal
-        alphaPower = power[:, 8:13].mean(axis=1) #Potencia media en la banda alfa
-        betaPower = power[:, 13:30].mean(axis=1) #Potencia media en la banda beta
-        features = np.vstack((alphaPower, betaPower)).T #apilamos las características
+        if self.method == "hilbert":
+            #Aplicamos la transformada de Hilbert
+            transformedSignal = hilbert(signal, axis=1) #trnasformada de Hilbert
+            power = np.abs(transformedSignal)**2 #Calculamos la potencia de la señal
+            alphaPower = power[:, 8:13]#.mean(axis=1) #Potencia media en la banda alfa
+            betaPower = power[:, 13:30]#.mean(axis=1) #Potencia media en la banda beta
+            features = np.hstack((alphaPower, betaPower)) #apilamos las características
 
-        return features
+            features = power
+
+            return features
+        
+        elif self.method == "psd":
+            psd = np.apply_along_axis(mlab.psd, 1, signal)
+            # features = np.vstack((psd[:, 8:13], psd[:, 13:30]))
+            return psd[:,0,:,:]
+
+    def fit_transform(self, signal):
+        """Función para aplicar los filtros a la señal.
+        -signal: Es la señal en un arreglo de numpy de la forma [canales, muestras]."""
+
+        self.fit()
+        return self.transform(signal)
+
 
     def csp_filter(self, signal):
         """TODO: Implementar el filtro CSP para seleccionar los mejores canales y luego aplicar la transformada de Hilbert."""
