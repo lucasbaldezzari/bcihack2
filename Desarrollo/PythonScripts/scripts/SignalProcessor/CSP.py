@@ -10,8 +10,6 @@ References
     Christian Andreas Kothe,  Lecture 7.3 Common Spatial Patterns
     https://www.youtube.com/watch?v=zsOULC16USU
 
-    https://github.com/fnielsen/brede/blob/4ae9c6c1bea5c00751606bb9b9421fa46fd1e9bc/brede/eeg/csp.py
-
     Información acerca de "Common spatial pattern"
     https://en.wikipedia.org/wiki/Common_spatial_pattern
 
