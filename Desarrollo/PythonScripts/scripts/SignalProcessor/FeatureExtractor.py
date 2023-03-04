@@ -25,12 +25,15 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
         return self #este método siempre debe retornar self!
 
     def transform(self, signal):
-        """Function to apply the filters to the signal.
-        -signal: It is the signal in a numpy array of the form [channels, samples]."""
+        """Función para aplicar los filtros a la señal.
+        -signal: Es la señal en un arreglo de numpy de la forma [canales, muestras].
+        
+        Retorna: Un arreglo de numpy con las características de la señal. La forma del arreglo es [canales, power_sample, trials]"""
 
         #NOTA: Debemos evaluar si implementamos un CSP para seleccionar los mejores canales y luego aplicamos la transformada de Hilbert
 
         if self.method == "hilbert":
+            """Retorna la potencia de la señal en la forma [canales, power_sample, trials]"""
             #Aplicamos la transformada de Hilbert
             transformedSignal = hilbert(signal, axis=1) #trnasformada de Hilbert
             power = np.abs(transformedSignal)**2 #Calculamos la potencia de la señal
@@ -43,6 +46,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
             return features
         
         elif self.method == "psd":
+            #Calcula la PSD de la señal
             psd = np.apply_along_axis(mlab.psd, 1, signal)
             # features = np.vstack((psd[:, 8:13], psd[:, 13:30]))
             return psd[:,0,:,:]
@@ -53,11 +57,6 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
 
         self.fit()
         return self.transform(signal)
-
-
-    def csp_filter(self, signal):
-        """TODO: Implementar el filtro CSP para seleccionar los mejores canales y luego aplicar la transformada de Hilbert."""
-        pass
 
 def main():
 
