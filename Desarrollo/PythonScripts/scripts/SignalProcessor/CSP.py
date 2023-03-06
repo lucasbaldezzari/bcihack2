@@ -21,7 +21,7 @@ import numpy as np
 from scipy.linalg import eig
 from sklearn import base
 
-import FeatureExtractor
+from FeatureExtractor import FeatureExtractor
 
 class CSP(base.BaseEstimator, base.TransformerMixin):
     """CSP Class."""
@@ -95,16 +95,18 @@ if __name__ == "__main__":
 
     #Cargamos dos trials de señales correspondientes a dos clases diferentes. Una es cuando una persona imagina
     #que mueve su mano izquierda y la otra cuando imagina que mueve su mano derecha.
-    #Cada trial tiene 59 canales y n muestras
+    #Cada trial tiene 59 canales.
 
     left = np.load("trialleft.npy", allow_pickle=True)
     right = np.load("trialright.npy", allow_pickle=True)
     print(left.shape) #[n_channels, n_samples]
     print(right.shape) #[n_channels, n_samples]
 
-    eegmatrix = np.array([left, right])
+    eegmatrix = np.array([left, right ])
+
+    c3, cz, c4 = 26, 28, 30 #canales de interés
     
-    #plotting the eeegmatrix for each class and one channel
+    #graficando la matriz de EEG para cada clase y un canal
     import matplotlib.pyplot as plt
     plt.title("EEG matrix antes de aplicar CSP")
     plt.plot(eegmatrix[0, 0, :], label = "left")
@@ -112,13 +114,116 @@ if __name__ == "__main__":
     plt.legend()
     plt.show()
 
+    #grafiando la matriz de EEG para cada clase y un canal
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+    fig.suptitle("EEG matrix antes de aplicar CSP C3, CZ, C4")
+    ax1.plot(eegmatrix[0, c3, :], label = "left")
+    ax1.plot(eegmatrix[1, c3, :], label = "right")
+    ax1.legend()
+    ax2.plot(eegmatrix[0, cz, :], label = "left")
+    ax2.plot(eegmatrix[1, cz, :], label = "right")
+    ax2.legend()
+    ax3.plot(eegmatrix[0, c4, :], label = "left")
+    ax3.plot(eegmatrix[1, c4, :], label = "right")
+    ax3.legend()
+    plt.show()
+
+    #instanciamos la clase CSP
     csp = CSP()
 
     eegmatrix_csp = csp.fit_transform(eegmatrix)
 
-    #plotting the eeegmatrix_csp for each class and one channel
-    plt.title("EEG matrix después de aplicar CSP")
-    plt.plot(eegmatrix_csp[0, 0, :], label = "left")
-    plt.plot(eegmatrix_csp[1, 0, :], label = "right")
+    #graficando la matriz de EEG para cada clase y los tres canales de interes
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+    fig.suptitle("EEG matrix después de aplicar CSP C3, CZ, C4")
+    ax1.plot(eegmatrix_csp[0, c3, :], label = "left")
+    ax1.plot(eegmatrix_csp[1, c3, :], label = "right")
+    ax1.legend()
+    ax2.plot(eegmatrix_csp[0, cz, :], label = "left")
+    ax2.plot(eegmatrix_csp[1, cz, :], label = "right")
+    ax2.legend()
+    ax3.plot(eegmatrix_csp[0, c4, :], label = "left")
+    ax3.plot(eegmatrix_csp[1, c4, :], label = "right")
+    ax3.legend()
+    plt.show()
+
+    #calculamos la varianza de la matriz de EEG para cada clase y canal
+    logvariance_no_csp = np.log(np.var(eegmatrix, axis=2))
+    #ordenamos la varianza de la matriz de EEG para cada clase y canal
+    logvariance_no_csp = np.sort(logvariance_no_csp, axis=1)
+    
+    #graficamos la varianza de la matriz de EEG para cada clase y canal
+    plt.title("Logvariance de la matriz EEG antes de aplicar CSP")
+    plt.bar(np.arange(0, 59), logvariance_no_csp[0, :], label = "left")
+    plt.bar(np.arange(0, 59), logvariance_no_csp[1, :], label = "right")
     plt.legend()
     plt.show()
+
+    #calculamos la varianza de la matriz de EEG luego de aplicar csp para cada clase y canal
+    logvariance_csp = np.log(np.var(eegmatrix_csp, axis=2))
+    #ordenamos la varianza de la matriz de EEG luego de aplicar csp para cada clase y canal
+    logvariance_csp = np.sort(logvariance_csp, axis=1)
+
+    #graficamos la varianza de la matriz de EEG luego de aplicar csp para cada clase y canal
+    plt.title("Logvariance de la matriz EEG después de aplicar CSP")
+    plt.bar(np.arange(0, 59), logvariance_csp[0, :], label = "left")
+    plt.bar(np.arange(0, 59), logvariance_csp[1, :], label = "right")
+    plt.legend()
+    plt.show()
+
+    #Grafico para un canal y para cada clase
+    plt.title("EEG matrix después de aplicar CSP")
+    plt.plot(eegmatrix_csp[0, c4, :], label = "left")
+    plt.plot(eegmatrix_csp[1, c4, :], label = "right")
+    plt.legend()
+    plt.show()
+
+    ##pltting a scatter plot for the voltage of one class versus the voltage of the other class for one channel after applying CSP
+    plt.title("Scatter plot de la matriz EEG antes de aplicar CSP")
+    plt.scatter(eegmatrix[0, 0, :], eegmatrix[0, -1, :])
+    plt.scatter(eegmatrix[1, 0, :], eegmatrix[1, -1, :])
+    plt.legend(["primer componente", "segunda componente"])
+    plt.show()
+
+    #pltting a scatter plot for the voltage of one class versus the voltage of the other class for one channel before applying CSP
+    plt.title("Scatter plot de la matriz EEG después de aplicar CSP")
+    plt.scatter(eegmatrix_csp[0, 0, :], eegmatrix_csp[0, -1, :])
+    plt.scatter(eegmatrix_csp[1, 0, :], eegmatrix_csp[1, -1, :])
+    plt.legend(["primer componente", "segunda componente"])
+    plt.show()
+
+    fe = FeatureExtractor(method="psd")
+
+    features_no_csp = fe.fit_transform(eegmatrix)
+    features_csp = fe.fit_transform(eegmatrix_csp)
+
+    #grafiando las features para los canales de interés antes del CSP
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+    fig.suptitle("Features antes de aplicar CSP - Canales C3, CZ, C4")
+    ax1.plot(features_no_csp[0, c3, :], label = "left")
+    ax1.plot(features_no_csp[1, c3, :], label = "right")
+    ax1.legend()
+    ax2.plot(features_no_csp[0, cz, :], label = "left")
+    ax2.plot(features_no_csp[1, cz, :], label = "right")
+    ax2.legend()
+    ax3.plot(features_no_csp[0, c4, :], label = "left")
+    ax3.plot(features_no_csp[1, c4, :], label = "right")
+    ax3.legend()
+    plt.show()
+
+    #grafiando las features para los canales de interés luego del CSP
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1)
+    fig.suptitle("Features antes de aplicar CSP - Canales C3, CZ, C4")
+    ax1.plot(features_csp[0, c3, :], label = "left")
+    ax1.plot(features_csp[1, c3, :], label = "right")
+    ax1.legend()
+    ax2.plot(features_csp[0, cz, :], label = "left")
+    ax2.plot(features_csp[1, cz, :], label = "right")
+    ax2.legend()
+    ax3.plot(features_csp[0, c4, :], label = "left")
+    ax3.plot(features_csp[1, c4, :], label = "right")
+    ax3.legend()
+    plt.show()
+
+
+
