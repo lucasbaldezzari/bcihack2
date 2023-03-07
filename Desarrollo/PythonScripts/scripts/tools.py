@@ -3,6 +3,9 @@ import scipy.io
 from scipy.signal import hilbert
 import matplotlib.pyplot as plt
 
+from mne import create_info
+from mne.io import RawArray
+
 """Nota, las funcones get_names, prepareData y getTrials se utilizan para trabajar con los datos de la competencia de BCI IV
 Para más información: https://bbci.de/competition/iv/desc_1.html"""
 
@@ -111,3 +114,23 @@ def plot_signals(signals, title, legend):
         plt.plot(signal)
     plt.legend(legend)
     plt.show()
+
+
+def fromNpyToFif(raweeg, channels_names, filename = "eeginfif.fif", sf = 250., chan_types="eeg"):
+    """Genera archivos del tipo fif que luego pueden ser procesados utilizando MNE
+    - raweeg: numpyarray con los datos de eeg de la forma [n_channels, n_samples]
+    - channels_names: lista de strings con los nombres de canales
+    - sf: frecuencia de muestreo. Por defecto es 250.
+    - chan_types: string con el tipo de canal a almacenar. Por defecto es "eeg"
+
+    Ejemplo
+    channel_names = ['Fp1', 'Fp2', 'C3', 'F4', 'C3', 'C4', 'P3', 'P4']
+    """
+    ch_types = ch_types*len(channels_names) #["eeg"]*n_channels
+    info = create_info(ch_names = channels_names, sfreq = sf, ch_types = chan_types)
+    
+    rawmne = RawArray(raweeg.T, info)
+
+    rawmne.save(filename, overwrite = True)
+
+    return rawmne
