@@ -13,11 +13,14 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
     Por ejemplo, se puede implementar ICA para eliminar las componentes de ruido de la señal y luego aplicar la transformada de Hilbertm, o bien
     implementar CSP para extraer las componentes de interés de la señal y luego aplicar la transformada de Hilbert."""
 
-    def __init__(self, method = "hilbert"):
-        """No se inicializan atributos."""
+    def __init__(self, method = "hilbert", sample_rate = 250., band = None):
+        """No se inicializan atributos.
+        - method: método por el cual extraer la potencia
+        - band: lista con el ancho de banda de frecuencias a extraer. Ejemplo [8,30]. Si es None se retorna array completo"""
 
         self.method = method
-        pass
+        self.sample_rate = sample_rate
+        self.band = band
 
     def fit(self, X = None, y=None):
         """No hace nada"""
@@ -37,9 +40,9 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
             #Aplicamos la transformada de Hilbert
             transformedSignal = hilbert(signal, axis=1) #trnasformada de Hilbert
             power = np.abs(transformedSignal)**2 #Calculamos la potencia de la señal
-            alphaPower = power[:, 8:13]#.mean(axis=1) #Potencia media en la banda alfa
-            betaPower = power[:, 13:30]#.mean(axis=1) #Potencia media en la banda beta
-            features = np.hstack((alphaPower, betaPower)) #apilamos las características
+            self._alphaPower = power[:, 8:13]#.mean(axis=1) #Potencia media en la banda alfa
+            self._betaPower = power[:, 13:30]#.mean(axis=1) #Potencia media en la banda beta
+            features = np.hstack((self._alphaPower, self._betaPower)) #apilamos las características
 
             features = power
 
@@ -47,9 +50,22 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
         
         elif self.method == "psd":
             #Calcula la PSD de la señal
-            psd = np.apply_along_axis(mlab.psd, 1, signal)
-            # features = np.vstack((psd[:, 8:13], psd[:, 13:30]))
-            return psd[:,0,:,:]
+            if self.band:
+                psdfunc = lambda x: mlab.psd(x, NFFT = signal.shape[1], Fs = self.sample_rate)
+                psd = np.apply_along_axis(psdfunc, 1, signal)
+                self.freqs = psd[0,1,:]
+                f1 = (self.freqs>=self.band[0])
+                f2 = (self.freqs<=self.band[1])
+                self.freqs = self.freqs[f1 & f2]
+                self.power = psd[:,0,:]
+                self.power = self.power[:,f1 & f2]
+                return self.power
+            else:
+                psdfunc = lambda x: mlab.psd(x, NFFT = signal.shape[1], Fs = self.sample_rate)
+                psd = np.apply_along_axis(psdfunc, 1, signal)
+                self.power = psd[:,0,:]
+                self.freqs = psd[0,1,:]
+                return self.power
 
     def fit_transform(self, signal):
         """Función para aplicar los filtros a la señal.
@@ -58,18 +74,29 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
         self.fit()
         return self.transform(signal)
 
-def main():
-
+if __name__ == '__main__':
     with open("testsignal_filtered.npy", "rb") as f:
         signal = np.load(f)
+    
+    featureExtractor = FeatureExtractor(method="psd", sample_rate=250, band = None) #instanciamos el extractor de características
 
-    featureExtractor = FeatureExtractor() #instanciamos el extractor de características
+    features = featureExtractor.fit_transform(signal) #signal [n_channels, n_samples]
+    features.shape
 
-    features = featureExtractor.fit_transform(signal)
+    featureExtractor.freqs.shape
+    
+
+    import matplotlib.pyplot as plt
+    plt.plot(featureExtractor.freqs, features[0,:])
+    plt.show()
+
+    filtro = featureExtractor.freqs>=8
+    filtro2 = featureExtractor.freqs<=30
+
+    features[:,(filtro)&(filtro2)]
+
+
+
 
     with open("testing_features.npy", "wb") as f:
         np.save(f, features)
-
-
-if __name__ == '__main__':
-    main()
