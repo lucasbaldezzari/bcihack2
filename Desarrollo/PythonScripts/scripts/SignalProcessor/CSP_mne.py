@@ -32,7 +32,7 @@ from mne.decoding import CSP
 from sklearn.decomposition import PCA
 
 class commonSpatialPattern(base.BaseEstimator, base.TransformerMixin):
-    """Clase CSP. El código base usa mne.decoding.csp. Se agregan algunos métodos para funcionalidad 
+    """Clase CSP. El código base usa mne.decoding.csp. Se agregan algunos métodos para funcionalidad
     del sistema correspondiente al segundo hackathon"""
 
     def __init__(self, n_components=4, reg=None, log=None, cov_est='concat',
@@ -40,9 +40,9 @@ class commonSpatialPattern(base.BaseEstimator, base.TransformerMixin):
                  cov_method_params=None, rank=None,
                  component_order='mutual_info') -> None:
         """Constructor de clase
-        
+
         Para información de los parámetros reg, log y transform_into referenciarse a mne.decoding.csp"""
-       
+
         self.n_components = n_components
         self.rank = rank
         self.reg = reg
@@ -60,13 +60,13 @@ class commonSpatialPattern(base.BaseEstimator, base.TransformerMixin):
     @staticmethod
     def loadCSP(self, filename = "csp_model.pkl"):
         """Cargamos un modelo ya entrenado a partir de un archivo .pickle"""
-        
+
         with open(filename, "rb") as f:
             self._csp = pickle.load(f)
 
     def fit(self, X, y):
         """Determina los filtros espaciales a partir de las épocas dentro de nuestros
-        
+
         - X: numpy.array de la forma [n_trials, n_channels, n_samples]
         - y: array con las etiquetas de clase. El array es de la forma [n_trials].
         """
@@ -74,13 +74,13 @@ class commonSpatialPattern(base.BaseEstimator, base.TransformerMixin):
         self._csp.fit(X,y)
 
         return self #El método fit siempre retorna self
-    
+
     def transform(self, X, y = None):
         """Retorna los datos transformados a partir de los filtros espaciales determinados por el método fit
         La forma de los datos retornados es [n_trials, n_components, n_samples]"""
 
         return self._csp.transform(X)
-        
+
     def saveCSPFilters(self, filname = "csp_model.pkl"):
         """Guardamos el modelo"""
         with open(filname, 'wb') as f:
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     #Contactemos en un sólo array
     eegmatrix = np.concatenate((left,right), axis=0) #importante el orden con el que concatenamos
     print(eegmatrix.shape) #[ n_trials (o n_epochs), n_channels, n_samples]
-    
+
 
     # import matplotlib.pyplot as plt
     # dt = 1/sample_frec
@@ -149,16 +149,92 @@ if __name__ == "__main__":
     plt.bar(np.arange(1,60), leftvar_csp, label = "left_csp")
     plt.bar(np.arange(1,60), np.flip(rightvar_csp), label = "right_csp")
     plt.legend()
-    plt.show()    
-
-
-    ## COMPARANDO DATOS ANTES Y DESPUÉS DE APLICAR CSP
-    
-    # plt.scatter(right[:,0], right[:,-1], label = "right sin csp" )
-    plt.scatter(right_csp[:,0], right_csp[:,-1], label = "right_csp")
-    plt.scatter(left_csp[:,0], left_csp[:,-1], label = "left_csp")
     plt.show()
 
-    
+    ## Vamos a utilizar un nuevo csp con menos componentes
+    csp = commonSpatialPattern(n_components = 4, transform_into="csp_space", reg = 0.01)
 
+    csp.fit(eegmatrix, labels) #entrenamos csp
 
+    #projectamos un sólo trial.
+    n_channels = left.shape[1]
+    n_samples = left.shape[2]
+    left_csp = csp.transform(left.mean(axis = 0).reshape(1,n_channels,n_samples))
+    right_csp = csp.transform(right.mean(axis = 0).reshape(1,n_channels,n_samples))
+
+    ##Extraemos características de los datos sin transformar y transformados. Promediamos los eeg trials
+    from FeatureExtractor import FeatureExtractor
+
+    left_medio = left.mean(axis = 0)
+    right_medio = right.mean(axis = 0)
+
+    #extrameos features sin csp
+    featureExtractor = FeatureExtractor(sample_rate = 100)
+    left_features_no_csp = featureExtractor.transform(left_medio.reshape(1,n_channels,n_samples))[0]
+
+    featureExtractor = FeatureExtractor(sample_rate = 100)
+    right_features_no_csp = featureExtractor.transform(right_medio.reshape(1,n_channels,n_samples))[0]
+
+    #graficando las features sin csp para canales c3, cz y c4. En tres axes
+    fig, axes = plt.subplots(1,3, figsize = (10,10))
+    fig.suptitle("Canales C3, Cz y C4")
+    axes[0].plot(left_features_no_csp[c3,:], label = "left")
+    axes[0].plot(right_features_no_csp[c3,:], label = "right")
+    axes[0].legend()
+    axes[1].plot(left_features_no_csp[cz,:], label = "left")
+    axes[1].plot(right_features_no_csp[cz,:], label = "right")
+    axes[1].legend()
+    axes[2].plot(left_features_no_csp[c4,:], label = "left")
+    axes[2].plot(right_features_no_csp[c4,:], label = "right")
+    axes[2].legend()
+    plt.show()
+
+    #extraemos las features con CSP
+    featureExtractor = FeatureExtractor(sample_rate = 100)
+    left_features_csp = featureExtractor.transform(left_csp).reshape(4,-1) #4 son las componentes
+    right_features_csp = featureExtractor.transform(right_csp).reshape(4,-1)
+
+    plt.plot(left_features_csp[0], label = "componente 1 - left")
+    plt.plot(right_features_csp[0], label = "componente 1 - right")
+    plt.show()
+
+    #entrenando rápidamente un clasificador y probandolo con cross validation
+    from sklearn.pipeline import Pipeline
+    from sklearn.svm import SVC
+    from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+    from sklearn.model_selection import ShuffleSplit, cross_val_score
+    from sklearn.model_selection import train_test_split
+
+    from RavelTransformer import RavelTransformer
+    from FeatureExtractor import FeatureExtractor
+
+    ravel = RavelTransformer(method="mean")
+    lda = LinearDiscriminantAnalysis()
+    svm = SVC(kernel='linear', C=1, gamma='scale')
+
+    #creamos el pipeline
+    pipeline = Pipeline([
+        ("csp", commonSpatialPattern(n_components = 6, transform_into="csp_space", reg = 0.01)),
+        ("feature_extractor", FeatureExtractor(sample_rate = 100, axisToCompute = 2)),
+        ("ravel", ravel),
+        ("classifier", lda)
+    ])
+
+    #entrenamos el pipeline
+    pipeline.fit(eegmatrix, labels)
+
+    #predecimos con el pipeline un trial
+    n_channels = left.shape[1]
+    n_samples = left.shape[2]
+    prediction = pipeline.predict(left[50].reshape(1,n_channels,n_samples))
+    print(prediction)
+
+    #hacemos cross validation
+
+    eegtotrain = eegmatrix[:,[c3,cz,c4],:]
+    cv = ShuffleSplit(5, test_size=0.2, random_state=42)
+    cv_split = cv.split(eegmatrix)
+
+    scores = cross_val_score(pipeline, eegmatrix, labels, cv = cv, n_jobs=None)
+
+    print(scores)

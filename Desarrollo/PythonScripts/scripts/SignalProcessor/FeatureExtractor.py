@@ -13,14 +13,13 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
     Por ejemplo, se puede implementar ICA para eliminar las componentes de ruido de la señal y luego aplicar la transformada de Hilbertm, o bien
     implementar CSP para extraer las componentes de interés de la señal y luego aplicar la transformada de Hilbert."""
 
-    def __init__(self, method = "welch", sample_rate = 250., overlap = 0.1, axisToCompute = 2):
+    def __init__(self, method = "welch", sample_rate = 250., axisToCompute = 2):
         """No se inicializan atributos.
         - method: método por el cual extraer la potencia
         - overlap: solapamiento en segundos"""
 
         self.method = method
         self.sample_rate = sample_rate
-        self.overlap = int(overlap*self.sample_rate)
         self.axisToCompute = axisToCompute
 
     def fit(self, X = None, y=None):
@@ -42,17 +41,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
             self.freqs = self.freqs*self.sample_rate
             return self.power
         
-        # if self.method == "psd":
-        #     #Calcula la PSD de la señal
-        #     psdfunc = lambda x: mlab.psd(x, NFFT = signal.shape[self.axisToCompute], Fs = self.sample_rate,
-        #                                  noverlap = self.overlap)
-        #     psd = np.apply_along_axis(psdfunc, self.axisToCompute, signal)
-        #     self.freqs = psd[0,:,1,0]
-        #     self.power = psd[:,,:]
-
-        #     return self.power
-
-    def fit_transform(self, signal):
+    def fit_transform(self, signal, y = None):
         """Función para aplicar los filtros a la señal.
         -signal: Es la señal en un arreglo de numpy de la forma [canales, muestras]."""
 
