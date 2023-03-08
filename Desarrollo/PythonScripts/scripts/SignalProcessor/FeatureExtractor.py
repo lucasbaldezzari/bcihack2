@@ -13,14 +13,15 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
     Por ejemplo, se puede implementar ICA para eliminar las componentes de ruido de la señal y luego aplicar la transformada de Hilbertm, o bien
     implementar CSP para extraer las componentes de interés de la señal y luego aplicar la transformada de Hilbert."""
 
-    def __init__(self, method = "welch", sample_rate = 250., overlap = 0.5):
+    def __init__(self, method = "welch", sample_rate = 250., overlap = 0.1, axisToCompute = 2):
         """No se inicializan atributos.
         - method: método por el cual extraer la potencia
         - overlap: solapamiento en segundos"""
 
         self.method = method
         self.sample_rate = sample_rate
-        self.overlap = overlap
+        self.overlap = int(overlap*self.sample_rate)
+        self.axisToCompute = axisToCompute
 
     def fit(self, X = None, y=None):
         """No hace nada"""
@@ -29,28 +30,27 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
 
     def transform(self, signal):
         """Función para aplicar los filtros a la señal.
-        -signal: Es la señal en un arreglo de numpy de la forma [canales, muestras, n_trials].
+        -signal: Es la señal en un arreglo de numpy de la forma [n_trials, canales, muestras].
         
         Retorna: Un arreglo de numpy con las características de la señal. La forma del arreglo es [canales, power_sample, n_trials]"""
         
         if self.method == "welch":
-            """Retorna la potencia de la señal en la forma [canales, power_sample, n_trials]"""
+            """Retorna la potencia de la señal en la forma [n_trials, canales, power_samples]"""
             #Aplicamos la transformada de Hilbert
-            self.freqs, self.power = welch(signal, axis=1, nfft = signal.shape[1],
-                                           noverlap=int(self.sample_rate*self.overlap)) #trnasformada de Welch
+            self.freqs, self.power = welch(signal, axis=self.axisToCompute) #trnasformada de Welch
+            
             self.freqs = self.freqs*self.sample_rate
-
             return self.power
         
-        if self.method == "psd":
-            #Calcula la PSD de la señal
-            psdfunc = lambda x: mlab.psd(x, NFFT = signal.shape[1], Fs = self.sample_rate,
-                                         noverlap=int(self.sample_rate*self.overlap))
-            psd = np.apply_along_axis(psdfunc, 1, signal)
-            self.freqs = psd[0,1,:,0]
-            self.power = psd[:,0,:]
+        # if self.method == "psd":
+        #     #Calcula la PSD de la señal
+        #     psdfunc = lambda x: mlab.psd(x, NFFT = signal.shape[self.axisToCompute], Fs = self.sample_rate,
+        #                                  noverlap = self.overlap)
+        #     psd = np.apply_along_axis(psdfunc, self.axisToCompute, signal)
+        #     self.freqs = psd[0,:,1,0]
+        #     self.power = psd[:,,:]
 
-            return self.power
+        #     return self.power
 
     def fit_transform(self, signal):
         """Función para aplicar los filtros a la señal.
@@ -67,20 +67,21 @@ if __name__ == '__main__':
     with open("all_right_trials.npy", "rb") as f:
         signalRight = np.load(f)
     
+    signalLeft.shape
     
-    featureExtractor = FeatureExtractor(method="psd", sample_rate=100.) #instanciamos el extractor de características
+    featureExtractor = FeatureExtractor(method="welch", sample_rate=100.) #instanciamos el extractor de características
     featuresleft = featureExtractor.fit_transform(signalLeft) #signal [n_channels, n_samples, n_trials]
 
-    featureExtractor = FeatureExtractor(method="psd", sample_rate=100.) #instanciamos el extractor de características
+    featureExtractor = FeatureExtractor(method="welch", sample_rate=100.) #instanciamos el extractor de características
     featuresright = featureExtractor.fit_transform(signalRight) #signal [n_channels, n_samples, n_trials]
 
     c3, cz, c4 = 26, 28, 30 #canales de interés
 
     import matplotlib.pyplot as plt
     plt.title("Potencia de la señal en la banda alfa y beta - Promedio trials - Clase $left$")
-    plt.plot(featureExtractor.freqs, featuresleft[c3].mean(axis=1), label = "C3")
-    plt.plot(featureExtractor.freqs, featuresleft[cz].mean(axis=1), label = "Cz")
-    plt.plot(featureExtractor.freqs, featuresleft[c4].mean(axis=1), label = "C4")
+    plt.plot(featureExtractor.freqs, featuresleft.mean(axis=0)[c3], label = "C3")
+    plt.plot(featureExtractor.freqs, featuresleft.mean(axis=0)[cz], label = "Cz")
+    plt.plot(featureExtractor.freqs, featuresleft.mean(axis=0)[c4], label = "C4")
     plt.xlim(1,30)
     plt.legend()
     plt.grid()
@@ -88,20 +89,20 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots(1,3, figsize=(10,5))
     fig.suptitle("Potencia de la señal en las bandas alfa (mu) y beta - Promedio trials - Clase $left$ y $right$")
-    ax[0].plot(featureExtractor.freqs, featuresleft[c3].mean(axis=1), label = "left")
-    ax[0].plot(featureExtractor.freqs, featuresright[c3].mean(axis=1), label = "right")
+    ax[0].plot(featureExtractor.freqs, featuresleft.mean(axis=0)[c3], label = "left")
+    ax[0].plot(featureExtractor.freqs, featuresright.mean(axis=0)[c3], label = "right")
     ax[0].set_title("C3")
     ax[0].grid()
     ax[0].set_xlim(1,30)
     ax[0].legend()
-    ax[1].plot(featureExtractor.freqs, featuresleft[cz].mean(axis=1), label = "left")
-    ax[1].plot(featureExtractor.freqs, featuresright[cz].mean(axis=1), label = "right")
+    ax[1].plot(featureExtractor.freqs, featuresleft.mean(axis=0)[cz], label = "left")
+    ax[1].plot(featureExtractor.freqs, featuresright.mean(axis=0)[cz], label = "right")
     ax[1].set_title("Cz")
     ax[1].grid()
     ax[1].set_xlim(1,30)
     ax[1].legend()
-    ax[2].plot(featureExtractor.freqs, featuresleft[c4].mean(axis=1), label = "left")
-    ax[2].plot(featureExtractor.freqs, featuresright[c4].mean(axis=1), label = "right")
+    ax[2].plot(featureExtractor.freqs, featuresleft.mean(axis=0)[c4], label = "left")
+    ax[2].plot(featureExtractor.freqs, featuresright.mean(axis=0)[c4], label = "right")
     ax[2].set_title("C4")
     ax[2].grid()
     ax[2].set_xlim(1,30)

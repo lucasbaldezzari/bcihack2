@@ -98,7 +98,11 @@ def getTrials(EEG, cl_lab, event_codes, event_onsets, nchannels,
         for i, onset in enumerate(cl_onsets):
             trials[cl][:,:,i] = EEG[:, win+onset]
 
-    #los datos dentro de trials son de la forma [channels, samples, trials]
+    #changing the order of numpy in the way [trials, channels, samples]    
+    for clase in trials.keys():
+        trials[clase] = trials[clase].swapaxes(1, 2).swapaxes(0, 1)
+
+    #los datos dentro de trials son de la forma [trials, channels, samples]
     return trials
 
 def plot_signals(signals, title, legend):

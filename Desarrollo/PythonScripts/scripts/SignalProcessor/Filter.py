@@ -11,7 +11,8 @@ class Filter(BaseEstimator, TransformerMixin):
         """Inicializa el objeto con los parámetros de filtrado."""
         pass
 
-    def fit(self, X = None, y=None, lowcut = 8.0, highcut = 30.0, notch_freq = 50.0, notch_width = 2.0, sample_rate = 250.0):
+    def fit(self, X = None, y=None, lowcut = 8.0, highcut = 30.0, notch_freq = 50.0, notch_width = 2.0, sample_rate = 250.0
+            , axisToCompute = 2):
         """Creamos los filtros.
         -lowcut: Frecuencia de corte inferior del filtro pasa banda.
         -highcut: Frecuencia de corte superior del filtro pasa banda.
@@ -26,6 +27,7 @@ class Filter(BaseEstimator, TransformerMixin):
         self.notch_freq = notch_freq
         self.notch_width = notch_width
         self.sample_rate = sample_rate
+        self.axisToCompute = axisToCompute
 
         self.b, self.a = butter(5, [self.lowcut, self.highcut], btype='bandpass', fs=self.sample_rate)
         self.b_notch, self.a_notch = iirnotch(self.notch_freq, self.notch_width, self.sample_rate)
@@ -34,22 +36,23 @@ class Filter(BaseEstimator, TransformerMixin):
 
     def transform(self, signal):
         """Función para aplicar los filtros a la señal.
-        -signal: Es la señal en un numpy array de la forma [canales, muestras]."""
+        -signal: Es la señal en un numpy array de la forma [n-trials, canales, muestras]."""
 
         signal = np.subtract(signal, signal.mean(axis=0)) #restamos la media de cada muestra
         signal = filtfilt(self.b, self.a, signal, axis=1) #aplicamos el filtro pasa banda
-        signal = filtfilt(self.b_notch, self.a_notch, signal, axis=1) #aplicamos el filtro notch
+        signal = filtfilt(self.b_notch, self.a_notch, signal, axis = self.axisToCompute) #aplicamos el filtro notch
         return signal
-    
 
-def main():
 
-    with open('testsignal.npy', 'rb') as f:
+if __name__ == "__main__":
+
+    with open('all_left_trials.npy', 'rb') as f:
         signal = np.load(f)
 
     filtro = Filter()
     filtro.fit(lowcut=1.0, highcut=36.0, notch_freq=50.0, notch_width=2.0, sample_rate=250.0)
     signalFiltered = filtro.transform(signal)
+
     # signalFiltered = signalpros.fit_transform(signal,highcut=36.0, notch_freq=50.0, notch_width=2.0)
 
     ### Grafico para comparar señal original y señal filtrada
@@ -60,7 +63,3 @@ def main():
 
     with open("testsignal_filtered.npy", "wb") as f:
         np.save(f, signalFiltered)
-
-
-if __name__ == "__main__":
-    main()
