@@ -60,6 +60,9 @@ Bloque para comunicación entre PC y el ejecutor (que será un brazo robótico y
 
 ## GUI Block
 
+Bloques de interfaces visuales.
+**TODO**
+
 ### Responsables
 
 - [x] Emiliano Álvarez
@@ -69,6 +72,5 @@ Bloque para comunicación entre PC y el ejecutor (que será un brazo robótico y
 
 La versión de python a utilizar será *>= 3.10.1*
 
-- Dependencias necesarias para ejecutar, probar y ejecutar estos scripts (*Lucas*)...
+- Dependencias necesarias para ejecutar, probar y ejecutar estos scripts (Completar por *Lucas*)...
 
-**TODO**
