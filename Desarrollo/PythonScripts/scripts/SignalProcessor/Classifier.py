@@ -1,3 +1,4 @@
+"""IMPORTANTE: Esta clase aún esta en revisión"""
 import threading
 import time
 import numpy as np
