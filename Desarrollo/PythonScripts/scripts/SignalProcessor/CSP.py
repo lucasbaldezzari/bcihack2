@@ -80,6 +80,10 @@ class commonSpatialPattern(base.BaseEstimator, base.TransformerMixin):
         La forma de los datos retornados es [n_trials, n_components, n_samples]"""
 
         return self._csp.transform(X)
+    
+    def fit_transform(self, X, y=None, **fit_params):
+        """Sobreescribir este método para que se comporte según lo esperado cuando se llame a fit_transform()"""
+        ##TODO: implementar este método
 
     def saveCSPFilters(self, filname = "csp_model.pkl"):
         """Guardamos el modelo"""
