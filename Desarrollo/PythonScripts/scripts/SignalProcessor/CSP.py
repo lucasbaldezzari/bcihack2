@@ -29,8 +29,6 @@ from sklearn import base
 
 from mne.decoding import CSP
 
-from sklearn.decomposition import PCA
-
 class commonSpatialPattern(base.BaseEstimator, base.TransformerMixin):
     """Clase CSP. El código base usa mne.decoding.csp. Se agregan algunos métodos para funcionalidad
     del sistema correspondiente al segundo hackathon"""
@@ -94,22 +92,22 @@ class commonSpatialPattern(base.BaseEstimator, base.TransformerMixin):
 if __name__ == "__main__":
 
     sample_frec = 100.
-
-    left = np.load("all_left_trials.npy", allow_pickle=True)
-    right = np.load("all_right_trials.npy", allow_pickle=True)
+    folder = "testData/"
+    left = np.load(folder+"all_left_trials.npy", allow_pickle=True)
+    right = np.load(folder+"all_right_trials.npy", allow_pickle=True)
     print(left.shape) #[n_channels, n_samples, ntrials]
     print(right.shape) #[n_channels, n_samples, ntrials]
 
     c3, cz, c4 = 26, 28, 30 #canales de interés
-
+    class_info = {1: "left", 2: "right"} #diccionario para identificar clases. El orden se corresponde con lo que hay eneegmatrix
+    n_clases = len(list(class_info.keys()))
+    
     #los datos deben pasarse al csp de la forma [n_epochs, n_channels, n_samples]
     #los datos que cargamos en eegmatrix están de la forma [n_clases, n_channels, n_samples]
-
 
     #Contactemos en un sólo array
     eegmatrix = np.concatenate((left,right), axis=0) #importante el orden con el que concatenamos
     print(eegmatrix.shape) #[ n_trials (o n_epochs), n_channels, n_samples]
-
 
     # import matplotlib.pyplot as plt
     # dt = 1/sample_frec
@@ -120,8 +118,6 @@ if __name__ == "__main__":
 
     #IMPORTANTE: DEBEMOS PRESTAR ESPECIAL ANTENCIÓN AL ORDEN DE LAS CLASES YA QUE EL CSP NOS DEVOLVERÁ UN SET DE FILTROS ESPACIALES
     #CADA FILTRO ESPACIAL SE CORRESPONDE A UNA DE LAS CLASES EN EL ORDEN CON QUE SE ENTRENA EL CSP
-
-    class_info = {1: "left", 2: "right"} #diccionario para identificar clases. El orden se corresponde con lo que hay eneegmatrix
 
     #En este ejemplo tenemos los trials ordenados, es decir, tenemos 100 trials para la clase left y 100 para la clase right.
     #Por lo tanto, las etiquetas que crearemos estarán ordenadas.

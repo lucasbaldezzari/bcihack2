@@ -50,7 +50,7 @@ Extraer las características con el módulo *[FeatureExtractor.py](https://githu
 
 Se plantean dos enfoques para la aplicación del CSP y la extracción de características. Una es la estrategia *OneVsOne* y la otra es *OneVsRest*.
 
-La siguiente figura muestra un diagrama de aplicación de CSP y extracción de características para la fase de entrenamiento, la fase online es similar, sólo que los CSP no se entrenan, sino que se utilizan filtros previamente entrenados. Se utilizan las señales de EEG previamente filtradas (pasabanda y notch), trials y labels para obtener los filtros espaciales que proyectarán el EEG a un nuevo espacio. La cantidad de filtros espaciales a obtener está en función del número de clases. Si tenemos $K$, entonces tenemos $\fra{K(K-1)}{2}$ filtros espaciales.
+La siguiente figura muestra un diagrama de aplicación de CSP y extracción de características para la fase de entrenamiento, la fase online es similar, sólo que los CSP no se entrenan, sino que se utilizan filtros previamente entrenados. Se utilizan las señales de EEG previamente filtradas (pasabanda y notch), trials y labels para obtener los filtros espaciales que proyectarán el EEG a un nuevo espacio. La cantidad de filtros espaciales a obtener está en función del número de clases. Si tenemos $K$, entonces tenemos $\frac{K(K-1)}{2}$ filtros espaciales.
 
 A partir de las salidas de estos filtros se extraen sus características con *[FeatureExtractor.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/FeatureExtractor.py)* y se concatenan cada una de estas para formar el **feature vector**.
 
