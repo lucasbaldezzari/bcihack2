@@ -56,6 +56,8 @@ A partir de las salidas de estos filtros se extraen sus características con *[F
 
 ![Diagrama aplicación de CSP y Extracción de características - OvO](cspovotrain.png)
 
+El entrenamiento y aplicación de filtrado por CSP está a cargo de [CSPMulticlass.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSPMulticlass.py).
+
 ### Clasificación
 Clasificación con *Classifier.py* $^1$. 
 
