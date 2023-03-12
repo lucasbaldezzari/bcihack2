@@ -3,8 +3,13 @@
 #### Credits
 
 ```diff
-+ Please, if you will use scripts, information or anything from this repository, please give us some credits.
+
+- Please, if you will use scripts, information or anything from this repository, please give us some credits.
 + We will appreciate it!
+
+- https://www.linkedin.com/in/lucasbaldezzari/
+
++ Thanks!
 ```
 
 ## Resumen proyecto
