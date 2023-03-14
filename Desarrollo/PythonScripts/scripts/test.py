@@ -190,5 +190,65 @@ print(trial.shape)
 y_pred = best_estimator.predict(trial)
 print(y_pred)
 
+## **************************************
+## Hacemos lo mismo pero con un SVM
+## **************************************
+from sklearn.svm import SVC
 
+pipeline2 = Pipeline([
+    ('pasabanda', pasabanda),
+    ('cspmulticlase', cspmulticlass),
+    ('featureExtractor', featureExtractor),
+    ('ravelTransformer', ravelTransformer),
+    ('svm', SVC())
+])
+
+"""Análisis rápido con el pipeline"""
+pipeline2.fit(eeg_train, labels_train)
+print(pipeline2.score(eeg_test, labels_test))
+
+"""Búsqueda de hiperparámetros con GridSearchCV"""
+#Definimos una grilla de parámetros para el GridSearch
+param_grid2 = {
+    'pasabanda__lowcut': [8.0, 9.0],
+    'pasabanda__highcut': [15.0, 28.0],
+    'cspmulticlase__n_components': [2],
+    'featureExtractor__method': ['hilbert','welch'],
+    'svm__kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+    'svm__C': [0.1, 1, 10, 100, 1000],
+    'svm__gamma': ['scale', 'auto']
+    }
+
+#Creamos el GridSearch
+grid2 = GridSearchCV(pipeline2, param_grid2, cv=5, n_jobs=-1)
+grid2.fit(eeg_train, labels_train)
+
+#Nos quedamos con el mejor estimador
+best_estimator2 = grid2.best_estimator_
+
+#Usamos el mejor estimador para predecir sobre los datos de test
+best_estimator2.fit(eeg_test, labels_test)
+
+#Usamos el mejor estimador para predecir sobre los datos de validación
+y_pred2 = best_estimator2.predict(eeg_val)
+
+#Calculamos la matriz de confusión
+confusion_matrix(labels_val, y_pred2)
+
+#Calculamos el accuracy
+from sklearn.metrics import accuracy_score, classification_report
+print(accuracy_score(labels_val, y_pred2))
+print(classification_report(labels_val, y_pred2))
+
+#guardamos el mejor modelo con los hiparámetros encontrados en la carpeta models. Si no existe la carpeta, la creamos
+filename = 'models/best_model_SVM.sav'
+pickle.dump(best_estimator2, open(filename, 'wb'))
+
+#usamos el modelo para predecir sobre un nuevo trial (usando un trial de la clase 1 de los datos de validación)
+trial = eeg_val[9].reshape(1, eeg_val.shape[1], eeg_val.shape[2])
+print(trial.shape)
+
+#predecimos
+y_pred2 = best_estimator2.predict(trial)
+print(y_pred2)
 
