@@ -7,6 +7,30 @@ Esta clase hará uso de la clase mne.decoding.csp para generar los filtros CSP. 
 1) El constructor de CSPMulticlass recibe los parámetros que recibe la clase mne.decoding.csp. Estos parámetros se utilizarán para entrenar cada clasificador
 2) El método fit recibe los datos de entrenamiento y las etiquetas de clase. Estos datos se utilizarán para entrenar cada filtro CSP. El método fit retorna self
 3) El método transform recibe los datos a transformar y retorna los datos transformados. Este método no se utiliza para entrenar los filtros CSP.
+
+
+ filters_ attribute only returns the top m CSP filters, meaning the m filters with the largest eigenvalues. These m filters are the ones that capture the most discriminative information between the two classes.
+
+When transform_into='csp_space', the transform() method applies these top m filters to the input data, resulting in a new feature space that is projected onto the CSP components. 
+
+IMPORTANTE: Debemos tener en cuenta que el método mne.decoding.csp posee un atributo filters_. El mismo posee la matriz de filtros espaciales luego de aplicar
+fit(). La clase CSP devuelve sólo los m filtros con las mayores autovalores. Estos m filtros son los que capturan la información discriminante más importante
+entre las dos clases. Cuando transform_into='csp_space', el método transform() aplica estos m filtros a los datos de entrada, resultando en un nuevo espacio de
+características que está proyectado sobre los componentes CSP. A diferencia de otras implementaciones, el método de mne sólo devuelve los m filtros con las mayores
+autovalores. Esto significa que si queremos utilizar además los m filtros correspondientes a los m menores autovalores, debemos hacerlo manualmente utilizando
+los atributos filters_, eigenvalues_ y eigenvectors_ de la clase mne.decoding.csp, ejemplo:
+
+
+eigenvalues = csp.eigenvalues_
+eigenvectors = csp.filters_
+
+sorted_indices = np.argsort(eigenvalues)[::-1]  # ordenamos los índices
+sorted_eigenvalues = eigenvalues[sorted_indices]
+sorted_eigenvectors = eigenvectors[:, sorted_indices]
+
+m = 3
+top_filters = sorted_eigenvectors[:, :m]
+bottom_filters = sorted_eigenvectors[:, -m:]
 """
 
 import numpy as np
@@ -188,7 +212,7 @@ if __name__ == "__main__":
     #Contactemos los trials de cada clase en un sólo array
     eegmatrix = np.concatenate((left,right), axis=0) #importante el orden con el que concatenamos
     print(eegmatrix.shape) #[ n_trials (o n_epochs), n_channels, n_samples]
-    
+
     class_info = {1: "left", 2: "right"} #diccionario para identificar clases. El orden se corresponde con lo que hay eneegmatrix
     n_clases = len(list(class_info.keys()))
 
@@ -199,16 +223,75 @@ if __name__ == "__main__":
     print(labels.shape)
     print(labels) #las labels se DEBEN corresponder con el orden de los trials en eegmatrix
 
-    #instanciamos el objeto csp
-    cspmulticlass = CSPMulticlass(n_components = 2, method = "ovo", n_classes = len(np.unique(labels)), transform_into="csp_space", reg = 0.01)
+    ## **************************************************
+    #Separamos los datos en train, test y validación
+    from sklearn.model_selection import train_test_split
+
+    eeg_train, eeg_test, labels_train, labels_test = train_test_split(eegmatrix, labels, test_size=0.2, random_state=1)
+    eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_train, labels_train, test_size=0.2, random_state=1)
+    
+    ## **************************************************
+
+    #instanciamos el objeto CSPMulticlass
+    # cspmulticlass = CSPMulticlass(n_components = 3, method = "ovo", n_classes = len(np.unique(labels)),
+    #                               transform_into="csp_space", reg = 0.03, component_order="mutual_info")
+
+    cspmulticlass = CSPMulticlass(n_components=2, method = "ovo", n_classes = len(np.unique(labels)), reg=None, log=None, norm_trace=False)
     print(f"Cantidad de filtros CSP a entrenar: {len(cspmulticlass.csplist)}")
 
     #entrenamos el csp
-    cspmulticlass.fit(eegmatrix, labels)
+    cspmulticlass.fit(eeg_train, labels_train)
 
-    #transformamos para un trial de la clase 1
-    trialtest = eegmatrix[0].reshape(1, eegmatrix.shape[1], eegmatrix.shape[2]) #debe tener la forma [n_trials, n_channels, n_samples]
-    trialtest.shape
+    eeg_test_transformed = cspmulticlass.transform(eeg_val)
+    eeg_test_transformed.shape
 
-    trialtest_transformed = cspmulticlass.transform(trialtest)
-    trialtest_transformed.shape
+    #Extraemos las envolventes de los trials antes y después de aplicar CSP sobre el set de testeo
+    from FeatureExtractor import FeatureExtractor
+
+    leftFE = FeatureExtractor(method = "hilbert", sample_rate=100., axisToCompute=2)
+    rightFE = FeatureExtractor(method = "hilbert", sample_rate=100., axisToCompute=2)
+
+    #Features separadas por etiqueta
+    left_test_envelope_withCSP = leftFE.fit_transform(eeg_val[labels_val == 1])
+    right_test_envelope_withCSP = rightFE.fit_transform(eeg_val[labels_val == 2])
+
+    #Graficamos las features para las componentes 1 y 2 obtenidas por el CSP
+    import matplotlib.pyplot as plt
+
+    sample_frec = 100.
+    t1 = -0.5
+    t2 = 2.5
+    timeline = np.arange(t1,t2,1/sample_frec)
+
+    fig, ax = plt.subplots(1,2, figsize=(10,5))
+    fig.suptitle("Envolventes set de validación con CSP - Promedio sobre trials")
+    ax[0].plot(timeline, left_test_envelope_withCSP.mean(axis = 0)[0], label = "1er componente (izq)")
+    ax[0].plot(timeline, right_test_envelope_withCSP.mean(axis = 0)[0], label = "1er componente (der)")
+    ax[0].legend()
+    ax[0].grid()
+    ax[1].plot(timeline, left_test_envelope_withCSP.mean(axis = 0)[1], label = "2da componente (izq)")
+    ax[1].plot(timeline, right_test_envelope_withCSP.mean(axis = 0)[1], label = "2da componente (der)")
+    ax[1].legend()
+    ax[1].grid()
+    plt.plot()
+    plt.show()
+
+    #Extraemos las potencias de las componentes poryectadas luego de aplicar CSP al set de testeo
+    leftFE = FeatureExtractor(method = "welch", sample_rate=100., axisToCompute=2)
+    rightFE = FeatureExtractor(method = "welch", sample_rate=100., axisToCompute=2)
+
+    left_test_powerCSP = leftFE.fit_transform(eeg_val[labels_val == 1])
+    right_test_powerCSP = rightFE.fit_transform(eeg_val[labels_val == 2])
+
+    fig, ax = plt.subplots(1,2, figsize=(10,5))
+    fig.suptitle("Potencia set de validación con CSP - Promedio sobre trials")
+    ax[0].plot(left_test_powerCSP.mean(axis = 0)[0], label = "1er componente (izq)")
+    ax[0].plot(right_test_powerCSP.mean(axis = 0)[0], label = "1er componente (der)")
+    ax[0].legend()
+    ax[0].grid()
+    ax[1].plot(left_test_powerCSP.mean(axis = 0)[1], label = "2da componente (izq)")
+    ax[1].plot(right_test_powerCSP.mean(axis = 0)[1], label = "2da componente (der)")
+    ax[1].legend()
+    ax[1].grid()
+    plt.plot()
+    plt.show()
