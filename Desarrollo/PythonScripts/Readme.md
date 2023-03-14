@@ -1,4 +1,4 @@
-# Scripts Python - Revisión 8/3/2023
+# Scripts Python - Revisión 14/3/2023
 
 En esta sección se encuentra el código fuente de los diferentes scripts en python para implementar la ICC.
 
@@ -39,9 +39,20 @@ A continuación de mencionan las funcionalidades y clases del bloque,
 
 Se aplican filtros pasabanda y notch a señal proveniente del bloque *EEGLogger* con la clase *[Filter.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/Filter.py)*.
 
-### Filtrado espacial - CSP
+### Filtrado espacial - CSPMulticlass
 
-Filtrado con [CSP](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSP.py). Esta clase aplica un filtrado espacial a través de [Common Spatial Pattern](https://en.wikipedia.org/wiki/Common_spatial_pattern#:~:text=Common%20spatial%20pattern%20(CSP)%20is,in%20variance%20between%20two%20windows). La misma hace uso de la clase [CSP](https://mne.tools/stable/generated/mne.decoding.CSP.html), pero se le agregan algunos métodos adicionales.
+Filtrado con [CSPMulticlass](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSPMulticlass.py). Esta clase aplica un filtrado espacial a través de [Common Spatial Pattern](https://en.wikipedia.org/wiki/Common_spatial_pattern#:~:text=Common%20spatial%20pattern%20(CSP)%20is,in%20variance%20between%20two%20windows). La misma hace uso de la clase [CSP](https://mne.tools/stable/generated/mne.decoding.CSP.html), pero se le agregan algunos métodos adicionales.
+
+Esta clase recibe los datos filtrados por [Filter.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/Filter.py) y genera una lista de filtros CSP. La cantidad de filtros espaciales creados depende, en primera instancia de la cantidad de clases que se tenga, y también del tipo de comparación que se quiere hacer. 
+
+Esta clase puede utilizar dos enfoques para generar y aplicar los filtros espaciales. Estos son,
+
+- One vs One: La clase genera $\frac{K(K-1)}{2}$ filtros diferentes ($K$ es la cantidad de clases) cuando se llama al método _fit()_.
+- One vs All: La clase genera $K$ filtros diferentes ($K$ es la cantidad de clases) cuando se llama al método _fit()_.
+
+Cuando se llama a *_transform(signal)_* el método aplica cada filtro dentro _csplist_ a los datos dentro de _signal_ y retorna un array con estas proyecciones concatenadas de tal forma que el array retornado tiene la forma [n_trials, n_components x n_filters, n_samples]. 
+
+A modo de ejemplo, si tenemos 4 clases, y entrenamos un _CSPMulticlass_ para dos componentes y con método _ovo_, deberíamos tener $2_{componentes}\times6_{filtros} = 12$ nuevas dimensiones, entonces el array que entregará CSPMulticlass al aplicar _transform_ es [n_trials, 12, n_samples]. 
 
 ### Extracción de características
 

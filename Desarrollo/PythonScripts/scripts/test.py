@@ -49,6 +49,9 @@ c3 = sujeto1["channelsNames"].index("C3")
 cz = sujeto1["channelsNames"].index("Cz")
 c4 = sujeto1["channelsNames"].index("C4")
 
+channelsToUse = ["C1", "C2", "C3", "C4", "C5", "C6", "Cz", "CP1", "CP2","CP3","CP4","CPz", "P1","P2","P3","P4"]
+indexes = [sujeto1["channelsNames"].index(channel) for channel in channelsToUse]
+
 #Dividimos la señal en trials considerando los event_starting
 trials = getTrials(eeg, [sujeto1["class1"], sujeto1["class2"]], sujeto1["event_codes"], sujeto1["event_starting"], 59,
                    w1=-0.5, w2=2.5, sample_rate=100)
