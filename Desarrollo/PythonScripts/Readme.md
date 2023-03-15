@@ -69,12 +69,36 @@ A partir de las salidas de estos filtros se extraen sus características con *[F
 
 El entrenamiento y aplicación de filtrado por CSP está a cargo de [CSPMulticlass.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSPMulticlass.py).
 
+La concatenación de las features en un único feature se hace con la clase [RavelTransformer](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/RavelTransformer.py).
+
 ### Clasificación
 Clasificación con *Classifier.py* $^1$. 
 
 Al momento se implementa una clase para intentar mejorar la extracción de características a través de Common Spatial Pattern. La clase es *[CommonSpatialPatter](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSP.py)*. 
 
 **NOTA:** Las clases dentro del bloque de _SignalProcessor_ se implementan como si fueran _[Transformers](https://scikit-learn.org/stable/data_transforms.html)_ de ScikitLearn (heredan de BaseEstimator, TransformerMixin). La idea es poder utilizar estos objetos en un _[Pipeline](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html)_, lo que nos da la ventaja de probar diferentes estrategias de manera rápida y sencilla.
+
+En el [test-py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/test.py) se muestra una aplicación completa para el set de datos de [BCI Competition IV](https://www.bbci.de/competition/iv/).
+
+Se muestra un resumen debajo,
+
+```python
+#creamos el pipeline con un pasabanda, un cspmulticlase, un featureExtractor y un LDA
+from sklearn.pipeline import Pipeline
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
+pipeline = Pipeline([
+    ('pasabanda', Filter(lowcut=8.0, highcut=28.0, notch_freq=50.0, notch_width=2.0, sample_rate=100.0)),
+    ('cspmulticlase', CSPMulticlass(n_components=2, method = "ovo", n_classes = len(np.unique(labels)), reg=None, log=None, norm_trace=False)),
+    ('featureExtractor', FeatureExtractor(method = "welch", sample_rate=100., axisToCompute=2)),
+    ('ravelTransformer', RavelTransformer()),
+    ('lda', LinearDiscriminantAnalysis())
+])
+
+"""Análisis rápido con el pipeline"""
+pipeline.fit(eeg_train, labels_train)
+print(pipeline.score(eeg_test, labels_test))
+```
 
 $^1$_Importante:_ Queda pendiente definir si se usará esta clase o directamente un clasificador de sklearn.
 
