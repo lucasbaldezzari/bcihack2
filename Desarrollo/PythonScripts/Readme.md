@@ -41,11 +41,11 @@ Se aplican filtros pasabanda y notch a señal proveniente del bloque *EEGLogger*
 
 ### Filtrado espacial - CSPMulticlass
 
-Filtrado con [CSPMulticlass](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSPMulticlass.py). Esta clase aplica un filtrado espacial a través de [Common Spatial Pattern](https://en.wikipedia.org/wiki/Common_spatial_pattern#:~:text=Common%20spatial%20pattern%20(CSP)%20is,in%20variance%20between%20two%20windows). La misma hace uso de la clase [CSP](https://mne.tools/stable/generated/mne.decoding.CSP.html), pero se le agregan algunos métodos adicionales.
+Esta clase aplica un filtrado espacial a través de [Common Spatial Pattern](https://en.wikipedia.org/wiki/Common_spatial_pattern#:~:text=Common%20spatial%20pattern%20(CSP)%20is,in%20variance%20between%20two%20windows). La misma hace uso de la clase [CSP](https://mne.tools/stable/generated/mne.decoding.CSP.html), pero se le agregan algunos métodos adicionales. La clase engargada es [CSPMulticlass](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSPMulticlass.py).
 
-Esta clase recibe los datos filtrados por [Filter.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/Filter.py) y genera una lista de filtros CSP. La cantidad de filtros espaciales creados depende, en primera instancia de la cantidad de clases que se tenga, y también del tipo de comparación que se quiere hacer. 
+La clase recibe los datos filtrados por [Filter.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/Filter.py) y genera una lista de filtros CSP. La cantidad de filtros espaciales creados depende, en primera instancia de la cantidad de clases que se tenga, y también del tipo de comparación que se quiere hacer. 
 
-Esta clase puede utilizar dos enfoques para generar y aplicar los filtros espaciales. Estos son,
+Se pueden utilizar dos enfoques para generar y aplicar los filtros espaciales. Estos son,
 
 - One vs One: La clase genera $\frac{K(K-1)}{2}$ filtros diferentes ($K$ es la cantidad de clases) cuando se llama al método _fit()_.
 - One vs All: La clase genera $K$ filtros diferentes ($K$ es la cantidad de clases) cuando se llama al método _fit()_.
@@ -56,14 +56,17 @@ A modo de ejemplo, si tenemos 4 clases, y entrenamos un _CSPMulticlass_ para dos
 
 ### Extracción de características
 
-Extraer las características con el módulo *[FeatureExtractor.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/FeatureExtractor.py)*. Luego de la etapa de filtrado se extrae la densidad espectral de potencia por método de [Welch](https://en.wikipedia.org/wiki/Welch%27s_method). Se filtra la información de las bandas *Mu* (8Hz a 13Hz) y *Beta* (13Hz a 30Hz).
+La extracción de características está a cargo del módulo *[FeatureExtractor.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/FeatureExtractor.py)*.
 
+La extracción de caraterísticas puede hacerse por dos métodos, uno es obteniendo la densidad espectral de potencia por método de [Welch](https://en.wikipedia.org/wiki/Welch%27s_method) y la otra es la envolvente de la señal de EEG a través de la transformada de [Hilbert](http://www.scholarpedia.org/article/Hilbert_transform_for_brain_waves).
 
 Se plantean dos enfoques para la aplicación del CSP y la extracción de características. Una es la estrategia *OneVsOne* y la otra es *OneVsRest*.
 
-La siguiente figura muestra un diagrama de aplicación de CSP y extracción de características para la fase de entrenamiento, la fase online es similar, sólo que los CSP no se entrenan, sino que se utilizan filtros previamente entrenados. Se utilizan las señales de EEG previamente filtradas (pasabanda y notch), trials y labels para obtener los filtros espaciales que proyectarán el EEG a un nuevo espacio. La cantidad de filtros espaciales a obtener está en función del número de clases. Si tenemos $K$, entonces tenemos $\frac{K(K-1)}{2}$ filtros espaciales.
+La siguiente figura muestra un diagrama de aplicación de CSP y extracción de características para la fase de entrenamiento, las fases de feedback y online son similares, sólo que los CSP no se entrenan, sino que se utilizan filtros previamente entrenados durante la fase de entrenamiento.
 
-A partir de las salidas de estos filtros se extraen sus características con *[FeatureExtractor.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/FeatureExtractor.py)* y se concatenan cada una de estas para formar el **feature vector**.
+Se utilizan las señales de EEG previamente filtradas (pasabanda y notch), trials y labels para obtener los filtros espaciales que proyectarán el EEG a un nuevo espacio. La cantidad de filtros espaciales a obtener está en función del número de clases según la cantidad de clases y el método de comparación seleccionado.
+
+A partir de las salidas de estos filtros se extraen sus características con *[FeatureExtractor.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/FeatureExtractor.py)* y se concatenan cada una de estas para formar el **feature vector** final.
 
 ![Diagrama aplicación de CSP y Extracción de características - OvO](cspovotrain.png)
 
