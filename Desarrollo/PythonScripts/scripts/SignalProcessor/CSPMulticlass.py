@@ -165,19 +165,20 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
         if self.method == "ova":
             classlist = np.unique(y)
             for i, c in enumerate(classlist):
-                
                 c_index = np.where(y == c) #índices de la clase de interés
                 others_index = np.where(y != c) #índices de las demás clases
                 
                 c_trials = X[c_index] #trials de la clase de interes
                 others_trials = X[others_index] #trials de las demás clases
+
+                trials = np.concatenate((c_trials, others_trials), axis = 0)
                 
                 c_labels = np.zeros(c_trials.shape[0]) #etiquetas de los trials de la clase de interés
                 others_labels = np.ones(others_trials.shape[0]) #etiquetas de los trials de las demás clases
                 labels = np.concatenate((c_labels, others_labels), axis = 0) #concatenamos las etiquetas
                 
                 #fitteamos el filtro CSP
-                self.csplist[i].fit(c_trials, labels)
+                self.csplist[i].fit(trials, labels)
 
         return self #el método fit siempre debe retornar self
     
@@ -213,7 +214,8 @@ if __name__ == "__main__":
     folder = "testData/"
     left = np.load(folder+"noisy_eeg_classLeft.npy", allow_pickle=True)[:,channelsToUse,:]
     right = np.load(folder+"noisy_eeg_classRight.npy", allow_pickle=True)[:,channelsToUse,:]
-    foot = (right+left) - (right+left).mean(axis = 2, keepdims = True) #simulamos que tenemos datos de la clase foot
+    # foot = (right+left) - (right+left).mean(axis = 2, keepdims = True) #simulamos que tenemos datos de la clase foot
+    # foot2 = foot
     print(left.shape) #[n_channels, n_samples, ntrials]
     print(right.shape) #[n_channels, n_samples, ntrials]
 
@@ -225,11 +227,11 @@ if __name__ == "__main__":
 
     #Contactemos los trials de cada clase en un sólo array
     eegmatrix = np.concatenate((left,right), axis=0) #importante el orden con el que concatenamos
-    eegmatrix = np.concatenate((left,right, foot), axis=0) #importante el orden con el que concatenamos
+    # eegmatrix = np.concatenate((left,right, foot, foot2), axis=0) #importante el orden con el que concatenamos
     print(eegmatrix.shape) #[ n_trials (o n_epochs), n_channels, n_samples]
 
     class_info = {1: "left", 2: "right"} #diccionario para identificar clases. El orden se corresponde con lo que hay eneegmatrix
-    class_info = {1: "left", 2: "right", 3:"foot"} #diccionario para identificar clases. El orden se corresponde con lo que hay eneegmatrix 
+    # class_info = {1: "left", 2: "right", 3:"foot", 4:"foot2"} #diccionario para identificar clases. El orden se corresponde con lo que hay eneegmatrix 
     n_clases = len(list(class_info.keys()))
 
     #genero las labels
@@ -245,7 +247,7 @@ if __name__ == "__main__":
 
     eeg_train, eeg_test, labels_train, labels_test = train_test_split(eegmatrix, labels, test_size=0.2, random_state=10)
     # eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_train, labels_train, test_size=0.2, random_state=1)
-    
+
     ## **************************************************
 
     #instanciamos el objeto CSPMulticlass
@@ -328,15 +330,20 @@ if __name__ == "__main__":
     #aplicamos pipeline para entrenar sobre los datos de entrenamiento y testear sobre los de testeo
     from sklearn.pipeline import Pipeline
     from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+    #importamos un svm
+    from sklearn.svm import SVC
     from RavelTransformer import RavelTransformer
+    #import standardScaler
+    from sklearn.preprocessing import StandardScaler
 
     #instanciamos el pipeline
     pipeline = Pipeline([
         ("filtro", Filter(lowcut= 8.0, highcut=16.0, notch_freq=50.0, notch_width=2.0, sample_rate=100.0)),
         ("csp", CSPMulticlass(n_components=2, method = "ovo", n_classes = len(np.unique(labels)), reg=None, log=None, norm_trace=False)),
-        ("hilbert", FeatureExtractor(method = "hilbert", sample_rate=100., axisToCompute=2)),
+        ("hilbert", FeatureExtractor(method = "welch", sample_rate=100., axisToCompute=2)),
         ("ravel", RavelTransformer()),
-        ("lda", LinearDiscriminantAnalysis())
+        # ("scaler", StandardScaler()),
+        ("svc", SVC)
     ])
 
     #entrenamos el pipeline

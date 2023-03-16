@@ -62,7 +62,7 @@ La extracción de caraterísticas puede hacerse por dos métodos, uno es obtenie
 
 Se plantean dos enfoques para la aplicación del CSP y la extracción de características. Una es la estrategia *OneVsOne* y la otra es *OneVsRest*.
 
-La siguiente figura muestra un diagrama de aplicación de CSP y extracción de características para la fase de entrenamiento, las fases de feedback y online son similares, sólo que los CSP no se entrenan, sino que se utilizan filtros previamente entrenados durante la fase de entrenamiento.
+La siguiente figura (adaptada de [Multiclass Classification Based on Combined Motor Imageries](https://www.frontiersin.org/articles/10.3389/fnins.2020.559858/full)) muestra un diagrama de aplicación de CSP y extracción de características para la fase de entrenamiento, las fases de feedback y online son similares, sólo que los CSP no se entrenan, sino que se utilizan filtros previamente entrenados durante la fase de entrenamiento.
 
 Se utilizan las señales de EEG previamente filtradas (pasabanda y notch), trials y labels para obtener los filtros espaciales que proyectarán el EEG a un nuevo espacio. La cantidad de filtros espaciales a obtener está en función del número de clases según la cantidad de clases y el método de comparación seleccionado.
 
@@ -79,7 +79,7 @@ Clasificación con *Classifier.py* $^1$.
 
 Al momento se implementa una clase para intentar mejorar la extracción de características a través de Common Spatial Pattern. La clase es *[CommonSpatialPatter](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSP.py)*. 
 
-**NOTA:** Las clases dentro del bloque de _SignalProcessor_ se implementan como si fueran _[Transformers](https://scikit-learn.org/stable/data_transforms.html)_ de ScikitLearn (heredan de BaseEstimator, TransformerMixin). La idea es poder utilizar estos objetos en un _[Pipeline](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html)_, lo que nos da la ventaja de probar diferentes estrategias de manera rápida y sencilla.
+**NOTA:** Las clases dentro del bloque _SignalProcessor_ se implementan como si fueran _[Transformers](https://scikit-learn.org/stable/data_transforms.html)_ de ScikitLearn (heredan de BaseEstimator, TransformerMixin). La idea es poder utilizar estos objetos en un _[Pipeline](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html)_, lo que nos da la ventaja de probar diferentes estrategias de manera rápida y sencilla.
 
 En el [test-py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/test.py) se muestra una aplicación completa para el análisis de las señales de EEG de uno de los voluntarios del set de datos de [BCI Competition IV](https://www.bbci.de/competition/iv/).
 
