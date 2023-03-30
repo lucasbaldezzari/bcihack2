@@ -15,7 +15,9 @@ Se comunica con todos los módulos.
 
 Este módulo es el encargado de gestionar los siguientes procesos,
 
-- Gestión de los trials. Temporización de cada etapa de un trial -tiempo para mostrar qué tarea debe ejecutar la persona, tiempo de estimulación, tiempo de descanso-.  
+- Según el modo de trabajo seleccionado (entrenamiento, calibración, online) se configuran los diferentes parámetros de la sesión (duración trials, duración de tiempo de descanso, nombre de sesión, número de sujeto, entre otros).
+- Gestión de los trials en cada sesión. Temporización de cada etapa de un trial -tiempo para mostrar qué tarea debe ejecutar la persona, tiempo de estimulación, tiempo de descanso-.
+- Envía y recibe *eventos* hacia y desde los diferentes bloques. Estos eventos se registran para un posterioir análisis, pero también para el control de los bloques.
 
 #### Responsable
 
