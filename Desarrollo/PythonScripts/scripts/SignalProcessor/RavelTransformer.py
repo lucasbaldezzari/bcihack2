@@ -2,7 +2,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 import numpy as np
 
 class RavelTransformer(BaseEstimator, TransformerMixin):
-    """Esta clase recibe datos en la forma [n_trials, n_channels or n_components, n_samples] y retorna datos en la forma [n_trials, n_components x n_samples]"""
+    """Esta clase recibe datos en la forma [n_trials, n_channels or n_components, n_samples].
+    Retorna datos en la forma [n_trials, n_components x n_samples]."""
     def __init__(self, method = "reshape"):
 
         self.method = method

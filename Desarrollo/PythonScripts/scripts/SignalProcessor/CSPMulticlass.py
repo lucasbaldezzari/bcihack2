@@ -65,7 +65,6 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
 
         Para más información sobre los parámetros (excepto method y n_classes), ver la documentación de mne.decoding.csp"""
 
-
         self.method = method
         self.n_classes = n_classes
         self.n_components = n_components
@@ -107,7 +106,7 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
         
     @staticmethod #método estático para poder cargar filtros CSP sin instanciar la clase
     def loadCSPList(self, filename, folder = "filtrosCSP"):
-        """Método para cargar los filtros CSP de un archivo pickle
+        """Método para cargar los filtros CSP desde un archivo pickle
 
         Parámetros:
         ----------------
