@@ -1,10 +1,13 @@
-from EEGLogger.EEGLogger import eegLogger, setupBoard
+from EEGLogger.EEGLogger import EEGLogger, setupBoard
 
 from SignalProcessor.Filter import Filter
 from SignalProcessor.FeatureExtractor import FeatureExtractor
 from SignalProcessor.Classifier import Classifier
 
+import json
 import os
+import threading
+import time
 
 class Core():
     """Esta clase es la clase principal del sistema.
@@ -17,27 +20,16 @@ class Core():
     se puede hacer otro para el control de la comunicación con el dispositivo.)
     NOTA 2: Se debe pensar en un hilo para el control de la GUI.
     """
-    def __init__(self):
+    def __init__(self, configParameters):
         """Constructor de la clase
-        
-        NOTA: Definir qué parámetros se necesitan inicar dentro del constructor."""
-        # self.eegLogger = eegLogger()
-        # self.filter = Filter()
-        # self.featureExtractor = FeatureExtractor()
-        # self.classifier = Classifier()
-        pass
 
-    def loadParameters(self, parameters):
-        """Este método se encargará de leer los parámetros importantes para llevar a cabo el control de la aplicación.
-
-        Se propone que la GUI de "Seteo e incio de sesión" pase los parámetros a esta clase en la forma de un diccionario o json.
-        
         - Parameters (dict): Diccionario con los parámetros a ser cargados. Los parámetros son:
             -typeSesion (int): Tipo de sesión. 0: Entrenamiento, 1: Feedback o calibración, 2: Online.
             -startingTimes (lista): Lista con los valores mínimo y máximo a esperar antes de iniciar un nuevo cue o tarea. 
             Estos valores se usan para generar un tiempo aleatorio entre estos valores.
             -cueDuration (float): Duración del cue en segundos.
             -finishDuration (float): Duración del tiempo de finalización en segundos.
+            -lenToClassify (float): Duración de la señal a clasificar en segundos.
             -subjectName (str): Nombre del sujeto.
             -sesionNumber (int): Número de la sesión.
             -boardParams (dict): Diccionario con los parámetros de la placa. Los parámetros son:
@@ -56,46 +48,77 @@ class Core():
             -classifierFile (str): Ruta al archivo pickle con el clasificador. IMPORTANTE: Se supone que este archivo ya fue generado con la sesión
             de entrenamiento y será usado durante las sesiones de feedback y online.
 
-            Un trial es la suma de startingTimes + cueDuration + finishDuration
-            
-            NOTA: Se agregarán (o quitarán parámetros a medida que evolucione la clase)."""
+        Un trial es la suma de startingTimes + cueDuration + finishDuration
+        
+        NOTA: Definir qué parámetros se necesitan inicar dentro del constructor."""
 
         #Parámetros generales para la sesións
-        self.typeSesion = parameters["typeSesion"]
-        self.startingTimes = parameters["startingTimes"]
-        self.cueDuration = parameters["cueDuration"]
-        self.finishDuration = parameters["finishDuration"]
-        self.subjectName = parameters["subjectName"]
-        self.sesionNumber = parameters["sesionNumber"]
+        self.typeSesion = configParameters["typeSesion"]
+        self.startingTimes = configParameters["startingTimes"]
+        self.cueDuration = configParameters["cueDuration"]
+        self.finishDuration = configParameters["finishDuration"]
+        self.lenToClassify = configParameters["lenToClassify"]
+        self.subjectName = configParameters["subjectName"]
+        self.sesionNumber = configParameters["sesionNumber"]
 
         #Parámetros para inicar la placa openbci
-        self.boardParams = parameters["boardParams"]
+        self.boardParams = configParameters["boardParams"]
 
         #parámetros del filtro
-        self.filterParameters = parameters["filterParameters"]
+        self.filterParameters = configParameters["filterParameters"]
 
         ## Archivo para cargar el CSP
-        self.cspFile = parameters["cspFile"]
+        self.cspFile = configParameters["cspFile"]
 
         ## Archivo para cargar el clasificador
-        self.classifierFile = parameters["classifierFile"]
+        self.classifierFile = configParameters["classifierFile"]
 
-    def startEEGLogger(self):
-        """Iniciamos el EEGLogger."""
-        # self.eegLogger.start()
-        pass
+        self.configParameters = configParameters
+        
+    def updateParameters(self,newParameters):
+        """Actualizamos cada valor dentro del diccionario
+        configParameters a partir de newParameters"""
+        self.typeSesion = newParameters["typeSesion"]
+        self.startingTimes = newParameters["startingTimes"]
+        self.cueDuration = newParameters["cueDuration"]
+        self.finishDuration = newParameters["finishDuration"]
+        self.lenToClassify = newParameters["lenToClassify"]
+        self.subjectName = newParameters["subjectName"]
+        self.sesionNumber = newParameters["sesionNumber"]
+        self.boardParams = newParameters["boardParams"]
+        self.filterParameters = newParameters["filterParameters"]
+        self.cspFile = newParameters["cspFile"]
+        self.classifierFile = newParameters["classifierFile"]
+        self.configParameters = newParameters
+        
+    def saveConfigParameters(self, fileName):
+        """Guardamos el diccionario configParameters en un archivo json"""
+        with open(fileName, 'w') as fp:
+            json.dump(self.configParameters, fp)
 
-    def startFilter(self):
+    def setEEGLogger(self, board, board_id):
+        """Seteamos EEGLogger para lectura de EEG desde placa.
+        Parámetros:
+         - board: objeto de la clase BoardShim
+         - board_id: id de la placa"""
+        
+        self.eeglogger = EEGLogger(board, board_id)
+
+    def setFilter(self):
         """Iniciamos el filtro."""
         # self.filter.start()
         pass
 
-    def startFeatureExtractor(self):
+    def setCSP(self):
+        """Iniciamos el CSPMulticlass."""
+        pass
+
+    def setFeatureExtractor(self):
         """Iniciamos el FeatureExtractor."""
         # self.featureExtractor.start()
         pass
 
-    def startClassifier(self):
+    def setClassifier(self):
         """Iniciamos el clasificador."""
         # self.classifier.start()
         pass
@@ -117,8 +140,8 @@ class Core():
             os.makedirs(rootFolder + self.subjectName)
 
         #Si la carpeta rootFolder/self.subjectName/self.sesionNumber no existe, se crea
-        if not os.path.exists(rootFolder + self.subjectName + "/" + str(self.sesionNumber)):
-            os.makedirs(rootFolder + self.subjectName + "/" + str(self.sesionNumber))
+        if not os.path.exists(rootFolder + self.subjectName + "/" + f"sesion{str(self.sesionNumber)}"):
+            os.makedirs(rootFolder + self.subjectName + "/" + f"sesion{str(self.sesionNumber)}")
 
     def stop(self):
         """Frenamos los hilos."""
@@ -138,4 +161,75 @@ class Core():
 
 if __name__ == "__main__":
 
-    pass
+    #Creamos un diccionario con los parámetros de configuración iniciales
+    parameters = {
+        "typeSesion": 0, #0: Entrenamiento, 1: Feedback, 2: Online
+        "startingTimes": [1.5, 3], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
+        "cueDuration": 4, #En segundos
+        "finishDuration": 3, #En segundos
+        "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
+        "subjectName": "subject_test",
+        "sesionNumber": 1,
+        "boardParams": {
+            "boardName": "synthetic",
+            "serialPort": "COM5"
+        },
+        "filterParameters": {
+            "lowcut": 8.,
+            "highcut": 28.,
+            "notch_freq": 50.,
+            "notch_width": 1,
+            "sample_rate": 250,
+            "axisToCompute": 1
+        },
+        "featureExtractorMethod": "welch",
+        "cspFile": "data/subject_test/csps/dummycsp.pickle",
+        "classifierFile": "data/subject_test/classifiers/dummyclassifier.pickle"
+    }
+
+    #Instanciamos un objeto Core
+    core = Core(parameters)
+
+    ### ********************************** INICIAMOS GUI CONFIGURACIÓN ********************************** ###
+    ## El primer paso es iniciar la GUI de configuración
+    ## Algunos campos dentro de la GUI de configuración se llenan con los parámetros iniciales
+    ## Luego de que el usuario modifica los parámetros, se actualizan los parámetros iniciales
+
+    ## newParameters = GUIConfiguracion.getParameters() #o algo así
+    # core.updateParameters(newParameters)
+
+    ### ********************************** SETEAMOS BLOQUES ********************************** ###
+    ## Una vez que tenemos los parámetros iniciales, seteamos los bloques
+
+    ## Seteamos EEGLogger
+    board, board_id = setupBoard(boardName = "synthetic", serial_port = "COM5") 
+    core.setEEGLogger(board, board_id)
+
+    # core.eeglogger.connectBoard() #nos conectamos a la placa
+    # core.eeglogger.startStreaming()
+    # newData = core.eeglogger.getData(core.cueDuration)
+    # newData.shape
+    # core.eeglogger.stopBoard()
+
+    # core.setFilter()
+    # core.setCSP()
+    # core.setFeatureExtractor()
+
+    ### ********************************** INICIAMOS GUI ********************************** ###
+    ## Dependiendo del tipo de sesión, es la GUI que iniciaremos.
+    ## Si es una sesión de entrenamiento, iniciamos la GUI de entrenamiento
+    if core.typeSesion == 0:
+        # GUIEntrenamiento()
+        pass
+    ## Si es una sesión de feedback, iniciamos la GUI de feedback
+    elif core.typeSesion == 1:
+        # GUITest()
+        pass
+    ## Si es una sesión online, iniciamos la GUI de online
+    elif core.typeSesion == 2:
+        # GUIOnline()
+        pass
+
+    ##TODO
+
+
