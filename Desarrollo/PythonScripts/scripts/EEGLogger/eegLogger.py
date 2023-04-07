@@ -2,6 +2,7 @@ import numpy as np
 from brainflow.board_shim import BoardShim, BrainFlowInputParams, BoardIds
 import logging, argparse
 import time
+import os
 
 
 class EEGLogger():
@@ -55,6 +56,10 @@ class EEGLogger():
         """Guardamos los datos crudos en un archivo .npy
         - fileName: nombre del archivo
         - path: carpeta donde se guardará el archivo"""
+
+        #Si la carpeta no existe, la creamos
+        if not os.path.exists(path):
+            os.makedirs(path)
 
         with open(path + fileName, "wb") as f:
             np.save(f, self.rawData)

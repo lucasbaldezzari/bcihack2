@@ -1,8 +1,10 @@
-from EEGLogger.eegLogger import eegLogger
+from EEGLogger.EEGLogger import eegLogger, setupBoard
 
 from SignalProcessor.Filter import Filter
 from SignalProcessor.FeatureExtractor import FeatureExtractor
 from SignalProcessor.Classifier import Classifier
+
+import os
 
 class Core():
     """Esta clase es la clase principal del sistema.
@@ -98,6 +100,25 @@ class Core():
         # self.classifier.start()
         pass
 
+    def setFolders(self, rootFolder = "data/"):
+        """Función para chequear que existan las carpetas donde se guardarán los datos de la sesión.
+        En caso de que no existan, se crean.
+        
+        La carpeta base es la rootFolder. Dentro de esta carpeta se crean las carpetas para cada sujeto.
+        
+        Se usa el nombre del sujeto para crear una subcarpeta. Dentro de esta se crean las carpetas para cada sesión."""
+
+        #si la carpeta rootFolder no existe, se crea
+        if not os.path.exists(rootFolder):
+            os.makedirs(rootFolder)
+
+        #Si la carpeta rootFolder/self.subjectName no existe, se crea
+        if not os.path.exists(rootFolder + self.subjectName):
+            os.makedirs(rootFolder + self.subjectName)
+
+        #Si la carpeta rootFolder/self.subjectName/self.sesionNumber no existe, se crea
+        if not os.path.exists(rootFolder + self.subjectName + "/" + str(self.sesionNumber)):
+            os.makedirs(rootFolder + self.subjectName + "/" + str(self.sesionNumber))
 
     def stop(self):
         """Frenamos los hilos."""
