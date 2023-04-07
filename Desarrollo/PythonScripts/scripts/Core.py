@@ -38,6 +38,9 @@ class Core():
             -finishDuration (float): Duración del tiempo de finalización en segundos.
             -subjectName (str): Nombre del sujeto.
             -sesionNumber (int): Número de la sesión.
+            -boardParams (dict): Diccionario con los parámetros de la placa. Los parámetros son:
+                -boardName (str): Nombre de la placa. Puede ser cyton, ganglion o synthetic.
+                -serialPort (str): Puerto serial de la placa. Puede ser del tipo /dev/ttyUSB0 o COM3 (para windows).
             -filterParameters (dict): Diccionario con los parámetros del filtro. Los parámetros son:
                 l-owcut (float): Frecuencia de corte inferior del filtro pasa banda.
                 -highcut (float): Frecuencia de corte superior del filtro pasa banda.
@@ -56,20 +59,24 @@ class Core():
             NOTA: Se agregarán (o quitarán parámetros a medida que evolucione la clase)."""
 
         #Parámetros generales para la sesións
-        self.typeSesion = parameters["tipySesion"]
+        self.typeSesion = parameters["typeSesion"]
         self.startingTimes = parameters["startingTimes"]
         self.cueDuration = parameters["cueDuration"]
         self.finishDuration = parameters["finishDuration"]
         self.subjectName = parameters["subjectName"]
         self.sesionNumber = parameters["sesionNumber"]
 
+        #Parámetros para inicar la placa openbci
+        self.boardParams = parameters["boardParams"]
+
         #parámetros del filtro
         self.filterParameters = parameters["filterParameters"]
 
-        ## Parámetros para el CSP
-        self.cspComponents = parameters["cspComponents"]
-        self.cspType = parameters["cspType"]
+        ## Archivo para cargar el CSP
+        self.cspFile = parameters["cspFile"]
 
+        ## Archivo para cargar el clasificador
+        self.classifierFile = parameters["classifierFile"]
 
     def startEEGLogger(self):
         """Iniciamos el EEGLogger."""
@@ -107,10 +114,10 @@ class Core():
 
         pass
 
-def main():
-    # core = Core()
-    # core.start()
-    pass
+# def main():
+
+#     pass
 
 if __name__ == "__main__":
-    main()
+    # main()
+    pass

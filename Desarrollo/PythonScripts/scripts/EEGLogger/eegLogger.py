@@ -19,8 +19,7 @@ class EEGLogger():
         self.sampling_rate = BoardShim.get_sampling_rate(board_id) #frecuencia de muestreo
         self.acel_channels = BoardShim.get_accel_channels(board_id) #canales de acelerometro
         self.gyro_channels = BoardShim.get_gyro_channels(board_id) #canales de giroscopio
-        self.rawData = np.zeros((len(self.eeg_channels), 0)) #datos crudos
-        pass
+        self.rawData = np.zeros((len(self.eeg_channels), 0)) #datos crudos    
         
     def connectBoard(self):
         """Nos conectamos a la placa y empezamos a transmitir datos"""
@@ -28,8 +27,10 @@ class EEGLogger():
         print("***********")
         print(f"Channles: {self.eeg_channels}")
         print("***********")
+
+    def startStreaming(self):
+        logging.info("Starting streaming")
         self.board.start_stream()
-        pass
 
     def stopBoard(self):
         """Paramos la transmisión de datos de la placa"""
@@ -58,20 +59,20 @@ class EEGLogger():
         with open(path + fileName, "wb") as f:
             np.save(f, self.rawData)
 
+def setupBoard(boardName = "synthetic", serial_port = None):
+    """Función para configurar la conexión a la placa.
+    - boardName (str): tipo de placa. Puede ser cyton, ganglion o synthetic.
+    - serial_port (str): puerto serial de la placa. Por defecto es None. Recibe puertos del tipo 'COM5'.
 
-def main():
+    NOTA: En esta primera versión, la función sólo recibe los parámetros de la placa a utilizar y el puerto serial.
+    En caso de que se necesiten parámetros adicionales para configurar la conexión a la placa, se deben pasar parámetros adicionales.
+    """
 
-    placas = {"cyton": BoardIds.CYTON_BOARD, #IMPORTANTE: frecuencia muestreo 256Hz
-              "ganglion": BoardIds.GANGLION_BOARD, #IMPORTANTE: frecuencia muestro 200Hz
-              "synthetic": BoardIds.SYNTHETIC_BOARD}
+    boards = {"cyton": BoardIds.CYTON_BOARD, #IMPORTANTE: frecuencia muestreo 256Hz
+            "ganglion": BoardIds.GANGLION_BOARD, #IMPORTANTE: frecuencia muestro 200Hz
+            "synthetic": BoardIds.SYNTHETIC_BOARD}
     
-    placa = placas["synthetic"]
-
-    BoardShim.enable_dev_board_logger()
-    logging.basicConfig(level=logging.DEBUG)
-
-    #IMPORTENTE: Chequear en que puerto esta conectada la OpenBCI.  
-    puerto = "COM5"
+    board_id = boards[boardName]
     
     parser = argparse.ArgumentParser()
     
@@ -84,13 +85,13 @@ def main():
     parser.add_argument('--ip-address', type=str, help='ip address', required=False, default='')
 
     
-    parser.add_argument('--serial-port', type=str, help='serial port', required=False, default = puerto)
+    parser.add_argument('--serial-port', type=str, help='serial port', required=False, default = serial_port)
     parser.add_argument('--mac-address', type=str, help='mac address', required=False, default='')
     parser.add_argument('--other-info', type=str, help='other info', required=False, default='')
     parser.add_argument('--streamer-params', type=str, help='streamer params', required=False, default='')
     parser.add_argument('--serial-number', type=str, help='serial number', required=False, default='')
     parser.add_argument('--board-id', type=int, help='board id, check docs to get a list of supported boards',
-                        required=False, default = placa)
+                        required=False, default = board_id)
     parser.add_argument('--file', type=str, help='file', required=False, default='')
     args = parser.parse_args()
 
@@ -104,13 +105,27 @@ def main():
     params.ip_protocol = args.ip_protocol
     params.timeout = args.timeout
     params.file = args.file
-        
-    board = BoardShim(args.board_id, params) #genero un objeto para control de placas de Brainflow
 
-    eeglogger = EEGLogger(board, args.board_id) #instanciamos un objeto para adquirir señales de EEG desde la placa OpenBCI
-    eeglogger.connectBoard() #nos conectamos a la placa y empezamos a transmitir datos
+    board = BoardShim(board_id, params)
 
+    return board, board_id    
+
+if __name__ == "__main__":
+    
+    boardName = "synthetic"
+
+    #IMPORTENTE: Chequear en que puerto esta conectada la OpenBCI.  
+    puerto = "COM5"
+
+    #usamos setupBoard para generar un objeto BoardShim y un id de placa
+    board, board_id = setupBoard(boardName = "synthetic", serial_port = "COM5") 
+
+    eeglogger = EEGLogger(board, board_id) #instanciamos un objeto para adquirir señales de EEG desde la placa OpenBCI
+    eeglogger.connectBoard() #nos conectamos a la placa
+    
     trialDuration = 2 #duración del trial en segundos
+
+    eeglogger.startStreaming() #iniciamos la adquisición de datos
 
     print("Adquiriendo datos por primera vez...")
     print("Debemos esperar para completar el buffer")
@@ -121,12 +136,10 @@ def main():
     print("Forma del array de datos [canales, muestras]: ",newData.shape)
     eeglogger.addData(newData[:16])
 
+    print(eeglogger.rawData.shape)
+
     print("Guardando datos...")
     eeglogger.saveData(fileName = "subject1.npy", path = "recordedEEG/") #guardamos los datos en un archivo .npy
 
     print("Detener la adquisición de datos")
     eeglogger.stopBoard()
-    
-
-if __name__ == "__main__":
-    main()
