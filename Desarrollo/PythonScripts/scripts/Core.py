@@ -8,6 +8,9 @@ import json
 import os
 import threading
 import time
+import random
+
+import numpy as np
 
 class Core():
     """Esta clase es la clase principal del sistema.
@@ -25,6 +28,10 @@ class Core():
 
         - Parameters (dict): Diccionario con los parámetros a ser cargados. Los parámetros son:
             -typeSesion (int): Tipo de sesión. 0: Entrenamiento, 1: Feedback o calibración, 2: Online.
+            -cueType (int): 0: se ejecuta movimiento, 1: se imaginan movimientos.
+            -ntrials (int): Número de trials a ejecutar.
+            -classes (list): Lista de valores enteros de las clases a clasificar.
+            -clasesNames (list): Lista con los nombres de las clases a clasificar.
             -startingTimes (lista): Lista con los valores mínimo y máximo a esperar antes de iniciar un nuevo cue o tarea. 
             Estos valores se usan para generar un tiempo aleatorio entre estos valores.
             -cueDuration (float): Duración del cue en segundos.
@@ -54,6 +61,10 @@ class Core():
 
         #Parámetros generales para la sesións
         self.typeSesion = configParameters["typeSesion"]
+        self.cueType = configParameters["cueType"]
+        self.ntrials = configParameters["ntrials"]
+        self.classes = configParameters["classes"]
+        self.clasesNames = configParameters["clasesNames"]
         self.startingTimes = configParameters["startingTimes"]
         self.cueDuration = configParameters["cueDuration"]
         self.finishDuration = configParameters["finishDuration"]
@@ -79,6 +90,10 @@ class Core():
         """Actualizamos cada valor dentro del diccionario
         configParameters a partir de newParameters"""
         self.typeSesion = newParameters["typeSesion"]
+        self.cueType = newParameters["cueType"]
+        self.ntrials = newParameters["ntrials"]
+        self.classes = newParameters["classes"]
+        self.clasesNames = newParameters["clasesNames"]
         self.startingTimes = newParameters["startingTimes"]
         self.cueDuration = newParameters["cueDuration"]
         self.finishDuration = newParameters["finishDuration"]
@@ -123,6 +138,19 @@ class Core():
         # self.classifier.start()
         pass
 
+    def makeAndMixTrials(self):
+        """Clase para generar los trials de la sesión. La cantidad de trials es igual a
+        la cantidad de trials total esta dada por [ntrials * len(self.classes)].
+        Se genera una lista de valores correspondiente a cada clase y se mezclan.
+        
+        Retorna:
+            -trialsSesion (list): numpyarray con los trials de la sesión."""
+
+        self.trialsSesion = np.array([[i] * self.ntrials for i in self.classes]).ravel()
+        random.shuffle(self.trialsSesion)
+
+        return self.trialsSesion
+
     def setFolders(self, rootFolder = "data/"):
         """Función para chequear que existan las carpetas donde se guardarán los datos de la sesión.
         En caso de que no existan, se crean.
@@ -158,12 +186,15 @@ class Core():
 
         pass
 
-
 if __name__ == "__main__":
 
     #Creamos un diccionario con los parámetros de configuración iniciales
     parameters = {
         "typeSesion": 0, #0: Entrenamiento, 1: Feedback, 2: Online
+        "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
+        "classes": [0, 1, 2, 3, 4], #Clases a clasificar
+        "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
+        "ntrials": 20, #Número de trials por clase
         "startingTimes": [1.5, 3], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
         "cueDuration": 4, #En segundos
         "finishDuration": 3, #En segundos
@@ -203,7 +234,7 @@ if __name__ == "__main__":
 
     ## Seteamos EEGLogger
     board, board_id = setupBoard(boardName = "synthetic", serial_port = "COM5") 
-    core.setEEGLogger(board, board_id)
+    core.setEEGLogger(board, board_id) #cramos el objeto EEGLogger
 
     # core.eeglogger.connectBoard() #nos conectamos a la placa
     # core.eeglogger.startStreaming()
