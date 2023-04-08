@@ -7,8 +7,10 @@ from SignalProcessor.Classifier import Classifier
 import json
 import os
 import threading
+from concurrent.futures import ThreadPoolExecutor
 import time
 import random
+import logging
 
 import numpy as np
 
@@ -85,7 +87,13 @@ class Core():
         self.classifierFile = configParameters["classifierFile"]
 
         self.configParameters = configParameters
+
+        self.__trialPhase = 0 #0: Inicio, 1: Cue, 2: Finalización
+        self.__trialNumber = 0 #Número de trial actual
+
         
+        self.__lock = threading.Lock() #Lock para sincronizar los hilos
+
     def updateParameters(self,newParameters):
         """Actualizamos cada valor dentro del diccionario
         configParameters a partir de newParameters"""
@@ -138,6 +146,17 @@ class Core():
         # self.classifier.start()
         pass
 
+    def setBlocks(self):
+        """Seteamos los bloques de la BCI."""
+
+        board, board_id = setupBoard(boardName = "synthetic", serial_port = "COM5")
+        self.setEEGLogger(board, board_id) #creamos el objeto EEGLogger
+
+        # self.setFilter() #creamos el objeto Filter
+        # self.setCSP() #creamos el objeto CSPMulticlass
+        # self.setFeatureExtractor() #creamos el objeto FeatureExtractor
+        # self.setClassifier() #creamos el objeto Classifier
+
     def makeAndMixTrials(self):
         """Clase para generar los trials de la sesión. La cantidad de trials es igual a
         la cantidad de trials total esta dada por [ntrials * len(self.classes)].
@@ -148,8 +167,6 @@ class Core():
 
         self.trialsSesion = np.array([[i] * self.ntrials for i in self.classes]).ravel()
         random.shuffle(self.trialsSesion)
-
-        return self.trialsSesion
 
     def setFolders(self, rootFolder = "data/"):
         """Función para chequear que existan las carpetas donde se guardarán los datos de la sesión.
@@ -167,23 +184,55 @@ class Core():
         if not os.path.exists(rootFolder + self.subjectName):
             os.makedirs(rootFolder + self.subjectName)
 
-        #Si la carpeta rootFolder/self.subjectName/self.sesionNumber no existe, se crea
-        if not os.path.exists(rootFolder + self.subjectName + "/" + f"sesion{str(self.sesionNumber)}"):
-            os.makedirs(rootFolder + self.subjectName + "/" + f"sesion{str(self.sesionNumber)}")
+        #Si la carpeta rootFolder/self.subjectName/sesions/self.sesionNumber no existe, se crea
+        if not os.path.exists(rootFolder + self.subjectName + "/sesions" + f"/sesion{str(self.sesionNumber)}"):
+            os.makedirs(rootFolder + self.subjectName + "/sesions" + f"/sesion{str(self.sesionNumber)}")
 
-    def stop(self):
-        """Frenamos los hilos."""
-        # self.eegLogger.stop()
-        # self.filter.stop()
-        # self.featureExtractor.stop()
-        # self.classifier.stop()
-        pass
+        #Si la carpeta classifiers no existe, se crea
+        if not os.path.exists(rootFolder + self.subjectName + "/classifiers"):
+            os.makedirs(rootFolder + self.subjectName + "/classifiers")
 
-    def run(self):
-        """Iniciamos el hilo de la clase"""
+        #Si la carpeta csps dentro de self.subjectName no existe, se crea
+        if not os.path.exists(rootFolder + self.subjectName + "/csps"):
+            os.makedirs(rootFolder + self.subjectName + "/csps")
 
-        #TODO: Implementar el control de la aplicación
+    def TrainingEEGTrhead(self):
+        """Función para hilo de lectura de EEG durante fase de entrenamiento."""
 
+        print("TrainingEEGTrhead")
+
+        if self.__trialPhase == 0:
+            print("Fase de inicio de trial")
+            #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
+            startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
+            time.sleep(startingTime) #esperamos el tiempo aleatorio
+            self.__trialPhase = 1 # la siguiente fase la de CUE
+
+        elif self.__trialPhase == 1:
+            print("Fase cue del trial")
+            self.__trialPhase = 2 # la siguiente fase la de FINISH
+            time.sleep(self.cueDuration) #esperamos el tiempo de cue
+
+        elif self.__trialPhase == 2:
+            print("Fase de finalización del trial")
+            self.__trialPhase = 0
+            self.__trialNumber += 1 #incrementamos el número de trial
+            time.sleep(self.finishDuration) #esperamos el tiempo de finish
+
+    def getTrialNumber(self):
+        """Función para obtener el número de trial actual."""
+        return self.__trialNumber
+
+    def checkLastTrial(self):
+        """Función para chequear si se alcanzó el último trial de la sesión.
+        Se compara el número de trial actual con el número de trials totales dado en self.trialsSesion"""
+        if self.__trialNumber == len(self.trialsSesion):
+            return True
+        else:
+            return False
+
+    def threadsManager(self):
+        """Función para inciar, controlar y frenar los threads de la aplicación."""
         pass
 
 if __name__ == "__main__":
@@ -194,10 +243,10 @@ if __name__ == "__main__":
         "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
         "classes": [0, 1, 2, 3, 4], #Clases a clasificar
         "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
-        "ntrials": 20, #Número de trials por clase
-        "startingTimes": [1.5, 3], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
-        "cueDuration": 4, #En segundos
-        "finishDuration": 3, #En segundos
+        "ntrials": 1, #Número de trials por clase
+        "startingTimes": [0.1, 0.2], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
+        "cueDuration": 1, #En segundos
+        "finishDuration": 1, #En segundos
         "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
         "subjectName": "subject_test",
         "sesionNumber": 1,
@@ -221,10 +270,12 @@ if __name__ == "__main__":
     #Instanciamos un objeto Core
     core = Core(parameters)
 
+    # core.setFolders(rootFolder="data/") #Seteamos las carpetas donde se guardarán los datos.
+
     ### ********************************** INICIAMOS GUI CONFIGURACIÓN ********************************** ###
     ## El primer paso es iniciar la GUI de configuración
     ## Algunos campos dentro de la GUI de configuración se llenan con los parámetros iniciales
-    ## Luego de que el usuario modifica los parámetros, se actualizan los parámetros iniciales
+    ## Luego de que el usuario modifica los parámetros, se actualizan los parámetros.
 
     ## newParameters = GUIConfiguracion.getParameters() #o algo así
     # core.updateParameters(newParameters)
@@ -233,7 +284,7 @@ if __name__ == "__main__":
     ## Una vez que tenemos los parámetros iniciales, seteamos los bloques
 
     ## Seteamos EEGLogger
-    board, board_id = setupBoard(boardName = "synthetic", serial_port = "COM5") 
+    board, board_id = setupBoard(boardName = "synthetic", serial_port = "COM5")
     core.setEEGLogger(board, board_id) #cramos el objeto EEGLogger
 
     # core.eeglogger.connectBoard() #nos conectamos a la placa
@@ -248,17 +299,21 @@ if __name__ == "__main__":
 
     ### ********************************** INICIAMOS GUI ********************************** ###
     ## Dependiendo del tipo de sesión, es la GUI que iniciaremos.
-    ## Si es una sesión de entrenamiento, iniciamos la GUI de entrenamiento
+    ## Si es una sesión de entrenamiento, iniciamos hilo de entrenamiento
     if core.typeSesion == 0:
         # GUIEntrenamiento()
-        pass
-    ## Si es una sesión de feedback, iniciamos la GUI de feedback
+        # core.TrainingEEGTrhead()
+        core.makeAndMixTrials()
+        while not core.checkLastTrial():
+            with ThreadPoolExecutor(max_workers=1) as pool:
+                futuro = pool.submit(core.TrainingEEGTrhead)
+                print(futuro.result())
+
+    ## Si es una sesión de feedback, iniciamos hilo de feedback
     elif core.typeSesion == 1:
-        # GUITest()
         pass
-    ## Si es una sesión online, iniciamos la GUI de online
+    ## Si es una sesión online, iniciamos hilo para sesión online
     elif core.typeSesion == 2:
-        # GUIOnline()
         pass
 
     ##TODO

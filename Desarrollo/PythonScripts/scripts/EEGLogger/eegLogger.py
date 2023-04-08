@@ -52,17 +52,34 @@ class EEGLogger():
         - newdata: numpy array de forma [canales, muestras]"""
         self.rawData = np.concatenate((self.rawData, newdata), axis = 1)
     
-    def saveData(self, fileName = "subject1.npy", path = "recordedEEG/"):
+    def saveData(self, eegdata, fileName = "subject1.npy", path = "recordedEEG/", append = False):
         """Guardamos los datos crudos en un archivo .npy
         - fileName: nombre del archivo
-        - path: carpeta donde se guardará el archivo"""
+        - path: carpeta donde se guardará el archivo
+        - append: si es True, los datos se agregan al archivo. Si es False, se sobreescribe el archivo."""
 
         #Si la carpeta no existe, la creamos
         if not os.path.exists(path):
             os.makedirs(path)
 
-        with open(path + fileName, "wb") as f:
-            np.save(f, self.rawData)
+        # if append:
+        #     with open(path + fileName, "ab") as f:
+        #         np.save(f, eegdata)
+        # else:
+        #     with open(path + fileName, "wb") as f:
+        #         np.save(f, eegdata)
+        if append:
+            #chequeamos si el archivo existe
+            if os.path.isfile(path + fileName):
+                print("ENTRO")
+                with open(path + fileName, "ab") as f:
+                    np.save(f, eegdata)
+            else:
+                with open(path + fileName, "wb") as f:
+                    np.save(f, eegdata)
+        else:
+            with open(path + fileName, "wb") as f:
+                np.save(f, eegdata)
 
 def setupBoard(boardName = "synthetic", serial_port = None):
     """Función para configurar la conexión a la placa.
@@ -88,7 +105,6 @@ def setupBoard(boardName = "synthetic", serial_port = None):
     parser.add_argument('--ip-protocol', type=int, help='ip protocol, check IpProtocolType enum', required=False,
                         default=0)
     parser.add_argument('--ip-address', type=str, help='ip address', required=False, default='')
-
     
     parser.add_argument('--serial-port', type=str, help='serial port', required=False, default = serial_port)
     parser.add_argument('--mac-address', type=str, help='mac address', required=False, default='')
@@ -144,7 +160,7 @@ if __name__ == "__main__":
     print(eeglogger.rawData.shape)
 
     print("Guardando datos...")
-    eeglogger.saveData(fileName = "subject1.npy", path = "recordedEEG/") #guardamos los datos en un archivo .npy
+    eeglogger.saveData(newData, fileName = "subject1.npy", path = "recordedEEG/", append=True) #guardamos los datos en un archivo .npy
 
     print("Detener la adquisición de datos")
     eeglogger.stopBoard()
