@@ -8,12 +8,9 @@ import pickle
 
 class MainWindow(QDialog):
 
-    def __init__(self, gui2, hilo2):
+    def __init__(self):
         super().__init__()
         uic.loadUi("config_registro.ui", self)
-
-        self.entrenamiento = gui2
-        self.hilo2 = hilo2
         
         self.btn_control.clicked.connect(self.Control)
         # self.btn_regresar.clicked.connect(self.Cerrar)
@@ -42,23 +39,6 @@ class MainWindow(QDialog):
                                 trials, trials_promedio, canales)
 
         self.close()
-
-        self.entrenamiento.show()
-
-        self.hilo2.sujeto = sujeto
-        self.hilo2.fecha = fecha
-        self.hilo2.placaBCI = placa
-        self.hilo2.puertoBCI = puerto
-        self.hilo2.tiempo_preparacion = tiempo_preparacion
-        self.hilo2.tiempo_accion = tiempo_accion
-        self.hilo2.tiempo_descanso = tiempo_descanso
-        self.hilo2.trials = trials
-        self.hilo2.average_trials = trials_promedio
-        self.hilo2.trial_duration = tiempo_preparacion + tiempo_accion + tiempo_descanso
-        self.hilo2.canales = canales
-        self.hilo2.control_bucle = False
-
-        self.hilo2.start()
 
 
     def guardar_diccionario(self, sujeto, fecha, placa, puerto, tiempo_preparacion, tiempo_accion, tiempo_descanso,
