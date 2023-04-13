@@ -14,7 +14,12 @@ import logging
 
 import numpy as np
 
-class Core():
+import sys
+from PyQt5.QtCore import QTimer#, QThread, pyqtSignal, pyqtSlot, QObject, QRunnable, QThreadPool, QTime, QDate, QDateTime
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import QApplication, QMainWindow
+
+class Core(QMainWindow):
     """Esta clase es la clase principal del sistema.
     Clase para manejar el bloque de procesamiento de los datos (filtrado, extracción de característica y clasificación),
     las GUI y el bloque de comunicación con el dispositivo de control. 
@@ -61,6 +66,8 @@ class Core():
         
         NOTA: Definir qué parámetros se necesitan inicar dentro del constructor."""
 
+        super().__init__()
+
         #Parámetros generales para la sesións
         self.typeSesion = configParameters["typeSesion"]
         self.cueType = configParameters["cueType"]
@@ -90,11 +97,32 @@ class Core():
 
         self.__trialPhase = 0 #0: Inicio, 1: Cue, 2: Finalización
         self.__trialNumber = 0 #Número de trial actual
-        self.__contador = 0 #Contador para llevar el control de tiempos
-        self.__sleepTime = 0.1 #Tiempo de espera entre cada iteración del hilo principal
-        self.__timeToWait = 0 #Tiempo a esperar entre cada fase del trial
-        
-        self.__lock = threading.Lock() #Lock para sincronizar los hilos
+        self.__sleepTime = 10 #Tiempo de espera entre cada iteración del hilo principal
+
+        #Configuramos timers del Core
+        """
+        Funcionamiento QTimer
+        https://stackoverflow.com/questions/42279360/does-a-qtimer-object-run-in-a-separate-thread-what-is-its-mechanism
+        """
+
+        #timer para controlar el inicio de la sesión
+        self.iniSesionTimer = QTimer()
+        self.iniSesionTimer.setInterval(3000) #3 segundos
+        self.iniSesionTimer.timeout.connect(self.startSesion)
+
+        #timer para controlar si se alcanzó el último trial y así cerrar la app
+        self.checkTrialsTimer = QTimer()
+        self.checkTrialsTimer.setInterval(10) #Chequeamos cada 10ms
+        self.checkTrialsTimer.timeout.connect(self.checkLastTrial)
+
+        #timer para controlar las fases de cada trial
+        self.phaseTrialTimer = QTimer() #Timer para control de tiempo de las fases de trials
+        self.phaseTrialTimer.setInterval(1) #1 milisegundo sólo para el inicio de sesión.
+        self.phaseTrialTimer.timeout.connect(self.trainingEEGTrhead)
+
+        print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
+        logging.info(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
+        self.iniSesionTimer.start()
 
     def updateParameters(self,newParameters):
         """Actualizamos cada valor dentro del diccionario
@@ -115,7 +143,7 @@ class Core():
         self.cspFile = newParameters["cspFile"]
         self.classifierFile = newParameters["classifierFile"]
         self.configParameters = newParameters
-        
+
     def saveConfigParameters(self, fileName):
         """Guardamos el diccionario configParameters en un archivo json"""
         with open(fileName, 'w') as fp:
@@ -128,25 +156,6 @@ class Core():
          - board_id: id de la placa"""
         
         self.eeglogger = EEGLogger(board, board_id)
-
-    def setFilter(self):
-        """Iniciamos el filtro."""
-        # self.filter.start()
-        pass
-
-    def setCSP(self):
-        """Iniciamos el CSPMulticlass."""
-        pass
-
-    def setFeatureExtractor(self):
-        """Iniciamos el FeatureExtractor."""
-        # self.featureExtractor.start()
-        pass
-
-    def setClassifier(self):
-        """Iniciamos el clasificador."""
-        # self.classifier.start()
-        pass
 
     def setBlocks(self):
         """Seteamos los bloques de la BCI."""
@@ -170,67 +179,44 @@ class Core():
         self.trialsSesion = np.array([[i] * self.ntrials for i in self.classes]).ravel()
         random.shuffle(self.trialsSesion)
 
-    def setFolders(self, rootFolder = "data/"):
-        """Función para chequear que existan las carpetas donde se guardarán los datos de la sesión.
-        En caso de que no existan, se crean.
-        
-        La carpeta base es la rootFolder. Dentro de esta carpeta se crean las carpetas para cada sujeto.
-        
-        Se usa el nombre del sujeto para crear una subcarpeta. Dentro de esta se crean las carpetas para cada sesión."""
-
-        #si la carpeta rootFolder no existe, se crea
-        if not os.path.exists(rootFolder):
-            os.makedirs(rootFolder)
-
-        #Si la carpeta rootFolder/self.subjectName no existe, se crea
-        if not os.path.exists(rootFolder + self.subjectName):
-            os.makedirs(rootFolder + self.subjectName)
-
-        #Si la carpeta rootFolder/self.subjectName/sesions/self.sesionNumber no existe, se crea
-        if not os.path.exists(rootFolder + self.subjectName + "/sesions" + f"/sesion{str(self.sesionNumber)}"):
-            os.makedirs(rootFolder + self.subjectName + "/sesions" + f"/sesion{str(self.sesionNumber)}")
-
-        #Si la carpeta classifiers no existe, se crea
-        if not os.path.exists(rootFolder + self.subjectName + "/classifiers"):
-            os.makedirs(rootFolder + self.subjectName + "/classifiers")
-
-        #Si la carpeta csps dentro de self.subjectName no existe, se crea
-        if not os.path.exists(rootFolder + self.subjectName + "/csps"):
-            os.makedirs(rootFolder + self.subjectName + "/csps")
-
-    def checkPhase(self):
-        pass
-        # if self.__contador < self.startingTimes
-
-    def TrainingEEGTrhead(self):
+    def trainingEEGTrhead(self):
         """Función para hilo de lectura de EEG durante fase de entrenamiento."""
 
-        #Si el tiempo de espera es menor o igual a 0, es que debemos iniciar un nuevo trial.
-        if self.__timeToWait <= 0: 
-            logging.info("Nuevo trial")
+        if self.__trialPhase == 0:
+            print(f"Inicio de trial {self.__trialNumber + 1}")
+            logging.info("Fase de inicio del trial")
             #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
             startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
-            self.__timeToWait = int((startingTime + self.cueDuration + self.finishDuration) / self.__sleepTime)
-            
-        if self.__trialPhase == 0:
-            if self.__timeToWait == int((self.cueDuration + self.finishDuration) / self.__sleepTime):
-                logging.info("Presentación del Cue")
-                self.__trialPhase = 1
-            pass
+            startingTime = int(startingTime * 1000) #lo pasamos a milisegundos
+            self.__trialPhase = 1 # la siguiente fase la de CUE
+            self.phaseTrialTimer.setInterval(startingTime) #esperamos el tiempo aleatorio
 
         elif self.__trialPhase == 1:
-            if self.__timeToWait == int(self.finishDuration / self.__sleepTime):
-                logging.info("Finalizando trial")
-                self.__trialPhase = 2
+            logging.info("Fase cue del trial")
+            self.__trialPhase = 2 # la siguiente fase la de FINISH
+            self.phaseTrialTimer.setInterval(int(self.cueDuration * 1000))
 
         elif self.__trialPhase == 2:
-            logging.info("Trial finalizado. Se reinician contadores")
+            logging.info("Fase de finalización del trial")
             self.__trialPhase = 0
             self.__trialNumber += 1 #incrementamos el número de trial
-        
-        self.__timeToWait -= 1 #decrementamos el contador de tiempo de espera
-        
-        time.sleep(self.__sleepTime) #esperamos el tiempo de sleep
+            self.phaseTrialTimer.setInterval(int(self.finishDuration * 1000))
+
+    def startSesion(self):
+        """Método para iniciar timers del Core"""
+        self.iniSesionTimer.stop()
+
+        if self.typeSesion == 0:
+            print("Inicio de sesión de entrenamiento")
+            self.makeAndMixTrials()
+            self.checkTrialsTimer.start()
+            self.phaseTrialTimer.start() #iniciamos timer para controlar hilo entrenamiento
+            
+        elif self.typeSesion == 1:
+            pass
+
+        elif self.typeSesion == 2:
+            pass
 
     def getTrialNumber(self):
         """Función para obtener el número de trial actual."""
@@ -240,15 +226,23 @@ class Core():
         """Función para chequear si se alcanzó el último trial de la sesión.
         Se compara el número de trial actual con el número de trials totales dado en self.trialsSesion"""
         if self.__trialNumber == len(self.trialsSesion):
-            return True
+            print("Sesión finalizada")
+            print("Último trial alcanzado")
+            self.checkTrialsTimer.stop()
+            self.phaseTrialTimer.stop()
+            self.closeApp()
         else:
-            return False
-
-    def threadsManager(self):
-        """Función para inciar, controlar y frenar los threads de la aplicación."""
-        pass
+            pass
+        
+    def closeApp(self):
+        print("Cerrando aplicación...")
+        self.close()
 
 if __name__ == "__main__":
+
+    debbuging = False
+    if debbuging:
+        logging.basicConfig(level=logging.DEBUG)
 
     #Creamos un diccionario con los parámetros de configuración iniciales
     parameters = {
@@ -280,52 +274,10 @@ if __name__ == "__main__":
         "classifierFile": "data/subject_test/classifiers/dummyclassifier.pickle"
     }
 
-    #Instanciamos un objeto Core
+    app = QApplication(sys.argv)
+
     core = Core(parameters)
 
-    # core.setFolders(rootFolder="data/") #Seteamos las carpetas donde se guardarán los datos.
-
-    ### ********************************** INICIAMOS GUI CONFIGURACIÓN ********************************** ###
-    ## El primer paso es iniciar la GUI de configuración
-    ## Algunos campos dentro de la GUI de configuración se llenan con los parámetros iniciales
-    ## Luego de que el usuario modifica los parámetros, se actualizan los parámetros.
-
-    ## newParameters = GUIConfiguracion.getParameters() #o algo así
-    # core.updateParameters(newParameters)
-
-    ### ********************************** SETEAMOS BLOQUES ********************************** ###
-    ## Una vez que tenemos los parámetros iniciales, seteamos los bloques
-
-    ## Seteamos EEGLogger
-    board, board_id = setupBoard(boardName = "synthetic", serial_port = "COM5")
-    core.setEEGLogger(board, board_id) #cramos el objeto EEGLogger
-
-    # core.eeglogger.connectBoard() #nos conectamos a la placa
-    # core.eeglogger.startStreaming()
-    # newData = core.eeglogger.getData(core.cueDuration)
-    # newData.shape
-    # core.eeglogger.stopBoard()
-
-    # core.setFilter()
-    # core.setCSP()
-    # core.setFeatureExtractor()
-
-    ### ********************************** INICIAMOS GUI ********************************** ###
-    ## Dependiendo del tipo de sesión, es la GUI que iniciaremos.
-    ## Si es una sesión de entrenamiento, iniciamos hilo de entrenamiento
-    if core.typeSesion == 0:
-        core.makeAndMixTrials()
-        while not core.checkLastTrial(): #mientras no se haya alcanzado el último trial
-            with ThreadPoolExecutor(max_workers=1) as pool:
-                _ = pool.submit(core.TrainingEEGTrhead)
-
-    ## Si es una sesión de feedback, iniciamos hilo de feedback
-    elif core.typeSesion == 1:
-        pass
-    ## Si es una sesión online, iniciamos hilo para sesión online
-    elif core.typeSesion == 2:
-        pass
-
-    ##TODO
+    sys.exit(app.exec_())
 
 
