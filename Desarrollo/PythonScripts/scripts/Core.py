@@ -90,7 +90,9 @@ class Core():
 
         self.__trialPhase = 0 #0: Inicio, 1: Cue, 2: Finalización
         self.__trialNumber = 0 #Número de trial actual
-
+        self.__contador = 0 #Contador para llevar el control de tiempos
+        self.__sleepTime = 0.1 #Tiempo de espera entre cada iteración del hilo principal
+        self.__timeToWait = 0 #Tiempo a esperar entre cada fase del trial
         
         self.__lock = threading.Lock() #Lock para sincronizar los hilos
 
@@ -196,28 +198,39 @@ class Core():
         if not os.path.exists(rootFolder + self.subjectName + "/csps"):
             os.makedirs(rootFolder + self.subjectName + "/csps")
 
+    def checkPhase(self):
+        pass
+        # if self.__contador < self.startingTimes
+
     def TrainingEEGTrhead(self):
         """Función para hilo de lectura de EEG durante fase de entrenamiento."""
 
-        print("TrainingEEGTrhead")
-
-        if self.__trialPhase == 0:
-            print("Fase de inicio de trial")
+        #Si el tiempo de espera es menor o igual a 0, es que debemos iniciar un nuevo trial.
+        if self.__timeToWait <= 0: 
+            logging.info("Nuevo trial")
             #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
             startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
-            time.sleep(startingTime) #esperamos el tiempo aleatorio
-            self.__trialPhase = 1 # la siguiente fase la de CUE
+            self.__timeToWait = int((startingTime + self.cueDuration + self.finishDuration) / self.__sleepTime)
+            
+        if self.__trialPhase == 0:
+            if self.__timeToWait == int((self.cueDuration + self.finishDuration) / self.__sleepTime):
+                logging.info("Presentación del Cue")
+                self.__trialPhase = 1
+            pass
 
         elif self.__trialPhase == 1:
-            print("Fase cue del trial")
-            self.__trialPhase = 2 # la siguiente fase la de FINISH
-            time.sleep(self.cueDuration) #esperamos el tiempo de cue
+            if self.__timeToWait == int(self.finishDuration / self.__sleepTime):
+                logging.info("Finalizando trial")
+                self.__trialPhase = 2
 
         elif self.__trialPhase == 2:
-            print("Fase de finalización del trial")
+            logging.info("Trial finalizado. Se reinician contadores")
             self.__trialPhase = 0
             self.__trialNumber += 1 #incrementamos el número de trial
-            time.sleep(self.finishDuration) #esperamos el tiempo de finish
+        
+        self.__timeToWait -= 1 #decrementamos el contador de tiempo de espera
+        
+        time.sleep(self.__sleepTime) #esperamos el tiempo de sleep
 
     def getTrialNumber(self):
         """Función para obtener el número de trial actual."""
@@ -244,9 +257,9 @@ if __name__ == "__main__":
         "classes": [0, 1, 2, 3, 4], #Clases a clasificar
         "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
         "ntrials": 1, #Número de trials por clase
-        "startingTimes": [0.1, 0.2], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
-        "cueDuration": 1, #En segundos
-        "finishDuration": 1, #En segundos
+        "startingTimes": [1, 2], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
+        "cueDuration": 3, #En segundos
+        "finishDuration": 2, #En segundos
         "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
         "subjectName": "subject_test",
         "sesionNumber": 1,
@@ -301,13 +314,10 @@ if __name__ == "__main__":
     ## Dependiendo del tipo de sesión, es la GUI que iniciaremos.
     ## Si es una sesión de entrenamiento, iniciamos hilo de entrenamiento
     if core.typeSesion == 0:
-        # GUIEntrenamiento()
-        # core.TrainingEEGTrhead()
         core.makeAndMixTrials()
-        while not core.checkLastTrial():
+        while not core.checkLastTrial(): #mientras no se haya alcanzado el último trial
             with ThreadPoolExecutor(max_workers=1) as pool:
-                futuro = pool.submit(core.TrainingEEGTrhead)
-                print(futuro.result())
+                _ = pool.submit(core.TrainingEEGTrhead)
 
     ## Si es una sesión de feedback, iniciamos hilo de feedback
     elif core.typeSesion == 1:
