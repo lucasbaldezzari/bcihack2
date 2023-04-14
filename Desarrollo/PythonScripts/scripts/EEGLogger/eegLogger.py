@@ -58,21 +58,23 @@ class EEGLogger():
         - path: carpeta donde se guardará el archivo
         - append: si es True, los datos se agregan al archivo. Si es False, se sobreescribe el archivo."""
 
-        #Si la carpeta no existe, la creamos
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        if append:
-            #chequeamos si el archivo existe
-            if os.path.isfile(path + fileName):
-                with open(path + fileName, "ab") as f:
-                    np.save(f, eegdata)
+        #Usamos try/except para enviar un mensaje de error pero no cerrar el programa
+        try:
+            if append:
+                #chequeamos si el archivo existe
+                if os.path.isfile(path + fileName):
+                    with open(path + fileName, "ab") as f:
+                        np.save(f, eegdata)
+                else:
+                    with open(path + fileName, "wb") as f:
+                        np.save(f, eegdata)
             else:
                 with open(path + fileName, "wb") as f:
                     np.save(f, eegdata)
-        else:
-            with open(path + fileName, "wb") as f:
-                np.save(f, eegdata)
+
+        except Exception as e:
+            print("Error al guardar los datos")
+            print(e)
 
 def setupBoard(boardName = "synthetic", serial_port = None):
     """Función para configurar la conexión a la placa.
