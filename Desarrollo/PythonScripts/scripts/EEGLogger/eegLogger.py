@@ -62,16 +62,9 @@ class EEGLogger():
         if not os.path.exists(path):
             os.makedirs(path)
 
-        # if append:
-        #     with open(path + fileName, "ab") as f:
-        #         np.save(f, eegdata)
-        # else:
-        #     with open(path + fileName, "wb") as f:
-        #         np.save(f, eegdata)
         if append:
             #chequeamos si el archivo existe
             if os.path.isfile(path + fileName):
-                print("ENTRO")
                 with open(path + fileName, "ab") as f:
                     np.save(f, eegdata)
             else:
