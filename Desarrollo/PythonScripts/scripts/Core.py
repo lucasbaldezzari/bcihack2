@@ -172,6 +172,15 @@ class Core(QMainWindow):
             os.makedirs(rootFolder + self.subjectName + "/sesions" + f"/sesion{str(self.sesionNumber)}")
         self.eegStoredFolder = self.rootFolder + self.subjectName + "/sesions/" + f"/sesion{str(self.sesionNumber)}/"
 
+        #Chequeamos si el filename existe. Si existe, se le agrega un número al final para no repetir
+        #el nombre del archivo por defecto es fileName =  f"sesion_{self.sesionNumber}.{self.cueType}.npy
+        self.fileName =  f"sesion_{self.sesionNumber}.{self.cueType}.npy"
+        if os.path.exists(self.eegStoredFolder + self.fileName):
+            i = 1
+            while os.path.exists(self.eegStoredFolder + self.fileName):
+                self.fileName =  f"sesion_{self.sesionNumber}.{self.cueType}_{i}.npy"
+                i += 1
+        
         #Si la carpeta classifiers no existe, se crea
         if not os.path.exists(rootFolder + self.subjectName + "/classifiers"):
             os.makedirs(rootFolder + self.subjectName + "/classifiers")
@@ -234,8 +243,8 @@ class Core(QMainWindow):
             logging.info("Iniciamos fase de finalización del trial")
             #Al finalizar la fase de CUE, guardamos los datos de EEG
             newData = self.eeglogger.getData(self.cueDuration)
-            fileName =  f"sesion_{self.sesionNumber}.{self.cueType}.npy"
-            self.eeglogger.saveData(newData, fileName = fileName, path = self.eegStoredFolder, append=True)
+            # fileName =  f"sesion_{self.sesionNumber}.{self.cueType}.npy"
+            self.eeglogger.saveData(newData, fileName = self.fileName, path = self.eegStoredFolder, append=True)
             self.__trialPhase = 0
             self.__trialNumber += 1 #incrementamos el número de trial
             self.phaseTrialTimer.setInterval(int(self.finishDuration * 1000))
