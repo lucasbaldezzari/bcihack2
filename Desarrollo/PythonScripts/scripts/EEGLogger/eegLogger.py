@@ -63,8 +63,10 @@ class EEGLogger():
             if append:
                 #chequeamos si el archivo existe
                 if os.path.isfile(path + fileName):
-                    with open(path + fileName, "ab") as f:
-                        np.save(f, eegdata)
+                    storedData = np.load(path + fileName, allow_pickle = True)
+                    storedData = np.concatenate((storedData, eegdata), axis = 1)
+                    with open(path + fileName, "wb") as f:
+                        np.save(f, storedData)
                 else:
                     with open(path + fileName, "wb") as f:
                         np.save(f, eegdata)
@@ -127,7 +129,11 @@ def setupBoard(boardName = "synthetic", serial_port = None):
     return board, board_id    
 
 if __name__ == "__main__":
-    
+
+    debbuging = True
+    if debbuging:
+        logging.basicConfig(level=logging.DEBUG)
+
     boardName = "synthetic"
 
     #IMPORTENTE: Chequear en que puerto esta conectada la OpenBCI.  
@@ -155,7 +161,7 @@ if __name__ == "__main__":
     print(eeglogger.rawData.shape)
 
     print("Guardando datos...")
-    eeglogger.saveData(newData, fileName = "subject1.npy", path = "recordedEEG/", append=True) #guardamos los datos en un archivo .npy
+    eeglogger.saveData(newData, fileName = "subject1.npy", path = "", append=True) #guardamos los datos en un archivo .npy
 
-    print("Detener la adquisición de datos")
+    print("Detenemos la adquisición de datos")
     eeglogger.stopBoard()

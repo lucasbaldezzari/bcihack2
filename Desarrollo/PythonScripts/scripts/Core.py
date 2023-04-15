@@ -270,6 +270,7 @@ class Core(QMainWindow):
             print("Último trial alcanzado")
             self.checkTrialsTimer.stop()
             self.phaseTrialTimer.stop()
+            self.eeglogger.stopBoard()
             self.closeApp()
         else:
             pass
@@ -365,9 +366,5 @@ if __name__ == "__main__":
     core.start()
 
     sys.exit(app.exec_())
-
-    #cargamos el archivo sesion_15.0.npy
-    data = np.load("sesion_1.0.npy")
-    data.shape
 
 
