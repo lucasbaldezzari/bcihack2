@@ -52,7 +52,7 @@ class EEGLogger():
         - newdata: numpy array de forma [canales, muestras]"""
         self.rawData = np.concatenate((self.rawData, newdata), axis = 1)
     
-    def saveData(self, eegdata, fileName = "subject1.npy", path = "recordedEEG/", append = False):
+    def saveData(self, eegdata, fileName = "subject1.npy", path = "recordedEEG/", append = True):
         """Guardamos los datos crudos en un archivo .npy
         - fileName: nombre del archivo
         - path: carpeta donde se guardará el archivo

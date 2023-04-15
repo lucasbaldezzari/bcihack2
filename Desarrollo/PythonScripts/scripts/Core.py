@@ -121,6 +121,7 @@ class Core(QMainWindow):
         self.phaseTrialTimer.setInterval(1) #1 milisegundo sólo para el inicio de sesión.
         self.phaseTrialTimer.timeout.connect(self.trainingEEGTrhead)
 
+    def start(self):
         print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         logging.info(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         self.iniSesionTimer.start()
@@ -145,10 +146,10 @@ class Core(QMainWindow):
         self.classifierFile = newParameters["classifierFile"]
         self.configParameters = newParameters
 
-    def saveConfigParameters(self, fileName):
+    def saveConfigParameters(self, fileName = "config.json"):
         """Guardamos el diccionario configParameters en un archivo json"""
-        with open(fileName, 'w') as fp:
-            json.dump(self.configParameters, fp)
+        with open(self.eegStoredFolder+self.eegFileName+"config.json", 'w') as f:
+            json.dump(self.configParameters, f)
 
     def setFolders(self, rootFolder = "data/"):
         """Función para chequear que existan las carpetas donde se guardarán los datos de la sesión.
@@ -172,14 +173,23 @@ class Core(QMainWindow):
             os.makedirs(rootFolder + self.subjectName + "/sesions" + f"/sesion{str(self.sesionNumber)}")
         self.eegStoredFolder = self.rootFolder + self.subjectName + "/sesions/" + f"/sesion{str(self.sesionNumber)}/"
 
-        #Chequeamos si el filename existe. Si existe, se le agrega un número al final para no repetir
-        #el nombre del archivo por defecto es fileName =  f"sesion_{self.sesionNumber}.{self.cueType}.npy
-        self.fileName =  f"sesion_{self.sesionNumber}.{self.cueType}.npy"
-        if os.path.exists(self.eegStoredFolder + self.fileName):
+        #Chequeamos si el eegFileName existe. Si existe, se le agrega un número al final para no repetir
+        #el nombre del archivo por defecto es eegFileName =  f"sesion_{self.sesionNumber}.{self.cueType}.npy
+        self.eegFileName =  f"sesion_{self.sesionNumber}.{self.cueType}.npy"
+        if os.path.exists(self.eegStoredFolder + self.eegFileName):
             i = 1
-            while os.path.exists(self.eegStoredFolder + self.fileName):
-                self.fileName =  f"sesion_{self.sesionNumber}.{self.cueType}_{i}.npy"
+            while os.path.exists(self.eegStoredFolder + self.eegFileName):
+                self.eegFileName =  f"sesion_{self.sesionNumber}.{self.cueType}_{i}.npy"
                 i += 1
+        
+        #Cramos un archivo txt que contiene la siguiente cabecera:
+        #trialNumber, class, classNumber, trialPhase, trialTime, trialStartTime, trialEndTime
+        #Primero creamos el archivo y agregamos la cabecera. Lo guardamos en rootFolder/self.subjectName/sesions/self.sesionNumber
+        #con el mismo nombre que self.eegFileName pero con extensión .txt
+        self.eventsFileName = self.eegStoredFolder + self.eegFileName[:-4] + "_events" + ".txt"
+        self.eventsFile = open(self.eventsFileName, "w")
+        self.eventsFile.write("trialNumber,classNumber,className,trialTime,time-time(formateado)\n")
+        self.eventsFile.close()
         
         #Si la carpeta classifiers no existe, se crea
         if not os.path.exists(rootFolder + self.subjectName + "/classifiers"):
@@ -188,6 +198,32 @@ class Core(QMainWindow):
         #Si la carpeta csps dentro de self.subjectName no existe, se crea
         if not os.path.exists(rootFolder + self.subjectName + "/csps"):
             os.makedirs(rootFolder + self.subjectName + "/csps")
+
+    def saveEvents(self):
+        """Función para almacenar los eventos de la sesión en el archivo txt self.eventsFileName
+        La función almacena los siguientes eventos, self.trialNumber, self.classNumber, self.class,
+        self.trialPhase, self.trialTime, self.trialStartTime, self.trialEndTime.
+        Cada nuevo dato se agrega en una nueva linea. Se abre el archivo en modo append (a)"""
+        
+        self.eventsFile = open(self.eventsFileName, "a")
+        
+        # self.classes = newParameters["classes"]
+        # self.clasesNames = newParameters["clasesNames"]
+        #A partir de self.classes y del sefl.__trialNumber y self.trialsSesion, obtenemos el nombre de la clase
+        #y el número de la clase
+
+        claseActual = self.trialsSesion[self.__trialNumber]
+        classNameActual = self.clasesNames[self.classes.index(claseActual)]
+
+        #obtenemos el timestamp actual
+        trialTime = time.time()
+        #formateamos el timestamp actual a formato legible del tipo DD/MM/YYYY HH:MM:SS
+        trialTimeLegible = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(trialTime))
+
+        eventos = f"{self.__trialNumber+1},{claseActual},{classNameActual},{trialTime}-{trialTimeLegible}\n"
+        
+        self.eventsFile.write(eventos)
+        self.eventsFile.close()
 
     def setEEGLogger(self, board, board_id):
         """Seteamos EEGLogger para lectura de EEG desde placa.
@@ -222,50 +258,6 @@ class Core(QMainWindow):
         self.trialsSesion = np.array([[i] * self.ntrials for i in self.classes]).ravel()
         random.shuffle(self.trialsSesion)
 
-    def trainingEEGTrhead(self):
-        """Función para hilo de lectura de EEG durante fase de entrenamiento."""
-
-        if self.__trialPhase == 0:
-            print(f"Inicio de trial {self.__trialNumber + 1}")
-            logging.info("Iniciamos fase de inicio del trial")
-            #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
-            startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
-            startingTime = int(startingTime * 1000) #lo pasamos a milisegundos
-            self.__trialPhase = 1 # la siguiente fase la de CUE
-            self.phaseTrialTimer.setInterval(startingTime) #esperamos el tiempo aleatorio
-
-        elif self.__trialPhase == 1:
-            logging.info("Iniciamos fase cue del trial")
-            self.__trialPhase = 2 # la siguiente fase la de FINISH
-            self.phaseTrialTimer.setInterval(int(self.cueDuration * 1000))
-
-        elif self.__trialPhase == 2:
-            logging.info("Iniciamos fase de finalización del trial")
-            #Al finalizar la fase de CUE, guardamos los datos de EEG
-            newData = self.eeglogger.getData(self.cueDuration)
-            # fileName =  f"sesion_{self.sesionNumber}.{self.cueType}.npy"
-            self.eeglogger.saveData(newData, fileName = self.fileName, path = self.eegStoredFolder, append=True)
-            self.__trialPhase = 0
-            self.__trialNumber += 1 #incrementamos el número de trial
-            self.phaseTrialTimer.setInterval(int(self.finishDuration * 1000))
-
-    def startSesion(self):
-        """Método para iniciar timers del Core"""
-        self.iniSesionTimer.stop()
-        self.setFolders(rootFolder = self.rootFolder)
-        if self.typeSesion == 0:
-            self.setBlocks()
-            print("Inicio de sesión de entrenamiento")
-            self.makeAndMixTrials()
-            self.checkTrialsTimer.start()
-            self.phaseTrialTimer.start() #iniciamos timer para controlar hilo entrenamiento
-            
-        elif self.typeSesion == 1:
-            pass
-
-        elif self.typeSesion == 2:
-            pass
-
     def getTrialNumber(self):
         """Función para obtener el número de trial actual."""
         return self.__trialNumber
@@ -280,6 +272,51 @@ class Core(QMainWindow):
             self.phaseTrialTimer.stop()
             self.closeApp()
         else:
+            pass
+
+    def trainingEEGTrhead(self):
+        """Función para hilo de lectura de EEG durante fase de entrenamiento."""
+
+        if self.__trialPhase == 0:
+            print(f"Inicio de trial {self.__trialNumber + 1}")
+            logging.info(f"Inicio de trial {self.__trialNumber + 1}")
+            #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
+            startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
+            startingTime = int(startingTime * 1000) #lo pasamos a milisegundos
+            self.__trialPhase = 1 # la siguiente fase la de CUE
+            self.phaseTrialTimer.setInterval(startingTime) #esperamos el tiempo aleatorio
+
+        elif self.__trialPhase == 1:
+            logging.info("Iniciamos fase cue del trial")
+            self.__trialPhase = 2 # la siguiente fase es la de FINISH
+            self.phaseTrialTimer.setInterval(int(self.cueDuration * 1000))
+
+        elif self.__trialPhase == 2:
+            logging.info("Iniciamos fase de finalización del trial")
+            #Al finalizar la fase de CUE, guardamos los datos de EEG
+            newData = self.eeglogger.getData(self.cueDuration)
+            self.eeglogger.saveData(newData, fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
+            self.saveEvents() #guardamos los eventos de la sesión
+            self.__trialPhase = 0
+            self.__trialNumber += 1 #incrementamos el número de trial
+            self.phaseTrialTimer.setInterval(int(self.finishDuration * 1000))
+
+    def startSesion(self):
+        """Método para iniciar timers del Core"""
+        self.iniSesionTimer.stop()
+        self.setFolders(rootFolder = self.rootFolder)
+        self.saveConfigParameters(self.eegStoredFolder+self.eegFileName+"config.json")
+        if self.typeSesion == 0:
+            self.setBlocks()
+            print("Inicio de sesión de entrenamiento")
+            self.makeAndMixTrials()
+            self.checkTrialsTimer.start()
+            self.phaseTrialTimer.start() #iniciamos timer para controlar hilo entrenamiento
+            
+        elif self.typeSesion == 1:
+            pass
+
+        elif self.typeSesion == 2:
             pass
         
     def closeApp(self):
@@ -296,12 +333,12 @@ if __name__ == "__main__":
     parameters = {
         "typeSesion": 0, #0: Entrenamiento, 1: Feedback, 2: Online
         "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
-        "classes": [0, 1, 2, 3, 4], #Clases a clasificar
+        "classes": [1, 2, 3, 4, 5], #Clases a clasificar
         "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
-        "ntrials": 1, #Número de trials por clase
-        "startingTimes": [1, 2], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
-        "cueDuration": 3, #En segundos
-        "finishDuration": 2, #En segundos
+        "ntrials": 2, #Número de trials por clase
+        "startingTimes": [2, 2.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
+        "cueDuration": 4, #En segundos
+        "finishDuration": 3, #En segundos
         "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
         "subjectName": "subject_test",
         "sesionNumber": 1,
@@ -324,8 +361,13 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    core = Core(parameters)
+    core = Core(parameters)    
+    core.start()
 
     sys.exit(app.exec_())
+
+    #cargamos el archivo sesion_15.0.npy
+    data = np.load("sesion_1.0.npy")
+    data.shape
 
 
