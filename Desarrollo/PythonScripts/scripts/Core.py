@@ -284,8 +284,8 @@ class Core(QMainWindow):
         """Función para hilo de lectura de EEG durante fase de entrenamiento."""
 
         if self.__trialPhase == 0:
-            print(f"Inicio de trial {self.__trialNumber + 1}")
-            logging.info(f"Inicio de trial {self.__trialNumber + 1}")
+            print(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
+            logging.info(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
             #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
             startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
             startingTime = int(startingTime * 1000) #lo pasamos a milisegundos
@@ -341,12 +341,12 @@ if __name__ == "__main__":
         "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
         "classes": [1, 2, 3, 4, 5], #Clases a clasificar
         "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
-        "ntrials": 1, #Número de trials por clase
-        "startingTimes": [1, 1.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
-        "cueDuration": 1, #En segundos
-        "finishDuration": 1, #En segundos
+        "ntrials": 20, #Número de trials por clase
+        "startingTimes": [1., 1.1], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
+        "cueDuration": 4, #En segundos
+        "finishDuration": 3, #En segundos
         "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
-        "subjectName": "subject_test",
+        "subjectName": "eegForDummyTests",
         "sesionNumber": 1,
         "boardParams": {
             "boardName": "synthetic",
