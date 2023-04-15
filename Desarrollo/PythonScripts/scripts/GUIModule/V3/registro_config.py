@@ -77,7 +77,7 @@ class MainWindow(QDialog):
             configParameters["filterParameters"]["lowcut"] = float(self.line_lowpass.text())
             configParameters["filterParameters"]["highcut"] = float(self.line_highpass.text())
             configParameters["filterParameters"]["notch_freq"] = float(self.line_notch.text())
-            configParameters["filterParameters"]["notch_width"] = float(self.line_notch.text())
+            configParameters["filterParameters"]["notch_width"] = float(self.line_anchonotch.text())
             configParameters["filterParameters"]["sample_rate"] = float(self.line_frecuencia.text())
             configParameters["filterParameters"]["axisToCompute"] = int(self.line_axis.text())
 

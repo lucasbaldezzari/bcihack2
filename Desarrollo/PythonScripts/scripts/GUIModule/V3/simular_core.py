@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import sys
 
-directorio =  'config.json' #establesca donde este config.json
+directorio =  'C:/Users/Emi/Documents/Repos/bcihack2/Desarrollo/PythonScripts/scripts/config.json' #establesca donde este config.json
 
 app = QApplication(sys.argv)
 

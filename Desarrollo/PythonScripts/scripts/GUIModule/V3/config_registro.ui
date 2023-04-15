@@ -6,88 +6,16 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1025</width>
-    <height>518</height>
+    <width>1028</width>
+    <height>506</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Registro de EEG</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(0, 4, 75);</string>
+   <string notr="true">background-color: rgb(85, 85, 255);</string>
   </property>
-  <widget class="QLineEdit" name="line_trials_5">
-   <property name="geometry">
-    <rect>
-     <x>1220</x>
-     <y>390</y>
-     <width>150</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <family>Verdana</family>
-     <pointsize>10</pointsize>
-     <weight>50</weight>
-     <bold>false</bold>
-    </font>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">color: rgb(255, 255, 255);</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="line_trials_8">
-   <property name="geometry">
-    <rect>
-     <x>1180</x>
-     <y>610</y>
-     <width>150</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <family>Verdana</family>
-     <pointsize>10</pointsize>
-     <weight>50</weight>
-     <bold>false</bold>
-    </font>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">color: rgb(255, 255, 255);</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="line_trials_15">
-   <property name="geometry">
-    <rect>
-     <x>1230</x>
-     <y>560</y>
-     <width>150</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <family>Verdana</family>
-     <pointsize>10</pointsize>
-     <weight>50</weight>
-     <bold>false</bold>
-    </font>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">color: rgb(255, 255, 255);</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
   <widget class="QGroupBox" name="groupBox_5">
    <property name="geometry">
     <rect>
@@ -97,9 +25,15 @@
      <height>191</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+    </font>
+   </property>
    <property name="styleSheet">
     <string notr="true">color: rgb(255, 255, 255);
-font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
+border-color: rgb(0, 0, 0);
+background-color: rgb(85, 0, 255);</string>
    </property>
    <property name="title">
     <string>Configuración de Metadatos</string>
@@ -589,12 +523,12 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
            </property>
            <item>
             <property name="text">
-             <string>Imaginacion</string>
+             <string>Movimiento</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>Movimiento</string>
+             <string>Imaginacion</string>
             </property>
            </item>
           </widget>
@@ -624,7 +558,8 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     </font>
    </property>
    <property name="styleSheet">
-    <string notr="true">color: rgb(255, 255, 255);</string>
+    <string notr="true">color: rgb(255, 255, 255);
+background-color: rgb(85, 85, 127);</string>
    </property>
    <property name="text">
     <string>Configuración de la Sesión BCI 2023</string>
@@ -717,7 +652,7 @@ QPushButton:hover{background-color:orange;}</string>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);
 font: 12pt &quot;MS Shell Dlg 2&quot;;
-background-color: rgb(0, 0, 127);</string>
+background-color: rgb(0, 0, 255);</string>
       </property>
       <property name="title">
        <string>Configuración de Tiempos</string>
@@ -863,7 +798,8 @@ background-color: rgb(0, 0, 127);</string>
      <widget class="QGroupBox" name="groupBox">
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);
-font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
+font: 12pt &quot;MS Shell Dlg 2&quot;;
+background-color: rgb(0, 0, 255);</string>
       </property>
       <property name="title">
        <string>Configuración de los Filtros</string>
@@ -1123,6 +1059,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
      <widget class="QGroupBox" name="groupBox_6">
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);
+background-color: rgb(0, 0, 255);
 font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
       </property>
       <property name="title">
