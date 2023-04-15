@@ -52,34 +52,31 @@ class EEGLogger():
         - newdata: numpy array de forma [canales, muestras]"""
         self.rawData = np.concatenate((self.rawData, newdata), axis = 1)
     
-    def saveData(self, eegdata, fileName = "subject1.npy", path = "recordedEEG/", append = False):
+    def saveData(self, eegdata, fileName = "subject1.npy", path = "recordedEEG/", append = True):
         """Guardamos los datos crudos en un archivo .npy
         - fileName: nombre del archivo
         - path: carpeta donde se guardará el archivo
         - append: si es True, los datos se agregan al archivo. Si es False, se sobreescribe el archivo."""
 
-        #Si la carpeta no existe, la creamos
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        # if append:
-        #     with open(path + fileName, "ab") as f:
-        #         np.save(f, eegdata)
-        # else:
-        #     with open(path + fileName, "wb") as f:
-        #         np.save(f, eegdata)
-        if append:
-            #chequeamos si el archivo existe
-            if os.path.isfile(path + fileName):
-                print("ENTRO")
-                with open(path + fileName, "ab") as f:
-                    np.save(f, eegdata)
+        #Usamos try/except para enviar un mensaje de error pero no cerrar el programa
+        try:
+            if append:
+                #chequeamos si el archivo existe
+                if os.path.isfile(path + fileName):
+                    storedData = np.load(path + fileName, allow_pickle = True)
+                    storedData = np.concatenate((storedData, eegdata), axis = 1)
+                    with open(path + fileName, "wb") as f:
+                        np.save(f, storedData)
+                else:
+                    with open(path + fileName, "wb") as f:
+                        np.save(f, eegdata)
             else:
                 with open(path + fileName, "wb") as f:
                     np.save(f, eegdata)
-        else:
-            with open(path + fileName, "wb") as f:
-                np.save(f, eegdata)
+
+        except Exception as e:
+            print("Error al guardar los datos")
+            print(e)
 
 def setupBoard(boardName = "synthetic", serial_port = None):
     """Función para configurar la conexión a la placa.
@@ -132,7 +129,11 @@ def setupBoard(boardName = "synthetic", serial_port = None):
     return board, board_id    
 
 if __name__ == "__main__":
-    
+
+    debbuging = True
+    if debbuging:
+        logging.basicConfig(level=logging.DEBUG)
+
     boardName = "synthetic"
 
     #IMPORTENTE: Chequear en que puerto esta conectada la OpenBCI.  
@@ -160,7 +161,7 @@ if __name__ == "__main__":
     print(eeglogger.rawData.shape)
 
     print("Guardando datos...")
-    eeglogger.saveData(newData, fileName = "subject1.npy", path = "recordedEEG/", append=True) #guardamos los datos en un archivo .npy
+    eeglogger.saveData(newData, fileName = "subject1.npy", path = "", append=True) #guardamos los datos en un archivo .npy
 
-    print("Detener la adquisición de datos")
+    print("Detenemos la adquisición de datos")
     eeglogger.stopBoard()
