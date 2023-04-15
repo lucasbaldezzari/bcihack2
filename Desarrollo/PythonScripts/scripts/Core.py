@@ -146,10 +146,15 @@ class Core(QMainWindow):
         self.classifierFile = newParameters["classifierFile"]
         self.configParameters = newParameters
 
-    def saveConfigParameters(self, fileName = "config.json"):
+    def saveConfigParameters(self, fileName = None):
         """Guardamos el diccionario configParameters en un archivo json"""
-        with open(self.eegStoredFolder+self.eegFileName+"config.json", 'w') as f:
-            json.dump(self.configParameters, f)
+
+        if not fileName:
+            with open(self.eegStoredFolder+self.eegFileName+"config.json", 'w') as f:
+                json.dump(self.configParameters, f)
+        else:
+            with open(fileName, 'w') as f:
+                json.dump(self.configParameters, f)
 
     def setFolders(self, rootFolder = "data/"):
         """Función para chequear que existan las carpetas donde se guardarán los datos de la sesión.
@@ -306,7 +311,7 @@ class Core(QMainWindow):
         """Método para iniciar timers del Core"""
         self.iniSesionTimer.stop()
         self.setFolders(rootFolder = self.rootFolder)
-        self.saveConfigParameters(self.eegStoredFolder+self.eegFileName+"config.json")
+        self.saveConfigParameters(self.eegStoredFolder+self.eegFileName[:-4]+"config.json")
         if self.typeSesion == 0:
             self.setBlocks()
             print("Inicio de sesión de entrenamiento")
@@ -336,10 +341,10 @@ if __name__ == "__main__":
         "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
         "classes": [1, 2, 3, 4, 5], #Clases a clasificar
         "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
-        "ntrials": 2, #Número de trials por clase
-        "startingTimes": [2, 2.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
-        "cueDuration": 4, #En segundos
-        "finishDuration": 3, #En segundos
+        "ntrials": 1, #Número de trials por clase
+        "startingTimes": [1, 1.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
+        "cueDuration": 1, #En segundos
+        "finishDuration": 1, #En segundos
         "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
         "subjectName": "subject_test",
         "sesionNumber": 1,
