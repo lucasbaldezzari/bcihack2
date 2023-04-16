@@ -6,7 +6,6 @@ from SignalProcessor.Classifier import Classifier
 
 import json
 import os
-import threading
 from concurrent.futures import ThreadPoolExecutor
 import time
 import random
@@ -16,8 +15,15 @@ import numpy as np
 
 import sys
 from PyQt5.QtCore import QTimer#, QThread, pyqtSignal, pyqtSlot, QObject, QRunnable, QThreadPool, QTime, QDate, QDateTime
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
+
+from GUIModule.V3.registro_config import MainWindow
+from GUIModule.V3.train_interfaz import entrenamiento
+
+
+
 
 class Core(QMainWindow):
     """Esta clase es la clase principal del sistema.
@@ -230,27 +236,21 @@ class Core(QMainWindow):
         self.eventsFile.write(eventos)
         self.eventsFile.close()
 
-    def setEEGLogger(self, board, board_id):
+    def setEEGLogger(self):
         """Seteamos EEGLogger para lectura de EEG desde placa.
         Parámetros:
          - board: objeto de la clase BoardShim
          - board_id: id de la placa"""
         
-        self.eeglogger = EEGLogger(board, board_id)
-
-    def setBlocks(self):
-        """Seteamos los bloques de la BCI."""
-
+        print("Seteando EEGLogger...")
+        logging.info("Seteando EEGLogger...")
         board, board_id = setupBoard(boardName = "synthetic", serial_port = "COM5")
-        self.setEEGLogger(board, board_id) #creamos el objeto EEGLogger
+        self.eeglogger = EEGLogger(board, board_id)
         self.eeglogger.connectBoard()
-        time.sleep(0.5) #500ms
-        self.eeglogger.startStreaming()
-
-        # self.setFilter() #creamos el objeto Filter
-        # self.setCSP() #creamos el objeto CSPMulticlass
-        # self.setFeatureExtractor() #creamos el objeto FeatureExtractor
-        # self.setClassifier() #creamos el objeto Classifier
+        time.sleep(0.500) #esperamos 500ms
+        print("Iniciando streaming de EEG...")
+        logging.info("Iniciando streaming de EEG...")
+        self.eeglogger.startStreaming()#iniciamos streaming de EEG
 
     def makeAndMixTrials(self):
         """Clase para generar los trials de la sesión. La cantidad de trials es igual a
@@ -310,13 +310,17 @@ class Core(QMainWindow):
             self.__trialNumber += 1 #incrementamos el número de trial
             self.phaseTrialTimer.setInterval(int(self.finishDuration * 1000))
 
+    def updateTrainingAPP(self):
+        """Actualizamos lo que se muestra en la APP de entrenamiento."""
+        pass
+
     def startSesion(self):
         """Método para iniciar timers del Core"""
         self.iniSesionTimer.stop()
-        self.setFolders(rootFolder = self.rootFolder)
-        self.saveConfigParameters(self.eegStoredFolder+self.eegFileName[:-4]+"config.json")
+        self.setFolders(rootFolder = self.rootFolder) #configuramos las carpetas de almacenamiento
+        self.saveConfigParameters(self.eegStoredFolder+self.eegFileName[:-4]+"config.json") #guardamos los parámetros de configuración
         if self.typeSesion == 0:
-            self.setBlocks()
+            self.setEEGLogger()
             print("Inicio de sesión de entrenamiento")
             self.makeAndMixTrials()
             self.checkTrialsTimer.start()
@@ -344,23 +348,23 @@ if __name__ == "__main__":
         "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
         "classes": [1, 2, 3, 4, 5], #Clases a clasificar
         "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
-        "ntrials": 30, #Número de trials por clase
+        "ntrials": 1, #Número de trials por clase
         "startingTimes": [1., 1.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
         "cueDuration": 4, #En segundos
-        "finishDuration": 1, #En segundos
+        "finishDuration": 3, #En segundos
         "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
-        "subjectName": "eegForDummyTests",
-        "sesionNumber": 1,
-        "boardParams": {
-            "boardName": "synthetic",
-            "serialPort": "COM5"
+        "subjectName": "subjetc_test", #nombre del sujeto
+        "sesionNumber": 1, #número de sesión
+        "boardParams": { 
+            "boardName": "synthetic", #Board de registro
+            "serialPort": "COM5" #puerto serial
         },
         "filterParameters": {
-            "lowcut": 8.,
-            "highcut": 28.,
-            "notch_freq": 50.,
-            "notch_width": 1,
-            "sample_rate": 250,
+            "lowcut": 8., #Frecuencia de corte baja
+            "highcut": 28., #Frecuencia de corte alta
+            "notch_freq": 50., #Frecuencia corte del notch
+            "notch_width": 1, #Ancho de del notch
+            "sample_rate": 250, #Frecuencia de muestreo
             "axisToCompute": 1
         },
         "featureExtractorMethod": "welch",
@@ -374,8 +378,3 @@ if __name__ == "__main__":
     core.start()
 
     sys.exit(app.exec_())
-
-    import numpy as np
-
-    data = np.load("data/eegForDummyTests/sesions/sesion1/sesion_1.0.npy")
-
