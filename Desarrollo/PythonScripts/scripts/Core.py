@@ -22,8 +22,7 @@ from PyQt5.QtCore import *
 from GUIModule.V3.registro_config import MainWindow
 from GUIModule.V3.train_interfaz import entrenamiento
 
-
-
+from sklearn.pipeline import Pipeline
 
 class Core(QMainWindow):
     """Esta clase es la clase principal del sistema.
@@ -92,6 +91,14 @@ class Core(QMainWindow):
 
         #parámetros del filtro
         self.filterParameters = configParameters["filterParameters"]
+        #Chequeamos el tipo de placa para corregir el sample rate
+        if self.boardParams["boardName"] == "cyton":
+            self.filterParameters["sample_rate"] = 250.
+        elif self.boardParams["boardName"] == "ganglion":
+            self.filterParameters["sample_rate"] = 200.
+        elif self.boardParams["boardName"] == "synthetic":
+            self.filterParameters["sample_rate"] = 250.
+        
 
         ## Archivo para cargar el CSP
         self.cspFile = configParameters["cspFile"]
@@ -123,9 +130,9 @@ class Core(QMainWindow):
         self.checkTrialsTimer.timeout.connect(self.checkLastTrial)
 
         #timer para controlar las fases de cada trial
-        self.phaseTrialTimer = QTimer() #Timer para control de tiempo de las fases de trials
-        self.phaseTrialTimer.setInterval(1) #1 milisegundo sólo para el inicio de sesión.
-        self.phaseTrialTimer.timeout.connect(self.trainingEEGTrhead)
+        self.eegThreadTimer = QTimer() #Timer para control de tiempo de las fases de trials
+        self.eegThreadTimer.setInterval(1) #1 milisegundo sólo para el inicio de sesión.
+        self.eegThreadTimer.timeout.connect(self.trainingEEGThread)
 
     def start(self):
         print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
@@ -147,7 +154,16 @@ class Core(QMainWindow):
         self.subjectName = newParameters["subjectName"]
         self.sesionNumber = newParameters["sesionNumber"]
         self.boardParams = newParameters["boardParams"]
+
         self.filterParameters = newParameters["filterParameters"]
+        #Chequeamos el tipo de placa para corregir el sample rate
+        if self.boardParams["boardName"] == "cyton":
+            self.filterParameters["sample_rate"] = 250.
+        elif self.boardParams["boardName"] == "ganglion":
+            self.filterParameters["sample_rate"] = 200.
+        elif self.boardParams["boardName"] == "synthetic":
+            self.filterParameters["sample_rate"] = 250.
+
         self.cspFile = newParameters["cspFile"]
         self.classifierFile = newParameters["classifierFile"]
         self.configParameters = newParameters
@@ -198,9 +214,9 @@ class Core(QMainWindow):
         #Primero creamos el archivo y agregamos la cabecera. Lo guardamos en rootFolder/self.subjectName/sesions/self.sesionNumber
         #con el mismo nombre que self.eegFileName pero con extensión .txt
         self.eventsFileName = self.eegStoredFolder + self.eegFileName[:-4] + "_events" + ".txt"
-        self.eventsFile = open(self.eventsFileName, "w")
-        self.eventsFile.write("trialNumber,classNumber,className,startingTime,cueDuration,trialTime,time-time(formateado)\n")
-        self.eventsFile.close()
+        eventsFile = open(self.eventsFileName, "w")
+        eventsFile.write("trialNumber,classNumber,className,startingTime,cueDuration,trialTime,time-time(formateado)\n")
+        eventsFile.close()
         
         #Si la carpeta classifiers no existe, se crea
         if not os.path.exists(rootFolder + self.subjectName + "/classifiers"):
@@ -216,13 +232,8 @@ class Core(QMainWindow):
         self.trialPhase, self.trialTime, self.trialStartTime, self.trialEndTime.
         Cada nuevo dato se agrega en una nueva linea. Se abre el archivo en modo append (a)"""
         
-        self.eventsFile = open(self.eventsFileName, "a")
+        eventsFile = open(self.eventsFileName, "a")
         
-        # self.classes = newParameters["classes"]
-        # self.clasesNames = newParameters["clasesNames"]
-        #A partir de self.classes y del sefl.__trialNumber y self.trialsSesion, obtenemos el nombre de la clase
-        #y el número de la clase
-
         claseActual = self.trialsSesion[self.__trialNumber]
         classNameActual = self.clasesNames[self.classes.index(claseActual)]
 
@@ -233,14 +244,12 @@ class Core(QMainWindow):
 
         eventos = f"{self.__trialNumber+1},{claseActual},{classNameActual},{self.__startingTime},{self.cueDuration},{trialTime}-{trialTimeLegible}\n"
         
-        self.eventsFile.write(eventos)
-        self.eventsFile.close()
+        eventsFile.write(eventos)
+        eventsFile.close()
 
-    def setEEGLogger(self):
+    def setEEGLogger(self, startStreaming = True):
         """Seteamos EEGLogger para lectura de EEG desde placa.
-        Parámetros:
-         - board: objeto de la clase BoardShim
-         - board_id: id de la placa"""
+        Iniciamos streaming de EEG."""
         
         print("Seteando EEGLogger...")
         logging.info("Seteando EEGLogger...")
@@ -250,7 +259,28 @@ class Core(QMainWindow):
         time.sleep(0.500) #esperamos 500ms
         print("Iniciando streaming de EEG...")
         logging.info("Iniciando streaming de EEG...")
-        self.eeglogger.startStreaming()#iniciamos streaming de EEG
+        if startStreaming:
+            self.eeglogger.startStreaming()#iniciamos streaming de EEG
+
+    def setFilter(self):
+        """Función para setear el filtro de EEG.
+        - Los parámetros del filtro se obtienen a partir de self.parameters['filterParameters']"""
+
+        lowcut = self.filterParameters['lowcut']
+        highcut = self.filterParameters['highcut']
+        notch_freq = self.filterParameters['notch_freq']
+        notch_width = self.filterParameters['notch_width']
+        sample_rate = self.filterParameters['sample_rate']
+        axis_to_filter = self.filterParameters['axisToCompute']
+
+        self.filter = Filter(lowcut=lowcut, highcut=highcut, notch_freq=notch_freq, notch_width=notch_width,
+                             sample_rate=sample_rate, axis_to_filter=axis_to_filter)
+        
+    def setPipeline(self):
+        """Función para setear el pipeline para el procesamiento y clasificación de EEG.
+        """
+
+        self.pipeline = Pipeline([("filtro", self.filter)])
 
     def makeAndMixTrials(self):
         """Clase para generar los trials de la sesión. La cantidad de trials es igual a
@@ -271,16 +301,17 @@ class Core(QMainWindow):
         """Función para chequear si se alcanzó el último trial de la sesión.
         Se compara el número de trial actual con el número de trials totales dado en self.trialsSesion"""
         if self.__trialNumber == len(self.trialsSesion):
-            print("Sesión finalizada")
             print("Último trial alcanzado")
+            print("Sesión finalizada")
+            logging.info("Se alcanzó el último trial de la sesión")
             self.checkTrialsTimer.stop()
-            self.phaseTrialTimer.stop()
+            self.eegThreadTimer.stop()
             self.eeglogger.stopBoard()
             self.closeApp()
         else:
             pass
 
-    def trainingEEGTrhead(self):
+    def trainingEEGThread(self):
         """Función para hilo de lectura de EEG durante fase de entrenamiento.
         Sólo se almacena trozos de EEG correspondientes a la suma de startTrainingTime y cueDuration.
         """
@@ -292,13 +323,13 @@ class Core(QMainWindow):
             startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
             self.__startingTime = startingTime
             startingTime = int(startingTime * 1000) #lo pasamos a milisegundos
-            self.__trialPhase = 1 # la siguiente fase la de CUE
-            self.phaseTrialTimer.setInterval(startingTime) #esperamos el tiempo aleatorio
+            self.__trialPhase = 1 # pasamos a la siguiente fase -> CUE
+            self.eegThreadTimer.setInterval(startingTime) #esperamos el tiempo aleatorio
 
         elif self.__trialPhase == 1:
             logging.info("Iniciamos fase cue del trial")
-            self.__trialPhase = 2 # la siguiente fase es la de FINISH
-            self.phaseTrialTimer.setInterval(int(self.cueDuration * 1000))
+            self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
+            self.eegThreadTimer.setInterval(int(self.cueDuration * 1000))
 
         elif self.__trialPhase == 2:
             logging.info("Iniciamos fase de finalización del trial")
@@ -306,9 +337,9 @@ class Core(QMainWindow):
             newData = self.eeglogger.getData(self.cueDuration + self.__startingTime)
             self.eeglogger.saveData(newData, fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
             self.saveEvents() #guardamos los eventos de la sesión
-            self.__trialPhase = 0
+            self.__trialPhase = 0 #volvemos a la fase inicial del trial
             self.__trialNumber += 1 #incrementamos el número de trial
-            self.phaseTrialTimer.setInterval(int(self.finishDuration * 1000))
+            self.eegThreadTimer.setInterval(int(self.finishDuration * 1000))
 
     def updateTrainingAPP(self):
         """Actualizamos lo que se muestra en la APP de entrenamiento."""
@@ -324,7 +355,7 @@ class Core(QMainWindow):
             print("Inicio de sesión de entrenamiento")
             self.makeAndMixTrials()
             self.checkTrialsTimer.start()
-            self.phaseTrialTimer.start() #iniciamos timer para controlar hilo entrenamiento
+            self.eegThreadTimer.start() #iniciamos timer para controlar hilo entrenamiento
             
         elif self.typeSesion == 1:
             pass
@@ -349,9 +380,9 @@ if __name__ == "__main__":
         "classes": [1, 2, 3, 4, 5], #Clases a clasificar
         "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
         "ntrials": 1, #Número de trials por clase
-        "startingTimes": [1., 1.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
-        "cueDuration": 4, #En segundos
-        "finishDuration": 3, #En segundos
+        "startingTimes": [0.5, 0.6], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
+        "cueDuration": 1, #En segundos
+        "finishDuration": 1, #En segundos
         "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
         "subjectName": "subjetc_test", #nombre del sujeto
         "sesionNumber": 1, #número de sesión
@@ -365,7 +396,7 @@ if __name__ == "__main__":
             "notch_freq": 50., #Frecuencia corte del notch
             "notch_width": 1, #Ancho de del notch
             "sample_rate": 250, #Frecuencia de muestreo
-            "axisToCompute": 1
+            "axisToCompute": 2
         },
         "featureExtractorMethod": "welch",
         "cspFile": "data/subject_test/csps/dummycsp.pickle",
