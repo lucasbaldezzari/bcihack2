@@ -44,7 +44,7 @@ class EEGLogger():
         Los datos se entregan en un numpy array de forma [canales, muestras]. Los datos están en microvolts.
         - sampleLength: duración (en segundos) de la señal a adquirir de la placa. Por defecto son 6 segundos."""
 
-        num_samples = self.board.get_sampling_rate(self.board_id) * sampleLength
+        num_samples = int(self.board.get_sampling_rate(self.board_id) * sampleLength)
         return self.board.get_board_data(num_samples)
     
     def addData(self, newdata):
