@@ -234,7 +234,7 @@ class Core(QMainWindow):
         #con el mismo nombre que self.eegFileName pero con extensión .txt
         self.eventsFileName = self.eegStoredFolder + self.eegFileName[:-4] + "_events" + ".txt"
         eventsFile = open(self.eventsFileName, "w")
-        eventsFile.write("trialNumber,classNumber,className,startingTime,cueDuration,trialTime,time-time(formateado)\n")
+        eventsFile.write("trialNumber,classNumber,className,startingTime,cueDuration,trialTime,trialTime(legible)\n")
         eventsFile.close()
         
         #Si la carpeta classifiers no existe, se crea
@@ -244,6 +244,10 @@ class Core(QMainWindow):
         #Si la carpeta csps dentro de self.subjectName no existe, se crea
         if not os.path.exists(rootFolder + self.subjectName + "/csps"):
             os.makedirs(rootFolder + self.subjectName + "/csps")
+
+        #Si la carpeta pipelines dentro de self.subjectName no existe, se crea
+        if not os.path.exists(rootFolder + self.subjectName + "/pipelines"):
+            os.makedirs(rootFolder + self.subjectName + "/pipelines")
 
     def saveEvents(self):
         """Función para almacenar los eventos de la sesión en el archivo txt self.eventsFileName
@@ -261,7 +265,7 @@ class Core(QMainWindow):
         #formateamos el timestamp actual a formato legible del tipo DD/MM/YYYY HH:MM:SS
         trialTimeLegible = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(trialTime))
 
-        eventos = f"{self.__trialNumber+1},{claseActual},{classNameActual},{self.__startingTime},{self.cueDuration},{trialTime}-{trialTimeLegible}\n"
+        eventos = f"{self.__trialNumber+1},{claseActual},{classNameActual},{self.__startingTime},{self.cueDuration},{trialTime},{trialTimeLegible}\n"
         
         eventsFile.write(eventos)
         eventsFile.close()
