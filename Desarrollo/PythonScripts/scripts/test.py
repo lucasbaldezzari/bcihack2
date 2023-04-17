@@ -244,7 +244,7 @@ print(accuracy_score(labels_val, y_pred2))
 print(classification_report(labels_val, y_pred2))
 
 #guardamos el mejor modelo con los hiparámetros encontrados en la carpeta models. Si no existe la carpeta, la creamos
-filename = 'models/best_model_SVM.sav'
+filename = 'models/best_model_SVM.pickle'
 pickle.dump(best_estimator2, open(filename, 'wb'))
 
 #usamos el modelo para predecir sobre un nuevo trial (usando un trial de la clase 1 de los datos de validación)

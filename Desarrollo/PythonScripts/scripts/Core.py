@@ -1,8 +1,8 @@
 from EEGLogger.EEGLogger import EEGLogger, setupBoard
 
 from SignalProcessor.Filter import Filter
+from SignalProcessor.RavelTransformer import RavelTransformer
 from SignalProcessor.FeatureExtractor import FeatureExtractor
-from SignalProcessor.Classifier import Classifier
 
 import json
 import os
@@ -12,15 +12,13 @@ import random
 import logging
 
 import numpy as np
+import pickle
 
 import sys
 from PyQt5.QtCore import QTimer#, QThread, pyqtSignal, pyqtSlot, QObject, QRunnable, QThreadPool, QTime, QDate, QDateTime
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-
-from GUIModule.V3.registro_config import MainWindow
-from GUIModule.V3.train_interfaz import entrenamiento
 
 from sklearn.pipeline import Pipeline
 
@@ -74,6 +72,8 @@ class Core(QMainWindow):
         super().__init__() #Inicializamos la clase padre
 
         #Parámetros generales para la sesións
+        self.configParameters = configParameters
+
         self.typeSesion = configParameters["typeSesion"]
         self.cueType = configParameters["cueType"]
         self.ntrials = configParameters["ntrials"]
@@ -109,7 +109,9 @@ class Core(QMainWindow):
         ## Archivo para cargar el clasificador
         self.classifierFile = configParameters["classifierFile"]
 
-        self.configParameters = configParameters
+        #archivo para cargar el pipeline
+        self.__customPipeline = configParameters["customPipeline"]
+        self.pipelineFile = configParameters["pipelineFile"]
 
         self.__trialPhase = 0 #0: Inicio, 1: Cue, 2: Finalización
         self.__trialNumber = 0 #Número de trial actual
@@ -177,6 +179,12 @@ class Core(QMainWindow):
         
         self.cspFile = newParameters["cspFile"]
         self.classifierFile = newParameters["classifierFile"]
+
+        #archivo para cargar el pipeline
+        self.__customPipeline = newParameters["customPipeline"]
+        self.pipelineFile = newParameters["pipelineFile"]
+
+        #actualizamos el diccionario
         self.configParameters = newParameters
 
     def saveConfigParameters(self, fileName = None):
@@ -206,10 +214,10 @@ class Core(QMainWindow):
             os.makedirs(rootFolder + self.subjectName)
 
         #Carpeta para almacenar la señal de EEG
-        #Si la carpeta rootFolder/self.subjectName/sesions/self.sesionNumber no existe, se crea
-        if not os.path.exists(rootFolder + self.subjectName + "/sesions" + f"/sesion{str(self.sesionNumber)}"):
-            os.makedirs(rootFolder + self.subjectName + "/sesions" + f"/sesion{str(self.sesionNumber)}")
-        self.eegStoredFolder = self.rootFolder + self.subjectName + "/sesions/" + f"/sesion{str(self.sesionNumber)}/"
+        #Si la carpeta rootFolder/self.subjectName/eegdata/self.sesionNumber no existe, se crea
+        if not os.path.exists(rootFolder + self.subjectName + "/eegdata" + f"/sesion{str(self.sesionNumber)}"):
+            os.makedirs(rootFolder + self.subjectName + "/eegdata" + f"/sesion{str(self.sesionNumber)}")
+        self.eegStoredFolder = self.rootFolder + self.subjectName + "/eegdata/" + f"/sesion{str(self.sesionNumber)}/"
 
         #Chequeamos si el eegFileName existe. Si existe, se le agrega un número al final para no repetir
         #el nombre del archivo por defecto es eegFileName =  f"sesion_{self.sesionNumber}.{self.cueType}.npy
@@ -221,8 +229,8 @@ class Core(QMainWindow):
                 i += 1
         
         #Cramos un archivo txt que contiene la siguiente cabecera:
-        #trialNumber, class, classNumber, trialPhase, trialTime, trialStartTime, trialEndTime
-        #Primero creamos el archivo y agregamos la cabecera. Lo guardamos en rootFolder/self.subjectName/sesions/self.sesionNumber
+        #trialNumber, classNumber, className,startingTime,cueDuration,trialTime,time-time(formateado)
+        #Primero creamos el archivo y agregamos la cabecera. Lo guardamos en rootFolder/self.subjectName/eegdata/self.sesionNumber
         #con el mismo nombre que self.eegFileName pero con extensión .txt
         self.eventsFileName = self.eegStoredFolder + self.eegFileName[:-4] + "_events" + ".txt"
         eventsFile = open(self.eventsFileName, "w")
@@ -287,26 +295,33 @@ class Core(QMainWindow):
         self.filter = Filter(lowcut=lowcut, highcut=highcut, notch_freq=notch_freq, notch_width=notch_width,
                              sample_rate=sample_rate, axisToCompute = axisToCompute)
         
-    def setPipeline(self):
+    def setPipeline(self, **pipelineBlocks):
         """Función para setear el pipeline para el procesamiento y clasificación de EEG.
+        Parametros:
+        - filename (str): nombre del archivo (pickle) donde se encuentra el pipeline guardado. Si es None
+        se setea el pipeline con los parámetros dados en pipelineObject.
+        - pipelineBlocks (dict): diccionario con los diferentes objetos para el pipeline.
         """
-        self.setFilter()
-        self.pipeline = Pipeline([("filtro", self.filter)])
+        
+        #Si pipelineBlocks esta vacío, se carga el pipeline desde el archivo self.pipelineFileName
+        if not pipelineBlocks:
+            self.pipeline = pickle.load(open(self.pipelineFile, "rb")) #cargamos el pipeline
+
+        #Si pipelineBlocks no esta vacío, se setea el pipeline con los parámetros dados en pipelineObject
+        else:
+            self.pipeline = Pipeline([(step, pipelineBlocks[step]) for step in pipelineBlocks.keys()])
+
 
     def makeAndMixTrials(self):
-        """Clase para generar los trials de la sesión. La cantidad de trials es igual a
-        la cantidad de trials total esta dada por [ntrials * len(self.classes)].
-        Se genera una lista de valores correspondiente a cada clase y se mezclan.
+        """Clase para generar los trials de la sesión. La cantidad total de trials
+        está dada por [ntrials * len(self.classes)].
+        Se genera un numpy array de valores correspondiente a cada clase y se mezclan.
         
         Retorna:
             -trialsSesion (list): numpyarray con los trials de la sesión."""
 
         self.trialsSesion = np.array([[i] * self.ntrials for i in self.classes]).ravel()
         random.shuffle(self.trialsSesion)
-
-    def getTrialNumber(self):
-        """Función para obtener el número de trial actual."""
-        return self.__trialNumber
 
     def checkLastTrial(self):
         """Función para chequear si se alcanzó el último trial de la sesión.
@@ -407,7 +422,14 @@ class Core(QMainWindow):
             
         elif self.typeSesion == 1:
             self.setEEGLogger()
-            self.setPipeline()
+            if not self.__customPipeline:
+                self.setPipeline() #cargamos pipeline desde archivo. ESTO ES LO RECOMENDABLE
+            else: #si se ha seleccionado un pipeline personalizado, lo cargamos
+                self.setFilter() #seteamos filtro
+                # self.setCSP() #seteamos CSP
+                # self.RavelTransformer() #seteamos RavelTransformer
+                # self.setClassifier() #seteamos clasificador
+                self.setPipeline(filter = self.filter) #seteamos pipeline
             print("Inicio de sesión de Feedback")
             self.makeAndMixTrials()
             self.checkTrialsTimer.start()
@@ -434,7 +456,7 @@ if __name__ == "__main__":
         "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
         "ntrials": 1, #Número de trials por clase
         "startingTimes": [1.0, 1.1], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
-        "cueDuration": 2, #En segundos
+        "cueDuration": 1, #En segundos
         "finishDuration": 1, #En segundos
         "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
         "subjectName": "subjetc_test", #nombre del sujeto
@@ -454,7 +476,9 @@ if __name__ == "__main__":
         },
         "featureExtractorMethod": "welch",
         "cspFile": "data/subject_test/csps/dummycsp.pickle",
-        "classifierFile": "data/subject_test/classifiers/dummyclassifier.pickle"
+        "classifierFile": "data/subject_test/classifiers/dummyclassifier.pickle",
+        "customPipeline": True,
+        "pipelineFile": "data/subject_test/pipelines/dummypipeline.pickle",
     }
 
     app = QApplication(sys.argv)
@@ -463,8 +487,3 @@ if __name__ == "__main__":
     core.start()
 
     sys.exit(app.exec_())
-
-    import numpy as np
-
-    d = np.arange(0,750)
-    d[-500:].shape
