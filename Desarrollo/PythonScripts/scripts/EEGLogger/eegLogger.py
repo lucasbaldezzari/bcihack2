@@ -19,7 +19,6 @@ class EEGLogger():
         self.eeg_channels = BoardShim.get_eeg_channels(board_id)
         self.sampling_rate = BoardShim.get_sampling_rate(board_id) #frecuencia de muestreo
         self.acel_channels = BoardShim.get_accel_channels(board_id) #canales de acelerometro
-        self.gyro_channels = BoardShim.get_gyro_channels(board_id) #canales de giroscopio
         self.rawData = np.zeros((len(self.eeg_channels), 0)) #datos crudos    
         
     def connectBoard(self):
@@ -87,9 +86,9 @@ def setupBoard(boardName = "synthetic", serial_port = None):
     En caso de que se necesiten parámetros adicionales para configurar la conexión a la placa, se deben pasar parámetros adicionales.
     """
 
-    boards = {"cyton": BoardIds.CYTON_BOARD, #IMPORTANTE: frecuencia muestreo 256Hz
+    boards = {"cyton": BoardIds.CYTON_BOARD, #IMPORTANTE: frecuencia muestreo 250Hz
             "ganglion": BoardIds.GANGLION_BOARD, #IMPORTANTE: frecuencia muestro 200Hz
-            "synthetic": BoardIds.SYNTHETIC_BOARD}
+            "synthetic": BoardIds.SYNTHETIC_BOARD} #IMPORTANTE: frecuencia muestreo 250Hz
     
     board_id = boards[boardName]
     
@@ -146,6 +145,8 @@ if __name__ == "__main__":
     eeglogger.connectBoard() #nos conectamos a la placa
     
     trialDuration = 2 #duración del trial en segundos
+
+    eeglogger.board.get_eeg_names(board_id)
 
     eeglogger.startStreaming() #iniciamos la adquisición de datos
 
