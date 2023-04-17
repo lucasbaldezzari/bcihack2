@@ -4,14 +4,15 @@ from PyQt5.QtCore import *
 import numpy as np
 from PyQt5 import uic
 import sys
-import pickle
 import json
+import os
 
 class MainWindow(QDialog):
 
     def __init__(self, gui2, fileName):
         super().__init__()
-        uic.loadUi("config_registro.ui", self)
+        ui_path = os.path.join(os.path.dirname(__file__), "config_registro.ui")
+        uic.loadUi(ui_path, self)
 
         self.entrenamiento = gui2
         self.fileName = fileName
