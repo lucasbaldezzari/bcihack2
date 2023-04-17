@@ -5,17 +5,17 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 import sys
 
-directorio =  'config.json' #establesca donde este config.json
+directorio =  'config.json' #establesca la ruta donde se encuentre su archivo config.json
 
 app = QApplication(sys.argv)
 
 gui2 = entrenamiento()
 
-gui = MainWindow(gui2, directorio)
+gui = MainWindow(gui2, directorio) #gui una vez que se cierra muestra gui2
 
 def update():
-    if gui2.isVisible():
-        gui2.label_orden.setText(f'Holaa')
+    if gui2.isVisible(): #Si la gui2 se esta mostrando en pantalla
+        gui2.label_orden.setText(f'Holaa') 
 
 phaseTrialTimer = QTimer() #Timer para control de tiempo de las fases de trials
 phaseTrialTimer.setInterval(1000) #1 milisegundo sólo para el inicio de sesión.
