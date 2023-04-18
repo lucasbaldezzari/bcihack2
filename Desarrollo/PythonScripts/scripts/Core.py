@@ -468,16 +468,16 @@ if __name__ == "__main__":
         "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
         "classes": [1, 2, 3, 4, 5], #Clases a clasificar
         "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
-        "ntrials": 2, #Número de trials por clase
-        "startingTimes": [1, 1.3], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
-        "cueDuration": 1, #En segundos
+        "ntrials": 30, #Número de trials por clase
+        "startingTimes": [1, 1], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
+        "cueDuration": 4, #En segundos
         "finishDuration": 1, #En segundos
-        "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
+        "lenToClassify": 1.0, #Trozo de señal a clasificar, en segundos
         "subjectName": "dummyTest", #nombre del sujeto
         "sesionNumber": 1, #número de sesión
         "boardParams": { 
             "boardName": "synthetic", #Board de registro
-            "channels": [0, 1, 2, 3, 4, 5, 6, 7], #Canal de registro
+            "channels": [8,9,10,11,12,13,14,15],#[0, 1, 2, 3, 4, 5, 6, 7], #Canal de registro
             "serialPort": "COM5" #puerto serial
         },
         "filterParameters": {
@@ -489,10 +489,10 @@ if __name__ == "__main__":
             "axisToCompute": 2,
         },
         "featureExtractorMethod": "welch",
-        "cspFile": "data/subject_test/csps/dummycsp.pickle",
-        "classifierFile": "data/subject_test/classifiers/dummyclassifier.pickle",
+        "cspFile": "data/dummyTest/csps/dummycsp.pickle",
+        "classifierFile": "data/dummyTest/classifiers/dummyclassifier.pickle",
         "customPipeline": True,
-        "pipelineFile": "data/subject_test/pipelines/dummypipeline.pickle",
+        "pipelineFile": "data/dummyTest/pipelines/best_estimator_svm.pkl",
     }
 
     app = QApplication(sys.argv)
