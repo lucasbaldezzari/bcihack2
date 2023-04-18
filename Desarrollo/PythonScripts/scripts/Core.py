@@ -464,16 +464,16 @@ if __name__ == "__main__":
 
     #Creamos un diccionario con los parámetros de configuración iniciales
     parameters = {
-        "typeSesion": 1, #0: Entrenamiento, 1: Feedback, 2: Online
-        "cueType": 1, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
+        "typeSesion": 0, #0: Entrenamiento, 1: Feedback, 2: Online
+        "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
         "classes": [1, 2, 3, 4, 5], #Clases a clasificar
         "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
-        "ntrials": 1, #Número de trials por clase
-        "startingTimes": [1, 1], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
+        "ntrials": 2, #Número de trials por clase
+        "startingTimes": [1, 1.3], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
         "cueDuration": 1, #En segundos
         "finishDuration": 1, #En segundos
         "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
-        "subjectName": "subjetc_test", #nombre del sujeto
+        "subjectName": "dummyTest", #nombre del sujeto
         "sesionNumber": 1, #número de sesión
         "boardParams": { 
             "boardName": "synthetic", #Board de registro
@@ -502,8 +502,8 @@ if __name__ == "__main__":
 
     sys.exit(app.exec_())
 
-    import numpy as np
+    # import numpy as np
 
-    data = np.load("data/subjetc_test/eegdata/sesion1/sn1_ts1_ct1_r1.npy")
+    # data = np.load("data/subjetc_test/eegdata/sesion1/sn1_ts1_ct1_r1.npy")
 
-    data.shape
+    # data.shape

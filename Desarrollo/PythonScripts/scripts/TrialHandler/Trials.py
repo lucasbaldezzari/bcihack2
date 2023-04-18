@@ -32,6 +32,8 @@ class Trials():
 
         #calculamos la cantidad de muestras que representa el cueDuration. Este tiempo es fijo
         cueDuration_samples = int(self.eventos["cueDuration"].to_numpy()[0] * self.sample_rate)
+        #calculamos la cantidad de muestras que representa el finishDuration
+        finishDuration_samples = int(self.eventos["finishDuration"].to_numpy()[0] * self.sample_rate)
         #calculamos la cantidad de muestras que representa el tmin
         tmin_samples = int(self.tmin * self.sample_rate)
         #encontramos el mínimo tmin en el dataframe
@@ -65,8 +67,7 @@ class Trials():
             #Recordar que el startingTime es variable
             startingTime_samples = int(self.eventos.loc[trial]["startingTime"] * self.sample_rate)
             startingAccumulator += startingTime_samples
-            delaySamples = startingAccumulator + cueDuration_samples*(trial-1)
-
+            delaySamples = startingAccumulator + (cueDuration_samples + finishDuration_samples)*(trial-1)
             trialsArray[trial-1] = self.rawEEG[:, delaySamples - tmin_samples : delaySamples + tmax_samples]
 
         return trialsArray
@@ -80,13 +81,14 @@ class Trials():
     
 if __name__ == "__main__":
 
-    file = "data/eegForDummyTests/eegdata/sesion1/sesion_1.0.npy"
+    file = "data/dummyTest/eegdata/sesion1/sn1_ts0_ct0_r1.npy"
     rawEEG = np.load(file)
 
-    eventosFile = "data/eegForDummyTests/eegdata/sesion1/sesion_1.0_events.txt"
+    eventosFile = "data/dummyTest/eegdata/sesion1/sn1_ts0_ct0_r1_events.txt"
+
     eventos = pd.read_csv(eventosFile, sep = ",")
 
-    trials = Trials(rawEEG, eventos, tmin = 1., tmax = 4., reject=None, sample_rate=250.)
+    trials = Trials(rawEEG, eventos, tmin = 0.5, tmax = 0.8, reject=None, sample_rate=250.)
 
     trials.trials.shape
 
