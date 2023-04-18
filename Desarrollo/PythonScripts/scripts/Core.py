@@ -35,7 +35,6 @@ class Core(QMainWindow):
     """
     def __init__(self, configParameters):
         """Constructor de la clase
-
         - Parameters (dict): Diccionario con los parámetros a ser cargados. Los parámetros son:
             -typeSesion (int): Tipo de sesión. 0: Entrenamiento, 1: Feedback o calibración, 2: Online.
             -cueType (int): 0: se ejecuta movimiento, 1: se imaginan movimientos.
@@ -64,7 +63,6 @@ class Core(QMainWindow):
             de entrenamiento y será usado durante las sesiones de feedback y online.
             -classifierFile (str): Ruta al archivo pickle con el clasificador. IMPORTANTE: Se supone que este archivo ya fue generado con la sesión
             de entrenamiento y será usado durante las sesiones de feedback y online.
-
         Un trial es la suma de startingTimes + cueDuration + finishDuration
         
         NOTA: Definir qué parámetros se necesitan inicar dentro del constructor."""
@@ -234,7 +232,7 @@ class Core(QMainWindow):
         #con el mismo nombre que self.eegFileName pero con extensión .txt
         self.eventsFileName = self.eegStoredFolder + self.eegFileName[:-4] + "_events" + ".txt"
         eventsFile = open(self.eventsFileName, "w")
-        eventsFile.write("trialNumber,classNumber,className,startingTime,cueDuration,finishDuration,trialTime,trialTime(legible)\n")
+        eventsFile.write("trialNumber,classNumber,className,startingTime,cueDuration,trialTime,trialTime(legible)\n")
         eventsFile.close()
         
         #Si la carpeta classifiers no existe, se crea
@@ -265,7 +263,7 @@ class Core(QMainWindow):
         #formateamos el timestamp actual a formato legible del tipo DD/MM/YYYY HH:MM:SS
         trialTimeLegible = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(trialTime))
 
-        eventos = f"{self.__trialNumber+1},{claseActual},{classNameActual},{self.__startingTime},{self.cueDuration},{self.finishDuration},{trialTime},{trialTimeLegible}\n"
+        eventos = f"{self.__trialNumber+1},{claseActual},{classNameActual},{self.__startingTime},{self.cueDuration},{trialTime},{trialTimeLegible}\n"
         
         eventsFile.write(eventos)
         eventsFile.close()
@@ -363,19 +361,13 @@ class Core(QMainWindow):
 
         elif self.__trialPhase == 2:
             logging.info("Iniciamos fase de finalización del trial")
-            self.__trialPhase = -1 #Fase para guardar datos de EEG
-            self.eegThreadTimer.setInterval(int(self.finishDuration * 1000))
-
-        else:
             #Al finalizar la fase de CUE, guardamos los datos de EEG
-            logging.info("Guardando datos de EEG")
-            newData = self.eeglogger.getData(self.__startingTime + self.cueDuration + self.finishDuration)
+            newData = self.eeglogger.getData(self.cueDuration + self.__startingTime)[self.channels]
             self.eeglogger.saveData(newData, fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
             self.saveEvents() #guardamos los eventos de la sesión
             self.__trialPhase = 0 #volvemos a la fase inicial del trial
             self.__trialNumber += 1 #incrementamos el número de trial
-            self.eegThreadTimer.setInterval(1)
-            
+            self.eegThreadTimer.setInterval(int(self.finishDuration * 1000))
 
     def feedbackThread(self):
         """Función para hilo de lectura de EEG durante fase de entrenamiento.
@@ -400,7 +392,7 @@ class Core(QMainWindow):
         elif self.__trialPhase == 2:
             logging.info("Iniciamos fase de finalización del trial")
             #Al finalizar la fase de CUE, guardamos los datos de EEG
-            newData = self.eeglogger.getData(self.cueDuration + self.__startingTime)
+            newData = self.eeglogger.getData(self.cueDuration + self.__startingTime)[self.channels]
             self.eeglogger.saveData(newData, fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
             self.saveEvents() #guardamos los eventos de la sesión
             self.__trialPhase = 0 #volvemos a la fase inicial del trial
@@ -443,7 +435,7 @@ class Core(QMainWindow):
             print("Inicio de sesión de Feedback")
             self.makeAndMixTrials()
             self.checkTrialsTimer.start()
-            self.feedbackThreadTimer.start() #iniciamos timer para controlar hilo feedback/calibración
+            self.feedbackThreadTimer.start() #iniciamos timer para controlar hilo entrenamiento
 
         elif self.typeSesion == 2:
             pass
@@ -460,12 +452,12 @@ if __name__ == "__main__":
 
     #Creamos un diccionario con los parámetros de configuración iniciales
     parameters = {
-        "typeSesion": 0, #0: Entrenamiento, 1: Feedback, 2: Online
+        "typeSesion": 1, #0: Entrenamiento, 1: Feedback, 2: Online
         "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
         "classes": [1, 2, 3, 4, 5], #Clases a clasificar
         "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
         "ntrials": 1, #Número de trials por clase
-        "startingTimes": [1.5, 1.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
+        "startingTimes": [1.0, 1.0], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
         "cueDuration": 1, #En segundos
         "finishDuration": 1, #En segundos
         "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
@@ -497,3 +489,9 @@ if __name__ == "__main__":
     core.start()
 
     sys.exit(app.exec_())
+
+    import numpy as np
+
+    data = np.load("data/subjetc_test/eegdata/sesion1/sesion_1.0_2.npy")
+
+    data.shape
