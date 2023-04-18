@@ -37,14 +37,18 @@ class EEGLogger():
         self.board.stop_stream()
         self.board.release_session()
     
-    def getData(self, sampleLength = 6):
+    def getData(self, sampleLength = 4, removeDataFromBuffer = True):
         """Obtenemos algunas muestras de la placa. La cantidad de muestras que devuelve el método depende del timeLength y de la frecuencia
         de muestro de la placa. 
         Los datos se entregan en un numpy array de forma [canales, muestras]. Los datos están en microvolts.
         - sampleLength: duración (en segundos) de la señal a adquirir de la placa. Por defecto son 6 segundos."""
 
         num_samples = int(self.board.get_sampling_rate(self.board_id) * sampleLength)
-        return self.board.get_board_data(num_samples)
+
+        if removeDataFromBuffer:
+            return self.board.get_board_data(num_samples) #devuelve los datos y los borra del buffer
+        else:
+            return self.board.get_current_board_data(num_samples) #devuelve los datos sin borrarlos del buffer
     
     def addData(self, newdata):
         """Agregamos datos a la variable rawData. 
