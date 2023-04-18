@@ -20,9 +20,6 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score, classification_report
 import pickle
 
-
-
-
 """Usaremos el registro de la Syntehtic board para entrenar y usar el pipeline"""
 
 file = file = "data/dummyTest/eegdata/sesion1/sn1_ts0_ct0_r1.npy"
@@ -52,7 +49,7 @@ clasesNames = config["clasesNames"]
 #Utilizamos la frecuencia de muestreo para calcular la cantidad de muestras que representa el cueDuration
 
 sample_rate = 250.
-trialshandler = TrialsHandler(raw_eeg, eventos, tmin = 0.0, tmax = 1, reject=None, sample_rate = sample_rate)
+trialshandler = TrialsHandler(raw_eeg, eventos, tmin = 0.3, tmax = 4., reject=None, sample_rate = sample_rate)
 trials = trialshandler.trials
 labels = trialshandler.labels
 print(trials.shape)
@@ -160,7 +157,7 @@ param_grid_svm = {
     'svm__gamma': ['scale', 'auto']
 }
 
-#Creamos el GridSearch para el LDA
+#Creamos el GridSearch para el SVC
 grid_svm = GridSearchCV(pipeline_svm, param_grid_svm, cv=5, n_jobs=-1)
 grid_svm.fit(eeg_train, labels_train)
 

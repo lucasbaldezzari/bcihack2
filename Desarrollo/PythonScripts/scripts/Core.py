@@ -140,8 +140,12 @@ class Core(QMainWindow):
         self.feedbackThreadTimer = QTimer() #Timer para control de tiempo de las fases de trials
         self.feedbackThreadTimer.setInterval(1) #1 milisegundo sólo para el inicio de sesión.
         self.feedbackThreadTimer.timeout.connect(self.feedbackThread)
-        
 
+        #timer para controlar el tiempo para clasificar el EEG
+        self.classifyEEGTimer = QTimer()
+        self.classifyEEGTimer.setInterval(int(self.lenToClassify*1000)) #Tiempo en milisegundos
+        self.classifyEEGTimer.timeout.connect(self.classifyEEG)
+        
     def start(self):
         print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         logging.info(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
@@ -394,29 +398,39 @@ class Core(QMainWindow):
 
         elif self.__trialPhase == 1:
             logging.info("Iniciamos fase cue del trial")
+            self.classifyEEGTimer.start()
             self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
             self.feedbackThreadTimer.setInterval(int(self.cueDuration * 1000))
 
         elif self.__trialPhase == 2:
             logging.info("Iniciamos fase de finalización del trial")
             #Al finalizar la fase de CUE, guardamos los datos de EEG
-            newData = self.eeglogger.getData(self.cueDuration, removeDataFromBuffer = False)[self.channels]
+            self.classifyEEGTimer.stop()
             self.__trialPhase = -1 #volvemos a la fase inicial del trial
-
-            dataToPredict = newData[self.channels][:, -int(self.cueDuration*self.sample_rate):]
-            dataToPredict = dataToPredict.reshape(1,len(self.channels),int(self.cueDuration*self.sample_rate))
-            self.pipeData = self.pipeline.fit_transform(dataToPredict) #aplicamos data al pipeline
+            # dataToPredict = newData[self.channels][:, -int(self.cueDuration*self.sample_rate):]
+            # dataToPredict = dataToPredict.reshape(1,len(self.channels),int(self.cueDuration*self.sample_rate))
+            # self.pipeData = self.pipeline.fit_transform(dataToPredict) #aplicamos data al pipeline
+            # self.feedbackThreadTimer.setInterval(int(self.finishDuration * 1000))
             self.feedbackThreadTimer.setInterval(int(self.finishDuration * 1000))
-
         else:
             #Al finalizar el trial, guardamos los datos de EEG
             logging.info("Guardando datos de EEG")
+            
             newData = self.eeglogger.getData(self.__startingTime + self.cueDuration + self.finishDuration)[self.channels]
             self.eeglogger.saveData(newData, fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
             self.saveEvents() #guardamos los eventos de la sesión
             self.__trialPhase = 0 #volvemos a la fase inicial del trial
             self.__trialNumber += 1 #incrementamos el número de trial
             self.eegThreadTimer.setInterval(1)
+
+    def classifyEEG(self):
+        """Función para clasificar EEG"""
+        newData = self.eeglogger.getData(self.cueDuration, removeDataFromBuffer = False)[self.channels]
+        trialToPredict = newData[:, -int(self.cueDuration*self.sample_rate):]
+        trialToPredict = trialToPredict.reshape(1,len(self.channels),int(self.cueDuration*self.sample_rate))
+        self.pipeData = self.pipeline.predict(trialToPredict) #aplicamos data al pipeline
+        print("Dato clasificado", self.pipeData)
+        
 
     def updateTrainingAPP(self):
         """Actualizamos lo que se muestra en la APP de entrenamiento."""
@@ -464,20 +478,20 @@ if __name__ == "__main__":
 
     #Creamos un diccionario con los parámetros de configuración iniciales
     parameters = {
-        "typeSesion": 0, #0: Entrenamiento, 1: Feedback, 2: Online
+        "typeSesion": 1, #0: Entrenamiento, 1: Feedback, 2: Online
         "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
         "classes": [1, 2, 3, 4, 5], #Clases a clasificar
         "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
-        "ntrials": 30, #Número de trials por clase
+        "ntrials": 1, #Número de trials por clase
         "startingTimes": [1, 1], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
         "cueDuration": 4, #En segundos
         "finishDuration": 1, #En segundos
-        "lenToClassify": 1.0, #Trozo de señal a clasificar, en segundos
-        "subjectName": "dummyTest", #nombre del sujeto
+        "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
+        "subjectName": "subject_test", #nombre del sujeto
         "sesionNumber": 1, #número de sesión
         "boardParams": { 
             "boardName": "synthetic", #Board de registro
-            "channels": [8,9,10,11,12,13,14,15],#[0, 1, 2, 3, 4, 5, 6, 7], #Canal de registro
+            "channels": [13,14,15],#[0, 1, 2, 3, 4, 5, 6, 7], #Canales de registro
             "serialPort": "COM5" #puerto serial
         },
         "filterParameters": {
@@ -491,7 +505,7 @@ if __name__ == "__main__":
         "featureExtractorMethod": "welch",
         "cspFile": "data/dummyTest/csps/dummycsp.pickle",
         "classifierFile": "data/dummyTest/classifiers/dummyclassifier.pickle",
-        "customPipeline": True,
+        "customPipeline": False,
         "pipelineFile": "data/dummyTest/pipelines/best_estimator_svm.pkl",
     }
 
