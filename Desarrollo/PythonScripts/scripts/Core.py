@@ -19,10 +19,11 @@ from PyQt5.QtCore import QTimer#, QThread, pyqtSignal, pyqtSlot, QObject, QRunna
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+from GUIModule.TrainingAPP import TrainingAPP
 
 from sklearn.pipeline import Pipeline
 
-class Core():
+class Core(QMainWindow):
     """Esta clase es la clase principal del sistema.
     Clase para manejar el bloque de procesamiento de los datos (filtrado, extracción de característica y clasificación),
     las GUI y el bloque de comunicación con el dispositivo de control. 
@@ -33,7 +34,7 @@ class Core():
     se puede hacer otro para el control de la comunicación con el dispositivo.)
     NOTA 2: Se debe pensar en un hilo para el control de la GUI.
     """
-    def __init__(self, configParameters):
+    def __init__(self, configParameters, trainingAPP):
         """Constructor de la clase
         - Parameters (dict): Diccionario con los parámetros a ser cargados. Los parámetros son:
             -typeSesion (int): Tipo de sesión. 0: Entrenamiento, 1: Feedback o calibración, 2: Online.
@@ -64,10 +65,14 @@ class Core():
             -classifierFile (str): Ruta al archivo pickle con el clasificador. IMPORTANTE: Se supone que este archivo ya fue generado con la sesión
             de entrenamiento y será usado durante las sesiones de feedback y online.
         Un trial es la suma de startingTimes + cueDuration + finishDuration
+
+        - TrainingAPP (QWidget): Objeto de la clase Entrenamiento. Se usa para enviar señales a la GUI.
         
         NOTA: Definir qué parámetros se necesitan inicar dentro del constructor."""
 
-        # super().__init__() #Inicializamos la clase padre
+        super().__init__() #Inicializamos la clase padre
+
+        self.trainingAPP = trainingAPP
 
         #Parámetros generales para la sesións
         self.configParameters = configParameters
@@ -124,7 +129,7 @@ class Core():
 
         #timer para controlar el inicio de la sesión
         self.iniSesionTimer = QTimer()
-        self.iniSesionTimer.setInterval(3000) #3 segundos
+        self.iniSesionTimer.setInterval(1000) #1 segundo1
         self.iniSesionTimer.timeout.connect(self.startSesion)
 
         #timer para controlar si se alcanzó el último trial y así cerrar la app
@@ -149,6 +154,9 @@ class Core():
     def start(self):
         print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         logging.info(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
+        if self.typeSesion == 0:
+            self.trainingAPP.show() #mostramos la APP de entrenamiento
+            self.trainingAPP.actualizar_orden("Inicio de sesión de entrenamiento") #actualizamos app
         self.iniSesionTimer.start()
 
     def updateParameters(self,newParameters):
@@ -354,6 +362,7 @@ class Core():
         if self.__trialPhase == 0:
             print(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
             logging.info(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
+            self.trainingAPP.actualizar_orden("Ready...")
             #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
             startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
             self.__startingTime = startingTime
@@ -363,11 +372,15 @@ class Core():
 
         elif self.__trialPhase == 1:
             logging.info("Iniciamos fase cue del trial")
+            claseActual = self.trialsSesion[self.__trialNumber]
+            classNameActual = self.clasesNames[self.classes.index(claseActual)]
+            self.trainingAPP.actualizar_orden(f"Cue -> {classNameActual}")
             self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
             self.eegThreadTimer.setInterval(int(self.cueDuration * 1000))
 
         elif self.__trialPhase == 2:
             logging.info("Iniciamos fase de finalización del trial")
+            self.trainingAPP.actualizar_orden("Fin de tarea...")
             self.__trialPhase = -1 #Fase para guardar datos de EEG
             self.eegThreadTimer.setInterval(int(self.finishDuration * 1000))
 
@@ -437,9 +450,11 @@ class Core():
         self.iniSesionTimer.stop()
         self.setFolders(rootFolder = self.rootFolder) #configuramos las carpetas de almacenamiento
         self.saveConfigParameters(self.eegStoredFolder+self.eegFileName[:-4]+"_config.json") #guardamos los parámetros de configuración
+        
         if self.typeSesion == 0:
-            self.setEEGLogger()
             print("Inicio de sesión de entrenamiento")
+            logging.info("Inicio de sesión de entrenamiento")
+            self.setEEGLogger()
             self.makeAndMixTrials()
             self.checkTrialsTimer.start()
             self.eegThreadTimer.start() #iniciamos timer para controlar hilo entrenamiento
@@ -464,6 +479,7 @@ class Core():
         
     def closeApp(self):
         print("Cerrando aplicación...")
+        self.trainingAPP.close()
         self.close()
 
 if __name__ == "__main__":
@@ -474,14 +490,14 @@ if __name__ == "__main__":
 
     #Creamos un diccionario con los parámetros de configuración iniciales
     parameters = {
-        "typeSesion": 1, #0: Entrenamiento, 1: Feedback, 2: Online
+        "typeSesion": 0, #0: Entrenamiento, 1: Feedback, 2: Online
         "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
         "classes": [1, 2, 3, 4, 5], #Clases a clasificar
-        "clasesNames": ["MI", "MD", "AM", "AP", "R"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
+        "clasesNames": ["mover Mano Izquierda", "mover Mano Derecha", "mover Ambas Manos", "mover Ambos Pies", "Rest"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
         "ntrials": 1, #Número de trials por clase
-        "startingTimes": [1, 1], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
+        "startingTimes": [1, 1.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
         "cueDuration": 4, #En segundos
-        "finishDuration": 1, #En segundos
+        "finishDuration": 2, #En segundos
         "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
         "subjectName": "subject_test", #nombre del sujeto
         "sesionNumber": 1, #número de sesión
@@ -507,17 +523,10 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    core = Core(parameters)    
+    core = Core(parameters, TrainingAPP())    
     core.start()
 
     sys.exit(app.exec_())
-
-    # from GUIModule.train_interfaz import entrenamiento
-
-    # app = QApplication(sys.argv)
-    # _ventana = entrenamiento()
-    # _ventana.show()
-    # app.exec_()
 
     # import numpy as np
 

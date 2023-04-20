@@ -6,7 +6,7 @@ import pyqtgraph as pg
 import sys
 import os
 
-class entrenamiento(QDialog):
+class TrainingAPP(QDialog):
 
     def __init__(self):
         super().__init__()
@@ -22,6 +22,6 @@ class entrenamiento(QDialog):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    _ventana = entrenamiento()
+    _ventana = TrainingAPP()
     _ventana.show()
     app.exec_()

@@ -14,7 +14,7 @@
    <string>Interfaz Sujeto</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(255, 255, 127);</string>
+   <string notr="true">background-color: rgb(240, 240, 240);</string>
   </property>
   <widget class="QLabel" name="label_accion">
    <property name="geometry">
@@ -54,12 +54,14 @@
    </property>
    <property name="font">
     <font>
-     <family>Verdana</family>
+     <family>Berlin Sans FB</family>
      <pointsize>28</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
     </font>
    </property>
    <property name="styleSheet">
-    <string notr="true">color: rgb(255, 0, 0);</string>
+    <string notr="true">color: rgb(25, 50, 200);</string>
    </property>
    <property name="text">
     <string>Comenzando...</string>
