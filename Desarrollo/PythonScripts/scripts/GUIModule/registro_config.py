@@ -9,12 +9,13 @@ import os
 
 class MainWindow(QDialog):
 
-    def __init__(self, gui2, fileName):
+    def __init__(self, gui_entrenamiento, gui_supervision, fileName):
         super().__init__()
         ui_path = os.path.join(os.path.dirname(__file__), "config_registro.ui")
         uic.loadUi(ui_path, self)
 
-        self.entrenamiento = gui2
+        self.gui_entrenamiento = gui_entrenamiento #una vez se cierre esta interfaz abrira esta gui
+        self.gui_supervision = gui_supervision #una vez se cierre esta interfaz abrira esta gui
         self.fileName = fileName
         self.btn_iniciar.clicked.connect(self.Inicio) #Guarda en .json e inicia la interfaz de entrenamiento
         self.btn_regresar.clicked.connect(self.Cerrar) #Cierra la interfaz
@@ -95,7 +96,9 @@ class MainWindow(QDialog):
 
         self.close()
 
-        self.entrenamiento.show()
+        self.gui_entrenamiento.show()
+
+        self.gui_supervision.show()
 
     def Cerrar(self):
         self.close()
