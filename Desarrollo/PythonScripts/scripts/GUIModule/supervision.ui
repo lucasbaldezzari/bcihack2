@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>5845e608fb0b0755fa99d7e7 (2).png</normaloff>5845e608fb0b0755fa99d7e7 (2).png</iconset>
+    <normaloff>doggy.png</normaloff>doggy.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">background-color: rgb(0, 4, 75);</string>
