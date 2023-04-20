@@ -22,7 +22,7 @@ from PyQt5.QtCore import *
 
 from sklearn.pipeline import Pipeline
 
-class Core(QMainWindow):
+class Core():
     """Esta clase es la clase principal del sistema.
     Clase para manejar el bloque de procesamiento de los datos (filtrado, extracción de característica y clasificación),
     las GUI y el bloque de comunicación con el dispositivo de control. 
@@ -67,7 +67,7 @@ class Core(QMainWindow):
         
         NOTA: Definir qué parámetros se necesitan inicar dentro del constructor."""
 
-        super().__init__() #Inicializamos la clase padre
+        # super().__init__() #Inicializamos la clase padre
 
         #Parámetros generales para la sesións
         self.configParameters = configParameters
@@ -407,10 +407,6 @@ class Core(QMainWindow):
             #Al finalizar la fase de CUE, guardamos los datos de EEG
             self.classifyEEGTimer.stop()
             self.__trialPhase = -1 #volvemos a la fase inicial del trial
-            # dataToPredict = newData[self.channels][:, -int(self.cueDuration*self.sample_rate):]
-            # dataToPredict = dataToPredict.reshape(1,len(self.channels),int(self.cueDuration*self.sample_rate))
-            # self.pipeData = self.pipeline.fit_transform(dataToPredict) #aplicamos data al pipeline
-            # self.feedbackThreadTimer.setInterval(int(self.finishDuration * 1000))
             self.feedbackThreadTimer.setInterval(int(self.finishDuration * 1000))
         else:
             #Al finalizar el trial, guardamos los datos de EEG
@@ -429,7 +425,7 @@ class Core(QMainWindow):
         trialToPredict = newData[:, -int(self.cueDuration*self.sample_rate):]
         trialToPredict = trialToPredict.reshape(1,len(self.channels),int(self.cueDuration*self.sample_rate))
         self.pipeData = self.pipeline.predict(trialToPredict) #aplicamos data al pipeline
-        print("Dato clasificado", self.pipeData)
+        logging.info("Dato clasificado", self.pipeData)
         
 
     def updateTrainingAPP(self):
@@ -515,6 +511,13 @@ if __name__ == "__main__":
     core.start()
 
     sys.exit(app.exec_())
+
+    # from GUIModule.train_interfaz import entrenamiento
+
+    # app = QApplication(sys.argv)
+    # _ventana = entrenamiento()
+    # _ventana.show()
+    # app.exec_()
 
     # import numpy as np
 
