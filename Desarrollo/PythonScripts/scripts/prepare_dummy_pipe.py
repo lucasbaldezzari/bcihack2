@@ -143,7 +143,7 @@ pipeline_svm = Pipeline([
     ('featureExtractor', featureExtractor),
     ('ravelTransformer', ravelTransformer),
     ('scaler', scaler),
-    ('svm', SVC())
+    ('svm', SVC(probability=True))
 ])
 
 """Análisis rápido con el pipeline"""

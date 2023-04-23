@@ -16,14 +16,23 @@ class TrainingAPP(QDialog):
         ui_path = os.path.join(os.path.dirname(__file__), 'registro.ui')
         uic.loadUi(ui_path, self)
         self.Centrar(self.cruz)
-        self.Gestionar_sesion(True) #Si seleccionas False no hará ruido al instanciar la interfaz
-        
-    def actualizar_orden(self, texto):
+        self.showCruz(False) #Si seleccionas False no hará ruido al instanciar la interfaz
+
+        #obtenemos el background de label_orden
+        self.background_color = self.label_orden.palette().color(QPalette.Background).name()
+        self.font_color = "rgb(25,50,200)" #self.label_orden.palette().color(QPalette.Base)
+
+    def actualizar_orden(self, texto, fontsize = 36, background = None, border = "1px", font_color = "black"):
         """
         Actualiza la etiqueta que da la orden
             texto (str): texto de la orden
         """
+        self.label_orden.setFont(QFont('Berlin Sans', fontsize))
         self.label_orden.setText(texto)
+        if background:
+            self.label_orden.setStyleSheet(f"background-color: {background};border: {border} solid black;color: {font_color}")
+        else:
+            self.label_orden.setStyleSheet(f"background-color: {self.background_color}; border: 0px solid black;color: {self.font_color}")
 
     def Centrar(self, objeto):
         """
@@ -53,7 +62,7 @@ class TrainingAPP(QDialog):
         objeto.setGeometry(int(width/2 - objeto.width()/2), int(height/2 - objeto.height()/2) - 100, 
                            int(objeto.width()),int(objeto.height()))
         
-    def Gestionar_sesion(self, mostrar:bool):
+    def showCruz(self, mostrar:bool):
         """
         Muestra o no la cruz de preparación en la interfaz
         """

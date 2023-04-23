@@ -103,7 +103,6 @@ class Core(QMainWindow):
         elif self.boardParams["boardName"] == "synthetic":
             self.filterParameters["sample_rate"] = 250.
 
-
         self.sample_rate = self.filterParameters["sample_rate"]
 
         ## Archivo para cargar el CSP
@@ -150,14 +149,6 @@ class Core(QMainWindow):
         self.classifyEEGTimer = QTimer()
         self.classifyEEGTimer.setInterval(int(self.lenToClassify*1000)) #Tiempo en milisegundos
         self.classifyEEGTimer.timeout.connect(self.classifyEEG)
-        
-    def start(self):
-        print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
-        logging.info(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
-        if self.typeSesion == 0:
-            self.trainingAPP.show() #mostramos la APP de entrenamiento
-            self.trainingAPP.actualizar_orden("Inicio de sesión de entrenamiento") #actualizamos app
-        self.iniSesionTimer.start()
 
     def updateParameters(self,newParameters):
         """Actualizamos cada valor dentro del diccionario
@@ -349,6 +340,7 @@ class Core(QMainWindow):
             logging.info("Se alcanzó el último trial de la sesión")
             self.checkTrialsTimer.stop()
             self.eegThreadTimer.stop()
+            self.feedbackThreadTimer.stop()
             self.eeglogger.stopBoard()
             self.closeApp()
         else:
@@ -362,7 +354,8 @@ class Core(QMainWindow):
         if self.__trialPhase == 0:
             print(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
             logging.info(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
-            self.trainingAPP.actualizar_orden("Ready...")
+            self.trainingAPP.showCruz(True) #mostramos la cruz
+            self.trainingAPP.actualizar_orden("Fijar la mirada en la cruz...")
             #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
             startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
             self.__startingTime = startingTime
@@ -371,10 +364,12 @@ class Core(QMainWindow):
             self.eegThreadTimer.setInterval(startingTime) #esperamos el tiempo aleatorio
 
         elif self.__trialPhase == 1:
+            self.trainingAPP.showCruz(False) #desactivamos la cruz
             logging.info("Iniciamos fase cue del trial")
             claseActual = self.trialsSesion[self.__trialNumber]
             classNameActual = self.clasesNames[self.classes.index(claseActual)]
-            self.trainingAPP.actualizar_orden(f"Cue -> {classNameActual}")
+            self.trainingAPP.actualizar_orden(f"{classNameActual}", fontsize = 46,
+                                              background = "rgb(38,38,38)", font_color = "white")
             self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
             self.eegThreadTimer.setInterval(int(self.cueDuration * 1000))
 
@@ -402,6 +397,8 @@ class Core(QMainWindow):
         if self.__trialPhase == 0:
             print(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
             logging.info(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
+            self.trainingAPP.showCruz(True) #mostramos la cruz
+            self.trainingAPP.actualizar_orden("Fijar la mirada en la cruz...")
             #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
             startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
             self.__startingTime = startingTime
@@ -411,20 +408,25 @@ class Core(QMainWindow):
 
         elif self.__trialPhase == 1:
             logging.info("Iniciamos fase cue del trial")
-            self.classifyEEGTimer.start()
+            self.trainingAPP.showCruz(False)
+            claseActual = self.trialsSesion[self.__trialNumber]
+            classNameActual = self.clasesNames[self.classes.index(claseActual)]
+            self.trainingAPP.actualizar_orden(f"{classNameActual}", fontsize = 46,
+                                              background = "rgb(38,38,38)", font_color = "white")
             self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
+            self.classifyEEGTimer.start()
             self.feedbackThreadTimer.setInterval(int(self.cueDuration * 1000))
 
         elif self.__trialPhase == 2:
+            self.classifyEEGTimer.stop() #detenemos el timer de clasificación
             logging.info("Iniciamos fase de finalización del trial")
-            #Al finalizar la fase de CUE, guardamos los datos de EEG
-            self.classifyEEGTimer.stop()
+            self.trainingAPP.actualizar_orden("Fin de tarea...")
             self.__trialPhase = -1 #volvemos a la fase inicial del trial
             self.feedbackThreadTimer.setInterval(int(self.finishDuration * 1000))
+
         else:
             #Al finalizar el trial, guardamos los datos de EEG
             logging.info("Guardando datos de EEG")
-            
             newData = self.eeglogger.getData(self.__startingTime + self.cueDuration + self.finishDuration)[self.channels]
             self.eeglogger.saveData(newData, fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
             self.saveEvents() #guardamos los eventos de la sesión
@@ -438,12 +440,21 @@ class Core(QMainWindow):
         trialToPredict = newData[:, -int(self.cueDuration*self.sample_rate):]
         trialToPredict = trialToPredict.reshape(1,len(self.channels),int(self.cueDuration*self.sample_rate))
         self.pipeData = self.pipeline.predict(trialToPredict) #aplicamos data al pipeline
+        self.probas = self.pipeline.predict_proba(trialToPredict) #obtenemos las probabilidades de cada clase
         logging.info("Dato clasificado", self.pipeData)
         
-
-    def updateTrainingAPP(self):
-        """Actualizamos lo que se muestra en la APP de entrenamiento."""
-        pass
+    def start(self):
+        print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
+        logging.info(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
+        if self.typeSesion == 0:
+            self.trainingAPP.show() #mostramos la APP de entrenamiento
+            self.trainingAPP.actualizar_orden("Iniciando sesión de entrenamiento") #actualizamos app
+        
+        if self.typeSesion == 1:
+            # self.feedbackAPP.show()
+            self.trainingAPP.show() #mostramos la APP de entrenamiento
+            self.trainingAPP.actualizar_orden("Iniciando sesión de feedback") #actualizamos app
+        self.iniSesionTimer.start()
 
     def startSesion(self):
         """Método para iniciar timers del Core"""
@@ -495,15 +506,15 @@ if __name__ == "__main__":
         "classes": [1, 2, 3, 4, 5], #Clases a clasificar
         "clasesNames": ["mover Mano Izquierda", "mover Mano Derecha", "mover Ambas Manos", "mover Ambos Pies", "Rest"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
         "ntrials": 1, #Número de trials por clase
-        "startingTimes": [1, 1.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
+        "startingTimes": [2, 2.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
         "cueDuration": 4, #En segundos
-        "finishDuration": 2, #En segundos
+        "finishDuration": 3, #En segundos
         "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
         "subjectName": "subject_test", #nombre del sujeto
         "sesionNumber": 1, #número de sesión
         "boardParams": { 
             "boardName": "synthetic", #Board de registro
-            "channels": [13,14,15],#[0, 1, 2, 3, 4, 5, 6, 7], #Canales de registro
+            "channels": [13,14,15], #[0, 1, 2, 3, 4, 5, 6, 7], #Canales de registro
             "serialPort": "COM5" #puerto serial
         },
         "filterParameters": {
@@ -511,10 +522,11 @@ if __name__ == "__main__":
             "highcut": 28., #Frecuencia de corte alta
             "notch_freq": 50., #Frecuencia corte del notch
             "notch_width": 1, #Ancho de del notch
-            "sample_rate": 250, #Frecuencia de muestreo
+            "sample_rate": 250., #Frecuencia de muestreo
             "axisToCompute": 2,
         },
         "featureExtractorMethod": "welch",
+        "rootFolder": "data",
         "cspFile": "data/dummyTest/csps/dummycsp.pickle",
         "classifierFile": "data/dummyTest/classifiers/dummyclassifier.pickle",
         "customPipeline": False,
@@ -523,7 +535,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    core = Core(parameters, TrainingAPP())    
+    core = Core(parameters, TrainingAPP())
     core.start()
 
     sys.exit(app.exec_())
