@@ -7,15 +7,13 @@ import sys
 import json
 import os
 
-class MainWindow(QDialog):
+class ConfigAPP(QDialog):
 
-    def __init__(self, gui_entrenamiento, gui_supervision, fileName):
+    def __init__(self, fileName):
         super().__init__()
         ui_path = os.path.join(os.path.dirname(__file__), "config_registro.ui")
         uic.loadUi(ui_path, self)
-
-        self.gui_entrenamiento = gui_entrenamiento #una vez se cierre esta interfaz abrira esta gui
-        self.gui_supervision = gui_supervision #una vez se cierre esta interfaz abrira esta gui
+        self.is_open = True
         self.fileName = fileName
         self.btn_iniciar.clicked.connect(self.Inicio) #Guarda en .json e inicia la interfaz de entrenamiento
         self.btn_regresar.clicked.connect(self.Cerrar) #Cierra la interfaz
@@ -94,17 +92,15 @@ class MainWindow(QDialog):
 
         self.Guardar()
 
-        self.close()
+        self.hide()
 
-        self.gui_entrenamiento.show()
-
-        self.gui_supervision.show()
+        self.is_open = False
 
     def Cerrar(self):
         self.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    _ventana = MainWindow()
+    _ventana = ConfigAPP()
     _ventana.show()
     app.exec_()

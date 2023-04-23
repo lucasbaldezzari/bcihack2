@@ -7,13 +7,14 @@ import sys
 import os
 import numpy as np
 
-class supervision(QDialog):
-
-    def __init__(self, tiempo_trial):
+class SupervitionAPP(QDialog):
+    """
+    Interfaz gráfica para supervisar las sesiones
+    """
+    def __init__(self):
         super().__init__()
         ui_path = os.path.join(os.path.dirname(__file__), 'supervision.ui')
         uic.loadUi(ui_path, self)
-        self.tiempo_trial = tiempo_trial #tiempo de cada trial. Si este varia se puede mover al metodo
         pg.setConfigOptions(antialias=True)
         self.traces = dict()
         self.x = np.array([0])
@@ -26,7 +27,7 @@ class supervision(QDialog):
         """
         self.label_orden.setText(texto)
 
-    def actualizar_barra(self, tiempo_actual, etapa):
+    def actualizar_barra(self, tiempo_total, tiempo_actual, etapa):
         """
         Actualiza la barra de progreso del trial
             tiempo_actual (float): tiempo actual del trial en segundos. No debe ser mayor al tiempo de trial total
@@ -36,7 +37,7 @@ class supervision(QDialog):
                 2: descanso;
         """
         try:
-            self.progressBar.setValue(int(tiempo_actual*100/self.tiempo_trial))
+            self.progressBar.setValue(int(tiempo_actual*100/tiempo_total))
 
             if etapa == 0:
                 self.progressBar.setStyleSheet("QProgressBar::chunk {background-color: green;}")
@@ -68,9 +69,18 @@ class supervision(QDialog):
             self.traces[name].setData(self.x, self.y)
         else:
             self.traces[name] = self.graphicsView.plot(pen='w')
+    
+    def actualizar_info(self, sesion:int, trial:float, etapa:int, canales:str):
+        """
+        Para actualizar los campos de información en la interfaz de superivisión
+        """
+        self.label_sesion.setText(f'Tipo de Sesión: {sesion}')
+        self.label_trial.setText(f'Tiempo del Trial: {trial} s')
+        self.label_etapa.setText(f'Estapa Actual: {etapa}')
+        self.label_etapa.setText(f'Canales Seleccionados: {canales}')
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    _ventana = supervision()
+    _ventana = SupervitionAPP()
     _ventana.show()
     app.exec_()

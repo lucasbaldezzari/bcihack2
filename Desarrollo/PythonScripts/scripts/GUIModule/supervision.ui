@@ -24,7 +24,7 @@
    <property name="geometry">
     <rect>
      <x>160</x>
-     <y>370</y>
+     <y>400</y>
      <width>150</width>
      <height>173</height>
     </rect>
@@ -42,7 +42,7 @@
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap>5845e608fb0b0755fa99d7e7 (2).png</pixmap>
+    <pixmap>doggy.png</pixmap>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
@@ -51,8 +51,8 @@
   <widget class="QLabel" name="label_orden_6">
    <property name="geometry">
     <rect>
-     <x>0</x>
-     <y>0</y>
+     <x>100</x>
+     <y>10</y>
      <width>289</width>
      <height>25</height>
     </rect>
@@ -162,7 +162,7 @@ color: rgb(0, 0, 0);</string>
      <x>10</x>
      <y>50</y>
      <width>471</width>
-     <height>161</height>
+     <height>281</height>
     </rect>
    </property>
    <property name="font">
@@ -224,33 +224,66 @@ border-color: rgb(0, 0, 0);
      </property>
     </widget>
    </widget>
-  </widget>
-  <widget class="QLabel" name="label_accion">
-   <property name="geometry">
-    <rect>
-     <x>81</x>
-     <y>325</y>
-     <width>16</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <family>Verdana</family>
-     <pointsize>16</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">color: rgb(255, 255, 255);</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
-   </property>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>160</y>
+      <width>431</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label_sesion">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Tipo de Sesión:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_trial">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Tiempo del Trial:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_etapa">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Etapa Actual:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_canal">
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Canales Seleccionados:</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
  </widget>
  <customwidgets>
