@@ -20,6 +20,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from GUIModule.TrainingAPP import TrainingAPP
+from GUIModule.ConfigAPP import ConfigAPP
 
 from sklearn.pipeline import Pipeline
 
@@ -34,7 +35,7 @@ class Core(QMainWindow):
     se puede hacer otro para el control de la comunicación con el dispositivo.)
     NOTA 2: Se debe pensar en un hilo para el control de la GUI.
     """
-    def __init__(self, configParameters, trainingAPP):
+    def __init__(self, configParameters, configAPP, trainingAPP):
         """Constructor de la clase
         - Parameters (dict): Diccionario con los parámetros a ser cargados. Los parámetros son:
             -typeSesion (int): Tipo de sesión. 0: Entrenamiento, 1: Feedback o calibración, 2: Online.
@@ -72,6 +73,7 @@ class Core(QMainWindow):
 
         super().__init__() #Inicializamos la clase padre
 
+        self.configAPP = configAPP
         self.trainingAPP = trainingAPP
 
         #Parámetros generales para la sesións
@@ -149,6 +151,14 @@ class Core(QMainWindow):
         self.classifyEEGTimer = QTimer()
         self.classifyEEGTimer.setInterval(int(self.lenToClassify*1000)) #Tiempo en milisegundos
         self.classifyEEGTimer.timeout.connect(self.classifyEEG)
+
+        #timer para controlar la app de configuración
+        self.configAppTimer = QTimer()
+        self.configAppTimer.setInterval(1) #1 ms
+        self.configAppTimer.timeout.connect(self.checkConfigApp)
+
+        self.showConfigAPP()
+        self.configAppTimer.start()
 
     def updateParameters(self,newParameters):
         """Actualizamos cada valor dentro del diccionario
@@ -434,6 +444,17 @@ class Core(QMainWindow):
             self.__trialNumber += 1 #incrementamos el número de trial
             self.eegThreadTimer.setInterval(1)
 
+    def showConfigAPP(self):
+        """Función para configurar la sesión de entrenamiento usando self.confiAPP.
+        """
+        self.configAPP.show()
+
+    def checkConfigApp(self):
+        if not self.configAPP.is_open:
+            print("APP CERRADA")
+            self.configAppTimer.stop()
+            self.start()
+
     def classifyEEG(self):
         """Función para clasificar EEG"""
         newData = self.eeglogger.getData(self.cueDuration, removeDataFromBuffer = False)[self.channels]
@@ -535,8 +556,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    core = Core(parameters, TrainingAPP())
-    core.start()
+    core = Core(parameters, ConfigAPP("config.json"), TrainingAPP())
 
     sys.exit(app.exec_())
 

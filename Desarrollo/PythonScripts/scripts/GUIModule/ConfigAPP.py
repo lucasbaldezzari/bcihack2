@@ -18,11 +18,11 @@ class ConfigAPP(QDialog):
         self.btn_iniciar.clicked.connect(self.Inicio) #Guarda en .json e inicia la interfaz de entrenamiento
         self.btn_regresar.clicked.connect(self.Cerrar) #Cierra la interfaz
         self.btn_guardar.clicked.connect(self.Guardar) #Solo reescribe el .json
-        self.Cargar() #establece los valores al inicio en base al archivo .json
+        self.configParameters = self.Cargar() #establece los valores al inicio en base al archivo .json
 
     def Cargar(self):
         with open(self.fileName, 'r') as fp:
-            configParameters = eval(fp.read())
+            configParameters = json.load(fp)
             self.desplegable_sesion.setCurrentIndex(configParameters["typeSesion"])
             self.desplegable_paradigma.setCurrentIndex(configParameters["cueType"])
             self.line_trials.setText(f'{configParameters["ntrials"]}')
@@ -51,6 +51,8 @@ class ConfigAPP(QDialog):
 
             self.line_csp.setText(f'{configParameters["cspFile"]}')
             self.line_clasificador.setText(f'{configParameters["classifierFile"]}')
+
+        return configParameters
 
     def Guardar(self):
         with open(self.fileName, 'w') as fp:
@@ -86,7 +88,12 @@ class ConfigAPP(QDialog):
             configParameters["cspFile"] = self.line_csp.text()
             configParameters["classifierFile"] = self.line_clasificador.text()
 
-            json.dump(configParameters, fp)
+            json.dump(configParameters, fp, indent = 4)
+
+        self.configParameters = configParameters #actualizamos los parámetros de la sesión
+
+    def getParameters(self):
+        return self.configParameters
 
     def Inicio(self):
 
@@ -101,6 +108,6 @@ class ConfigAPP(QDialog):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    _ventana = ConfigAPP()
+    _ventana = ConfigAPP("config.json")
     _ventana.show()
     app.exec_()
