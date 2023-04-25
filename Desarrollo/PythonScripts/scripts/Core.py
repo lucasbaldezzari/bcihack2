@@ -424,8 +424,10 @@ class Core(QMainWindow):
             self.trainingAPP.actualizar_orden(f"{classNameActual}", fontsize = 46,
                                               background = "rgb(38,38,38)", font_color = "white")
             self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
+            self._dataToClasify = self.eeglogger.getData(self.cueDuration)[self.channels]
             self.classifyEEGTimer.start()
-            self.feedbackThreadTimer.setInterval(int(self.cueDuration * 1000))
+            # self.feedbackThreadTimer.setInterval(int(self.cueDuration * 1000))
+            self.feedbackThreadTimer.setInterval(int((self.cueDuration + self.lenToClassify*0.05) * 1000))
 
         elif self.__trialPhase == 2:
             self.classifyEEGTimer.stop() #detenemos el timer de clasificación
@@ -456,13 +458,27 @@ class Core(QMainWindow):
             self.start()
 
     def classifyEEG(self):
-        """Función para clasificar EEG"""
-        newData = self.eeglogger.getData(self.cueDuration, removeDataFromBuffer = False)[self.channels]
-        trialToPredict = newData[:, -int(self.cueDuration*self.sample_rate):]
-        trialToPredict = trialToPredict.reshape(1,len(self.channels),int(self.cueDuration*self.sample_rate))
-        self.pipeData = self.pipeline.predict(trialToPredict) #aplicamos data al pipeline
+        """Función para clasificar EEG
+        La función se llama cada vez que se activa el timer self.classifyEEGTimer. La duración
+        del timer esta dada por self.classifyEEGTimer.setInterval(self.lenToClassify*1000).
+
+        Se obtiene un nuevo trozo de EEG de longitud self.lenToClassify segundos, se añade al
+        buffer de datos a clasificar y se clasifica. El resultado de la clasificación se almacena
+        en self.prediction.
+
+        Por cada entrada a la función, se elimina el primer trozo de datos del buffer de datos a
+        clasificar y se añade el nuevo trozo de datos. La idea es actualizar los datos mientras la persona ejecuta
+        la tarea.
+        """
+        newData = self.eeglogger.getData(self.lenToClassify, removeDataFromBuffer = False)[self.channels]
+        samplesToRemove = int(self.lenToClassify*self.sample_rate)
+        self._dataToClasify = np.concatenate((self._dataToClasify[:,samplesToRemove:], newData), axis = 1)
+        channels, samples = self._dataToClasify.shape
+        #camibamos la forma de los datos para que sea compatible con el modelo
+        trialToPredict = self._dataToClasify.reshape(1,channels,samples)
+        self.prediction = self.pipeline.predict(trialToPredict) #aplicamos data al pipeline
         self.probas = self.pipeline.predict_proba(trialToPredict) #obtenemos las probabilidades de cada clase
-        logging.info("Dato clasificado", self.pipeData)
+        logging.info("Dato clasificado", self.prediction)
         
     def start(self):
         print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
@@ -522,7 +538,7 @@ if __name__ == "__main__":
 
     #Creamos un diccionario con los parámetros de configuración iniciales
     parameters = {
-        "typeSesion": 0, #0: Entrenamiento, 1: Feedback, 2: Online
+        "typeSesion": 1, #0: Entrenamiento, 1: Feedback, 2: Online
         "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
         "classes": [1, 2, 3, 4, 5], #Clases a clasificar
         "clasesNames": ["mover Mano Izquierda", "mover Mano Derecha", "mover Ambas Manos", "mover Ambos Pies", "Rest"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
@@ -530,7 +546,7 @@ if __name__ == "__main__":
         "startingTimes": [2, 2.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
         "cueDuration": 4, #En segundos
         "finishDuration": 3, #En segundos
-        "lenToClassify": 0.3, #Trozo de señal a clasificar, en segundos
+        "lenToClassify": 1.0, #Trozo de señal a clasificar, en segundos
         "subjectName": "subject_test", #nombre del sujeto
         "sesionNumber": 1, #número de sesión
         "boardParams": { 
