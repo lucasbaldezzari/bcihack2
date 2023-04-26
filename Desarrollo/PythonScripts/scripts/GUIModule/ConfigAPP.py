@@ -52,6 +52,13 @@ class ConfigAPP(QDialog):
             self.line_csp.setText(f'{configParameters["cspFile"]}')
             self.line_clasificador.setText(f'{configParameters["classifierFile"]}')
 
+            if configParameters["customPipeline"] == True:
+                self.desplegable_pipeline.setCurrentText('Si')
+            else:
+                self.desplegable_pipeline.setCurrentText('No')
+
+            self.line_pipeline.setText(f'{configParameters["pipelineFile"]}')
+
         return configParameters
 
     def Guardar(self):
@@ -87,6 +94,13 @@ class ConfigAPP(QDialog):
 
             configParameters["cspFile"] = self.line_csp.text()
             configParameters["classifierFile"] = self.line_clasificador.text()
+
+            if self.desplegable_extractor.currentText() == 'Si':
+                configParameters["customPipeline"] = True
+            else:
+                configParameters["customPipeline"] = False
+
+            configParameters["pipelineFile"] = self.line_pipeline.text()
 
             json.dump(configParameters, fp, indent = 4)
 

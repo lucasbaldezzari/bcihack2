@@ -39,5 +39,7 @@
     },
     "featureExtractorMethod": "welch",
     "cspFile": "data/dummyTest/csps/dummycsp.pickle",
-    "classifierFile": "data/dummyTest/classifiers/dummyclassifier.pickle"
+    "classifierFile": "data/dummyTest/classifiers/dummyclassifier.pickle",
+    "customPipeline": false,
+    "pipelineFile": "data/dummyTest/pipelines/best_estimator_svm.pkl"
 }
