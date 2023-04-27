@@ -17,16 +17,21 @@
         "Rest"
     ],
     "startingTimes": [
-        2,
-        2.5
+        1,
+        1
     ],
-    "cueDuration": 4.0,
-    "finishDuration": 3.0,
-    "lenToClassify": 0.3,
+    "cueDuration": 1.0,
+    "finishDuration": 1.0,
+    "lenToClassify": 0.5,
     "subjectName": "subject_test",
     "sesionNumber": 1,
     "boardParams": {
         "boardName": "synthetic",
+        "channels": [
+            13,
+            14,
+            15
+        ],
         "serialPort": "COM5"
     },
     "filterParameters": {

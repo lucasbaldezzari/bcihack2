@@ -195,6 +195,10 @@ class Core(QMainWindow):
         self.__customPipeline = newParameters["customPipeline"]
         self.pipelineFile = newParameters["pipelineFile"]
 
+        self.__startingTime = self.startingTimes[1]
+
+        self.classifyEEGTimer.setInterval(int(self.lenToClassify*1000)) #Tiempo en milisegundos
+
         #actualizamos el diccionario
         self.configParameters = newParameters
 
@@ -454,6 +458,8 @@ class Core(QMainWindow):
     def checkConfigApp(self):
         if not self.configAPP.is_open:
             print("APP CERRADA")
+            newParameters = self.configAPP.getParameters()
+            self.updateParameters(newParameters)
             self.configAppTimer.stop()
             self.start()
 
