@@ -1,6 +1,6 @@
 {
-    "typeSesion": 0,
-    "cueType": 0,
+    "typeSesion": 1,
+    "cueType": 1,
     "ntrials": 1,
     "classes": [
         1,
@@ -20,11 +20,11 @@
         1,
         1
     ],
-    "cueDuration": 1.0,
+    "cueDuration": 4.0,
     "finishDuration": 1.0,
     "lenToClassify": 0.5,
     "subjectName": "subject_test",
-    "sesionNumber": 1,
+    "sesionNumber": 2,
     "boardParams": {
         "boardName": "synthetic",
         "channels": [

@@ -6,7 +6,7 @@ import sys
 import os
 import winsound
 
-class TrainingAPP(QDialog):
+class IndicatorAPP(QDialog):
     """
     Interfaz gráfica que tiene como fin únicamente mostrar la orden para la adquisición de datos 
     de entrenamiento para el clasificador
@@ -74,8 +74,10 @@ class TrainingAPP(QDialog):
             self.cruz.setVisible(False)
             self.Centrar(self.label_orden)
 
+    
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    _ventana = TrainingAPP()
+    _ventana = IndicatorAPP()
     _ventana.showMaximized()
     app.exec_()

@@ -1,5 +1,5 @@
 from GUIModule.ConfigAPP import ConfigAPP
-from GUIModule.TrainingAPP import TrainingAPP
+from GUIModule.IndicatorAPP import IndicatorAPP
 from GUIModule.SupervitionAPP import SupervitionAPP
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -10,7 +10,7 @@ directorio =  'config.json' #establesca la ruta donde se encuentre su archivo co
 
 app = QApplication(sys.argv)
 
-gui_entrenamiento = TrainingAPP()
+gui_entrenamiento = IndicatorAPP()
 
 gui_supervision = SupervitionAPP()
 

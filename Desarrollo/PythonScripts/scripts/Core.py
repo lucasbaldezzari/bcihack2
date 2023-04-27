@@ -19,7 +19,7 @@ from PyQt5.QtCore import QTimer#, QThread, pyqtSignal, pyqtSlot, QObject, QRunna
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from GUIModule.TrainingAPP import TrainingAPP
+from GUIModule.IndicatorAPP import IndicatorAPP
 from GUIModule.ConfigAPP import ConfigAPP
 
 from sklearn.pipeline import Pipeline
@@ -35,7 +35,7 @@ class Core(QMainWindow):
     se puede hacer otro para el control de la comunicación con el dispositivo.)
     NOTA 2: Se debe pensar en un hilo para el control de la GUI.
     """
-    def __init__(self, configParameters, configAPP, trainingAPP):
+    def __init__(self, configParameters, configAPP, indicatorAPP):
         """Constructor de la clase
         - Parameters (dict): Diccionario con los parámetros a ser cargados. Los parámetros son:
             -typeSesion (int): Tipo de sesión. 0: Entrenamiento, 1: Feedback o calibración, 2: Online.
@@ -74,7 +74,7 @@ class Core(QMainWindow):
         super().__init__() #Inicializamos la clase padre
 
         self.configAPP = configAPP
-        self.trainingAPP = trainingAPP
+        self.trainingAPP = indicatorAPP
 
         #Parámetros generales para la sesións
         self.configParameters = configParameters
@@ -250,7 +250,7 @@ class Core(QMainWindow):
         #con el mismo nombre que self.eegFileName pero con extensión .txt
         self.eventsFileName = self.eegStoredFolder + self.eegFileName[:-4] + "_events" + ".txt"
         eventsFile = open(self.eventsFileName, "w")
-        eventsFile.write("trialNumber,classNumber,className,startingTime,cueDuration,finishDuration,trialTime,trialTime(legible)\n")
+        eventsFile.write("trialNumber,classNumber,className,prediction,probabilities,startingTime,cueDuration,finishDuration,trialTime,trialTime(legible)\n")
         eventsFile.close()
         
         #Si la carpeta classifiers no existe, se crea
@@ -281,8 +281,15 @@ class Core(QMainWindow):
         #formateamos el timestamp actual a formato legible del tipo DD/MM/YYYY HH:MM:SS
         trialTimeLegible = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(trialTime))
 
-        eventos = f"{self.__trialNumber+1},{claseActual},{classNameActual},{self.__startingTime},{self.cueDuration},{self.finishDuration},{trialTime},{trialTimeLegible}\n"
+        if self.typeSesion == 0:
+            eventos = f"{self.__trialNumber+1},{claseActual},{classNameActual},{-1},{-1},{self.__startingTime},{self.cueDuration},{self.finishDuration},{trialTime},{trialTimeLegible}\n"
         
+        elif self.typeSesion == 1:
+            eventos = f"{self.__trialNumber+1},{claseActual},{classNameActual},{self.prediction[-1]},{self.probas[-1]},{self.__startingTime},{self.cueDuration},{self.finishDuration},{trialTime},{trialTimeLegible}\n"
+
+        elif self.typeSesion == 2:
+            pass
+
         eventsFile.write(eventos)
         eventsFile.close()
 
@@ -457,11 +464,11 @@ class Core(QMainWindow):
 
     def checkConfigApp(self):
         if not self.configAPP.is_open:
-            print("APP CERRADA")
+            print("CONFIG APP CERRADA")
             newParameters = self.configAPP.getParameters()
             self.updateParameters(newParameters)
             self.configAppTimer.stop()
-            self.start()
+            self.start() #iniciamos la sesión
 
     def classifyEEG(self):
         """Función para clasificar EEG
@@ -487,6 +494,7 @@ class Core(QMainWindow):
         logging.info("Dato clasificado", self.prediction)
         
     def start(self):
+        """Método para iniciar la sesión"""
         print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         logging.info(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         if self.typeSesion == 0:
@@ -578,7 +586,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    core = Core(parameters, ConfigAPP("config.json"), TrainingAPP())
+    core = Core(parameters, ConfigAPP("config.json"), IndicatorAPP())
 
     sys.exit(app.exec_())
 
