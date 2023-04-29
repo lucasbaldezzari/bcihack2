@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from GUIModule.IndicatorAPP import IndicatorAPP
 from GUIModule.ConfigAPP import ConfigAPP
+from GUIModule.SupervisionAPP import SupervisionAPP
 
 from sklearn.pipeline import Pipeline
 
@@ -35,7 +36,7 @@ class Core(QMainWindow):
     se puede hacer otro para el control de la comunicación con el dispositivo.)
     NOTA 2: Se debe pensar en un hilo para el control de la GUI.
     """
-    def __init__(self, configParameters, configAPP, indicatorAPP):
+    def __init__(self, configParameters, configAPP, indicatorAPP, supervisionAPP):
         """Constructor de la clase
         - Parameters (dict): Diccionario con los parámetros a ser cargados. Los parámetros son:
             -typeSesion (int): Tipo de sesión. 0: Entrenamiento, 1: Feedback o calibración, 2: Online.
@@ -67,14 +68,16 @@ class Core(QMainWindow):
             de entrenamiento y será usado durante las sesiones de feedback y online.
         Un trial es la suma de startingTimes + cueDuration + finishDuration
 
-        - TrainingAPP (QWidget): Objeto de la clase Entrenamiento. Se usa para enviar señales a la GUI.
+        - indicatorAPP (QWidget): Objeto de la clase Entrenamiento. Se usa para enviar señales a la GUI.
+        - supervisionAPP (QWidget): Objeto de la clase Supervision. Se usa para supervisar eventos, señal de EEG entre otros.
         
         NOTA: Definir qué parámetros se necesitan inicar dentro del constructor."""
 
         super().__init__() #Inicializamos la clase padre
 
         self.configAPP = configAPP
-        self.trainingAPP = indicatorAPP
+        self.indicatorAPP = indicatorAPP
+        self.supervisionAPP = supervisionAPP
 
         #Parámetros generales para la sesións
         self.configParameters = configParameters
@@ -157,8 +160,12 @@ class Core(QMainWindow):
         self.configAppTimer.setInterval(1) #1 ms
         self.configAppTimer.timeout.connect(self.checkConfigApp)
 
-        self.showConfigAPP()
-        self.configAppTimer.start()
+        #timer para actualizar la supervisionAPP
+        self.supervisionAPPTimer = QTimer()
+        self.supervisionAPPTimer.setInterval(10) #10 ms
+        self.supervisionAPPTimer.timeout.connect(self.updateSupervisionAPP)
+
+        self.showGUIAPPs()
 
     def updateParameters(self,newParameters):
         """Actualizamos cada valor dentro del diccionario
@@ -340,7 +347,6 @@ class Core(QMainWindow):
         else:
             self.pipeline = Pipeline([(step, pipelineBlocks[step]) for step in pipelineBlocks.keys()])
 
-
     def makeAndMixTrials(self):
         """Clase para generar los trials de la sesión. La cantidad total de trials
         está dada por [ntrials * len(self.classes)].
@@ -375,8 +381,8 @@ class Core(QMainWindow):
         if self.__trialPhase == 0:
             print(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
             logging.info(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
-            self.trainingAPP.showCruz(True) #mostramos la cruz
-            self.trainingAPP.actualizar_orden("Fijar la mirada en la cruz...")
+            self.indicatorAPP.showCruz(True) #mostramos la cruz
+            self.indicatorAPP.actualizar_orden("Fijar la mirada en la cruz...")
             #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
             startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
             self.__startingTime = startingTime
@@ -385,25 +391,25 @@ class Core(QMainWindow):
             self.eegThreadTimer.setInterval(startingTime) #esperamos el tiempo aleatorio
 
         elif self.__trialPhase == 1:
-            self.trainingAPP.showCruz(False) #desactivamos la cruz
+            self.indicatorAPP.showCruz(False) #desactivamos la cruz
             logging.info("Iniciamos fase cue del trial")
             claseActual = self.trialsSesion[self.__trialNumber]
             classNameActual = self.clasesNames[self.classes.index(claseActual)]
-            self.trainingAPP.actualizar_orden(f"{classNameActual}", fontsize = 46,
+            self.indicatorAPP.actualizar_orden(f"{classNameActual}", fontsize = 46,
                                               background = "rgb(38,38,38)", font_color = "white")
             self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
             self.eegThreadTimer.setInterval(int(self.cueDuration * 1000))
 
         elif self.__trialPhase == 2:
             logging.info("Iniciamos fase de finalización del trial")
-            self.trainingAPP.actualizar_orden("Fin de tarea...")
+            self.indicatorAPP.actualizar_orden("Fin de tarea...")
             self.__trialPhase = -1 #Fase para guardar datos de EEG
             self.eegThreadTimer.setInterval(int(self.finishDuration * 1000))
 
         else:
             #Al finalizar el trial, guardamos los datos de EEG
             logging.info("Guardando datos de EEG")
-            newData = self.eeglogger.getData(self.__startingTime + self.cueDuration + self.finishDuration)[self.channels]
+            newData = self.eeglogger.getData(self.__startingTime + self.cueDuration + self.finishDuration, removeDataFromBuffer=False)[self.channels]
             self.eeglogger.saveData(newData, fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
             self.saveEvents() #guardamos los eventos de la sesión
             self.__trialPhase = 0 #volvemos a la fase inicial del trial
@@ -418,8 +424,8 @@ class Core(QMainWindow):
         if self.__trialPhase == 0:
             print(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
             logging.info(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
-            self.trainingAPP.showCruz(True) #mostramos la cruz
-            self.trainingAPP.actualizar_orden("Fijar la mirada en la cruz...")
+            self.indicatorAPP.showCruz(True) #mostramos la cruz
+            self.indicatorAPP.actualizar_orden("Fijar la mirada en la cruz...")
             #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
             startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
             self.__startingTime = startingTime
@@ -429,13 +435,13 @@ class Core(QMainWindow):
 
         elif self.__trialPhase == 1:
             logging.info("Iniciamos fase cue del trial")
-            self.trainingAPP.showCruz(False)
+            self.indicatorAPP.showCruz(False)
             claseActual = self.trialsSesion[self.__trialNumber]
             classNameActual = self.clasesNames[self.classes.index(claseActual)]
-            self.trainingAPP.actualizar_orden(f"{classNameActual}", fontsize = 46,
+            self.indicatorAPP.actualizar_orden(f"{classNameActual}", fontsize = 46,
                                               background = "rgb(38,38,38)", font_color = "white")
             self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
-            self._dataToClasify = self.eeglogger.getData(self.cueDuration)[self.channels]
+            self._dataToClasify = self.eeglogger.getData(self.cueDuration, removeDataFromBuffer=False)[self.channels]
             self.classifyEEGTimer.start()
             # self.feedbackThreadTimer.setInterval(int(self.cueDuration * 1000))
             self.feedbackThreadTimer.setInterval(int((self.cueDuration + self.lenToClassify*0.05) * 1000))
@@ -443,32 +449,41 @@ class Core(QMainWindow):
         elif self.__trialPhase == 2:
             self.classifyEEGTimer.stop() #detenemos el timer de clasificación
             logging.info("Iniciamos fase de finalización del trial")
-            self.trainingAPP.actualizar_orden("Fin de tarea...")
+            self.indicatorAPP.actualizar_orden("Fin de tarea...")
             self.__trialPhase = -1 #volvemos a la fase inicial del trial
             self.feedbackThreadTimer.setInterval(int(self.finishDuration * 1000))
 
         else:
             #Al finalizar el trial, guardamos los datos de EEG
             logging.info("Guardando datos de EEG")
-            newData = self.eeglogger.getData(self.__startingTime + self.cueDuration + self.finishDuration)[self.channels]
+            newData = self.eeglogger.getData(self.__startingTime + self.cueDuration + self.finishDuration, removeDataFromBuffer=False)[self.channels]
             self.eeglogger.saveData(newData, fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
             self.saveEvents() #guardamos los eventos de la sesión
             self.__trialPhase = 0 #volvemos a la fase inicial del trial
             self.__trialNumber += 1 #incrementamos el número de trial
             self.eegThreadTimer.setInterval(1)
 
-    def showConfigAPP(self):
+    def showGUIAPPs(self):
         """Función para configurar la sesión de entrenamiento usando self.confiAPP.
         """
-        self.configAPP.show()
+        self.indicatorAPP.show() #mostramos la APP
+        self.supervisionAPP.show() #mostramos la APP
+        self.configAPP.show() #mostramos la APP
+        self.configAppTimer.start()
 
     def checkConfigApp(self):
+        """Función para comprobar si la configuración de la sesión ha finalizado."""
         if not self.configAPP.is_open:
             print("CONFIG APP CERRADA")
             newParameters = self.configAPP.getParameters()
             self.updateParameters(newParameters)
             self.configAppTimer.stop()
             self.start() #iniciamos la sesión
+
+    def updateSupervisionAPP(self):
+        """Función para actualizar la APP de supervisión."""
+        ##TODO: actualizar la APP de supervisión
+        pass
 
     def classifyEEG(self):
         """Función para clasificar EEG
@@ -498,13 +513,12 @@ class Core(QMainWindow):
         print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         logging.info(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         if self.typeSesion == 0:
-            self.trainingAPP.show() #mostramos la APP de entrenamiento
-            self.trainingAPP.actualizar_orden("Iniciando sesión de entrenamiento") #actualizamos app
+            # self.indicatorAPP.show() #mostramos la APP
+            self.indicatorAPP.actualizar_orden("Iniciando sesión de entrenamiento") #actualizamos app
         
         if self.typeSesion == 1:
-            # self.feedbackAPP.show()
-            self.trainingAPP.show() #mostramos la APP de entrenamiento
-            self.trainingAPP.actualizar_orden("Iniciando sesión de feedback") #actualizamos app
+            # self.indicatorAPP.show() #mostramos la APP
+            self.indicatorAPP.actualizar_orden("Iniciando sesión de feedback") #actualizamos app
         self.iniSesionTimer.start()
 
     def startSesion(self):
@@ -541,7 +555,7 @@ class Core(QMainWindow):
         
     def closeApp(self):
         print("Cerrando aplicación...")
-        self.trainingAPP.close()
+        self.indicatorAPP.close()
         self.close()
 
 if __name__ == "__main__":
@@ -586,7 +600,7 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    core = Core(parameters, ConfigAPP("config.json"), IndicatorAPP())
+    core = Core(parameters, ConfigAPP("config.json"), IndicatorAPP(), SupervisionAPP())
 
     sys.exit(app.exec_())
 

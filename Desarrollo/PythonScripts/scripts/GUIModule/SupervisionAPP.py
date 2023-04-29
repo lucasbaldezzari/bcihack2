@@ -7,7 +7,7 @@ import sys
 import os
 import numpy as np
 
-class SupervitionAPP(QDialog):
+class SupervisionAPP(QDialog):
     """
     Interfaz gráfica para supervisar las sesiones
     """
@@ -81,6 +81,6 @@ class SupervitionAPP(QDialog):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    _ventana = SupervitionAPP()
+    _ventana = SupervisionAPP()
     _ventana.show()
     app.exec_()

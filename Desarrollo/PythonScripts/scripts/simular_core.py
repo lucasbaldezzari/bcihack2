@@ -1,6 +1,6 @@
 from GUIModule.ConfigAPP import ConfigAPP
 from GUIModule.IndicatorAPP import IndicatorAPP
-from GUIModule.SupervitionAPP import SupervitionAPP
+from GUIModule.SupervisionAPP import SupervisionAPP
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -12,7 +12,7 @@ app = QApplication(sys.argv)
 
 gui_entrenamiento = IndicatorAPP()
 
-gui_supervision = SupervitionAPP()
+gui_supervision = SupervisionAPP()
 
 gui = ConfigAPP(directorio)
 
