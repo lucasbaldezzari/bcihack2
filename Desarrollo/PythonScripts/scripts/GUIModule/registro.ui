@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>992</width>
+    <width>981</width>
     <height>558</height>
    </rect>
   </property>
@@ -14,7 +14,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>Interfaz Sujeto</string>
+   <string>IndicatorApp</string>
   </property>
   <property name="styleSheet">
    <string notr="true">background-color: rgb(240, 240, 240);</string>
@@ -93,6 +93,25 @@
    </property>
    <property name="pixmap">
     <pixmap>cross.png</pixmap>
+   </property>
+  </widget>
+  <widget class="QProgressBar" name="progressBar">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>430</y>
+     <width>431</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color: rgb(255, 0, 0);</string>
+   </property>
+   <property name="value">
+    <number>24</number>
+   </property>
+   <property name="textVisible">
+    <bool>false</bool>
    </property>
   </widget>
  </widget>
