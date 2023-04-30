@@ -19,20 +19,18 @@ El siguiente repositorio será utilizado para almacenar bibliografía, set de da
 
 **NOTA**: Queda pendiente mejorar el resumen del proyecto.
 
+## Director proyecto
+
+[MSc. Bioing. BALDEZZARI Lucas](https://www.linkedin.com/in/lucasbaldezzari/)
+
 ## Colaboradores
 
-- Tomy Suarez - tomy.suarez@utec.edu.uy 
-- Emiliano Álvarez - emiliano.alvarez@utec.edu.uy 
-- Lucas Lopez - lucas.lopez.d@estudiantes.utec.edu.uy 
-- Maximiliano Galván - maximiliano.galvan@utec.edu.uy 
-- Walter Mar - walter.mar@utec.edu.uy
-
-## Talleres
-
-- [x] Taller 1: Introducción a las Interfaces Cerebro Computadora.
-- [x] Taller 2: Introducción al Machine Learning.
-- [x] Taller 3: Principios de EEG. Adquisición y registro de EEG. Visualización. Pre procesamiento.
-- [ ] Taller 4: Principios de Imaginería Motora. Princpios de los potenciales de Sincronización y Desincronización relacionados a eventos (ERD/ERS). Procesamiento y visualización de ERD/ERS.
+- [Dra. SALUM Graciela - graciela.salum@utec.edu.uy](https://www.linkedin.com/in/graciela-marisa-salum-5262bb47)
+- [Téc. SUAREZ Tomy - tomy.suarez@utec.edu.uy](https://www.linkedin.com/in/tomy-suarez-a06993162)
+- [Téc. ÁLVAREZ Emiliano - emiliano.alvarez@utec.edu.uy](https://www.linkedin.com/in/emilianoalvarezruiz)
+- [Estudiante Mecatrónica LOPEZ Lucas - lucas.lopez.d@estudiantes.utec.edu.uy](https://www.linkedin.com/in/lucas-lopez-14ba46225)
+- [Estudiante Ing. Biomédica. GALVÁN Maximiliano - maximiliano.galvan@utec.edu.uy](https://www.linkedin.com/in/maximiliano-g-b0628825a/)
+- [Téc. MAR Walter - walter.mar@utec.edu.uy](https://www.linkedin.com/in/walter-mar-6b2104195/?originalSubdomain=uy)
 
 ## Discord
 
