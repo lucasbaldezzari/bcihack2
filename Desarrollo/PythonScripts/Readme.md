@@ -21,7 +21,7 @@ Este módulo es el encargado de gestionar los siguientes procesos,
 
 #### Responsable
 
-- [x] Lucas Baldezzari
+- [x] MSc. Bioing. Lucas Baldezzari
 
 ## Bloque de adquisición de señal - EEGLogger Block
 
@@ -31,7 +31,7 @@ Esta gestión se hace con la clase *[EEGLogger.py](https://github.com/lucasbalde
 
 #### Responsable
 
-- [x] Lucas Baldezzari 
+- [x] MSc. Bioing. Lucas Baldezzari 
 
 ## Bloque de procesamiento de señal - Signal Processor Block
 
@@ -77,7 +77,7 @@ El entrenamiento y aplicación de filtrado por CSP está a cargo de [CSPMulticla
 La concatenación de las features en un único feature se hace con la clase [RavelTransformer](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/RavelTransformer.py).
 
 ### Clasificación
-Clasificación con *Classifier.py* $^1$. 
+Clasificación con *Classifier.py*. 
 
 Al momento se implementa una clase para intentar mejorar la extracción de características a través de Common Spatial Pattern. La clase es *[CommonSpatialPatter](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSP.py)*. 
 
@@ -105,11 +105,9 @@ pipeline.fit(eeg_train, labels_train)
 print(pipeline.score(eeg_test, labels_test))
 ```
 
-$^1$_Importante:_ Queda pendiente definir si se usará esta clase o directamente un clasificador de sklearn.
-
 #### Responsable
 
-- [x] Lucas Baldezzari 
+- [x] MSc. Bioing. Lucas Baldezzari 
 
 ## Bloque para transmitir/recibir mensajes- Messenger Block
 
@@ -117,17 +115,20 @@ Bloque para comunicación entre PC y el ejecutor (que será un brazo robótico y
 
 #### Responsable
 
-- [x] Lucas Baldezzari 
+- [x] MSc. Bioing. Lucas Baldezzari 
 
 ## GUI Block
 
-Bloques de interfaces visuales.
-**TODO**
+Existen 3 GUIs o APPs
 
-### Responsables
+- [ConfigAPP](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/GUIModule/ConfigAPP.py): Esta interfaz permite la configuración de diferentes parámetros de la sesión, por ejemplo, número sesión, tipo de sesión (ejecutar o imaginar), placa de adquisición a usar, canales a usar, parámetros de filtrado, pipeline de clasificación, entre varios más.
+- [IndicatorAPP](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/GUIModule/IndicatorAPP.py): Esta clase permite mostrar en pantalla qué tarea o _cue_ debe ejecutar la persona. Además, para las sesiones de calibración/feedback se tiene una _barra_ que muestra la probabilidad, de 0 a 100%, de que la clase clasificada se corresponda con la que se solicitó al sujeto que ejecute/imagine.
+- [SupervisionAPP](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/GUIModule/SupervisionAPP.py): Esta clase es usada por el grupo de técnicos/as e ingenieros/as para supervisar diferentes parámetros de la sesión y la señal de EEG que se registra.
 
-- [x] Emiliano Álvarez
-- [x] Lucas Baldezzari
+#### Responsables
+
+- [x] Tec. Emiliano Álvarez
+- [x] MSc. Bioing. Lucas Baldezzari
 
 ### Dependencias
 
