@@ -77,7 +77,7 @@ El entrenamiento y aplicación de filtrado por CSP está a cargo de [CSPMulticla
 La concatenación de las features en un único feature se hace con la clase [RavelTransformer](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/RavelTransformer.py).
 
 ### Clasificación
-Clasificación con *Classifier.py*. 
+Se entrenan y utilizan clasificadores de la librería Scipy.
 
 Al momento se implementa una clase para intentar mejorar la extracción de características a través de Common Spatial Pattern. La clase es *[CommonSpatialPatter](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSP.py)*. 
 
