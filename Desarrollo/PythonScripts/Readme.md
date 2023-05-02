@@ -1,4 +1,4 @@
-# Scripts Python - Revisión 14/3/2023
+# Scripts Python - Revisión 30/4/2023
 
 En esta sección se encuentra el código fuente de los diferentes scripts en python para implementar la ICC.
 
