@@ -214,10 +214,10 @@ class Core(QMainWindow):
 
         if not fileName:
             with open(self.eegStoredFolder+self.eegFileName+"config.json", 'w') as f:
-                json.dump(self.configParameters, f)
+                json.dump(self.configParameters, f, indent = 4)
         else:
             with open(fileName, 'w') as f:
-                json.dump(self.configParameters, f)
+                json.dump(self.configParameters, f, indent = 4)
 
     def setFolders(self, rootFolder = "data/"):
         """Función para chequear que existan las carpetas donde se guardarán los datos de la sesión.
@@ -556,6 +556,7 @@ class Core(QMainWindow):
     def closeApp(self):
         print("Cerrando aplicación...")
         self.indicatorAPP.close()
+        self.supervisionAPP.close()
         self.close()
 
 if __name__ == "__main__":
