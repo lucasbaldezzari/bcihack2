@@ -24,7 +24,7 @@
     "finishDuration": 1.0,
     "lenToClassify": 0.5,
     "subjectName": "subject_test",
-    "sesionNumber": 2,
+    "sesionNumber": 1,
     "boardParams": {
         "boardName": "synthetic",
         "channels": [

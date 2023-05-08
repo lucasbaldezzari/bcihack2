@@ -467,6 +467,7 @@ class Core(QMainWindow):
         """Función para configurar la sesión de entrenamiento usando self.confiAPP.
         """
         self.indicatorAPP.show() #mostramos la APP
+        self.indicatorAPP.actualizar_orden("Configurando la sesión...")
         self.supervisionAPP.show() #mostramos la APP
         self.configAPP.show() #mostramos la APP
         self.configAppTimer.start()
@@ -513,11 +514,9 @@ class Core(QMainWindow):
         print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         logging.info(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         if self.typeSesion == 0:
-            # self.indicatorAPP.show() #mostramos la APP
             self.indicatorAPP.actualizar_orden("Iniciando sesión de entrenamiento") #actualizamos app
         
         if self.typeSesion == 1:
-            # self.indicatorAPP.show() #mostramos la APP
             self.indicatorAPP.actualizar_orden("Iniciando sesión de feedback") #actualizamos app
         self.iniSesionTimer.start()
 
