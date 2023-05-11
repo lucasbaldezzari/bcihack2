@@ -17,12 +17,12 @@
         "Rest"
     ],
     "startingTimes": [
-        1,
-        1
+        2,
+        3
     ],
     "cueDuration": 4.0,
-    "finishDuration": 1.0,
-    "lenToClassify": 0.5,
+    "finishDuration": 4.0,
+    "lenToClassify": 0.1,
     "subjectName": "subject_test",
     "sesionNumber": 1,
     "boardParams": {
@@ -36,7 +36,7 @@
     },
     "filterParameters": {
         "lowcut": 8.0,
-        "highcut": 28.0,
+        "highcut": 12.0,
         "notch_freq": 50.0,
         "notch_width": 1.0,
         "sample_rate": 250.0,

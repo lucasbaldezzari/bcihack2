@@ -31,6 +31,11 @@ class IndicatorAPP(QDialog):
         self.background_color = self.label_orden.palette().color(QPalette.Background).name()
         self.font_color = "rgb(25,50,200)" #self.label_orden.palette().color(QPalette.Base)
 
+        from matplotlib.pyplot import cm
+        #obtengo la paleta de colores summer_r
+        self.colormap_barra = cm.get_cmap('summer_r')
+        del cm
+
     def actualizar_orden(self, texto, fontsize = 36, background = None, border = "1px", font_color = "black"):
         """
         Actualiza la etiqueta que da la orden
@@ -51,9 +56,8 @@ class IndicatorAPP(QDialog):
         porcentaje = int(probabilidad*100)
 
         self.progressBar.setValue(porcentaje)
-
-        # color_barra = f"rgb(255, {int(255-2.5*porcentaje)}, {int(255-2.5*porcentaje)})"
-        color_barra = f"background-color: rgb(255, {int(255-2.5*porcentaje)}, {int(255-2.5*porcentaje)});"
+        colormap = self.colormap_barra(probabilidad)
+        color_barra = f"background-color: rgb({colormap[0]*250}, {colormap[1]*250}, {colormap[2]*250});"
 
         self.progressBar.setStyleSheet("QProgressBar::chunk {" + color_barra + "}")
 
@@ -101,7 +105,6 @@ class IndicatorAPP(QDialog):
         else:
             self.progressBar.setVisible(False)
     
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     _ventana = IndicatorAPP()

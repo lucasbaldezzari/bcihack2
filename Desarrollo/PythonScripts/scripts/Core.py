@@ -440,14 +440,17 @@ class Core(QMainWindow):
             classNameActual = self.clasesNames[self.classes.index(claseActual)]
             self.indicatorAPP.actualizar_orden(f"{classNameActual}", fontsize = 46,
                                               background = "rgb(38,38,38)", font_color = "white")
+            self.indicatorAPP.showBar(True)
+            self.indicatorAPP.actualizar_barra(0) #iniciamos la barra en 0%
             self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
             self._dataToClasify = self.eeglogger.getData(self.cueDuration, removeDataFromBuffer=False)[self.channels]
             self.classifyEEGTimer.start()
-            # self.feedbackThreadTimer.setInterval(int(self.cueDuration * 1000))
+            
             self.feedbackThreadTimer.setInterval(int((self.cueDuration + self.lenToClassify*0.05) * 1000))
 
         elif self.__trialPhase == 2:
             self.classifyEEGTimer.stop() #detenemos el timer de clasificación
+            self.indicatorAPP.showBar(False)
             logging.info("Iniciamos fase de finalización del trial")
             self.indicatorAPP.actualizar_orden("Fin de tarea...")
             self.__trialPhase = -1 #volvemos a la fase inicial del trial
@@ -507,6 +510,11 @@ class Core(QMainWindow):
         trialToPredict = self._dataToClasify.reshape(1,channels,samples)
         self.prediction = self.pipeline.predict(trialToPredict) #aplicamos data al pipeline
         self.probas = self.pipeline.predict_proba(trialToPredict) #obtenemos las probabilidades de cada clase
+        #nos quedamos con la probabilida de la clase actual
+        probaClaseActual = self.probas[0][self.classes.index(self.trialsSesion[self.__trialNumber])]
+        #creo un número aleatorio para simular la probabilidad de la clase actual
+        probaClaseActual = np.random.rand()
+        self.indicatorAPP.actualizar_barra(probaClaseActual) #actualizamos la barra de probabilidad
         logging.info("Dato clasificado", self.prediction)
         
     def start(self):
@@ -603,9 +611,3 @@ if __name__ == "__main__":
     core = Core(parameters, ConfigAPP("config.json"), IndicatorAPP(), SupervisionAPP())
 
     sys.exit(app.exec_())
-
-    # import numpy as np
-
-    # data = np.load("data/subjetc_test/eegdata/sesion1/sn1_ts1_ct1_r1.npy")
-
-    # data.shape

@@ -139,6 +139,8 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
         ----------------
         - self"""
 
+        assert X.shape[0] == y.shape[0], "X e y deben tener la misma cantidad de trials"
+
         if self.method == "ovo":
             classlist = np.unique(y)
             class_combinations = list(itertools.combinations(classlist, 2))

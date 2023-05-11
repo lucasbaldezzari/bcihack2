@@ -37,7 +37,6 @@ class Filter(BaseEstimator, TransformerMixin):
         """Función para aplicar los filtros a la señal.
         -signal: Es la señal en un numpy array de la forma [n-trials, canales, muestras]."""
 
-        # signal = np.subtract(signal, signal.mean(axis = self.axisToCompute)) #restamos la media de cada muestra
         signal = signal - np.mean(signal, axis=self.axisToCompute, keepdims=True)
         signal = filtfilt(self.b, self.a, signal, axis = self.axisToCompute) #aplicamos el filtro pasa banda
         signal = filtfilt(self.b_notch, self.a_notch, signal, axis = self.axisToCompute) #aplicamos el filtro notch
