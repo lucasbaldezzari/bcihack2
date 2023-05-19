@@ -165,8 +165,9 @@ class Core(QMainWindow):
         self.configAppTimer.timeout.connect(self.checkConfigApp)
 
         #timer para actualizar la supervisionAPP
+        self.__supervisionAPPTime = 100 #ms
         self.supervisionAPPTimer = QTimer()
-        self.supervisionAPPTimer.setInterval(10) #10 ms
+        self.supervisionAPPTimer.setInterval(self.__supervisionAPPTime )
         self.supervisionAPPTimer.timeout.connect(self.updateSupervisionAPP)
 
         self.showGUIAPPs()
@@ -322,13 +323,14 @@ class Core(QMainWindow):
         logging.info("Iniciando streaming de EEG...")
 
         channels_names = self.eeglogger.board.get_eeg_channels(board_id)
-        
-        self.selectedChannelsIds = [channels_names.index(i) for i in self.channels]
 
         if startStreaming:
             self.eeglogger.startStreaming()#iniciamos streaming de EEG
             print("Esperamos para estabilizar señal de EEG...")
             time.sleep(3) #Esperamos unos segundos para estabilizar la señal de EEG
+            
+            #iniciamos timer para actualizar grafico de EEG de la supervisionAPP
+            self.supervisionAPPTimer.start()
 
     def setFilter(self):
         """Función para setear el filtro de EEG.
@@ -422,8 +424,8 @@ class Core(QMainWindow):
         else:
             #Al finalizar el trial, guardamos los datos de EEG
             logging.info("Guardando datos de EEG")
-            newData = self.eeglogger.getData(self.__startingTime + self.cueDuration + self.finishDuration, removeDataFromBuffer=False)[self.channels]
-            self.eeglogger.saveData(newData, fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
+            newData = self.eeglogger.getData(self.__startingTime + self.cueDuration + self.finishDuration, removeDataFromBuffer=False)
+            self.eeglogger.saveData(newData[self.channels], fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
             self.saveEvents() #guardamos los eventos de la sesión
             self.__trialPhase = 0 #volvemos a la fase inicial del trial
             self.__trialNumber += 1 #incrementamos el número de trial
@@ -499,8 +501,13 @@ class Core(QMainWindow):
 
     def updateSupervisionAPP(self):
         """Función para actualizar la APP de supervisión."""
-        ##TODO: actualizar la APP de supervisión
-        pass
+        ##Actualizamos gráficas de EEG y FFT
+
+        #obtenemos los datos de EEG
+        data = self.eeglogger.getData(self.__supervisionAPPTime , removeDataFromBuffer = False)[self.channels]
+        data = self.pasabanda.fit_transform(data.reshape(1,data.shape[0],data.shape[1]))
+        #actualizamos la gráfica de EEG
+        self.supervisionAPP.update_plot(data.reshape(data.shape[1],data.shape[2]))
 
     def classifyEEG(self):
         """Función para clasificar EEG
@@ -547,6 +554,13 @@ class Core(QMainWindow):
         self.setFolders(rootFolder = self.rootFolder) #configuramos las carpetas de almacenamiento
         self.saveConfigParameters(self.eegStoredFolder+self.eegFileName[:-4]+"_config.json") #guardamos los parámetros de configuración
         
+        lowcut = self.filterParameters['lowcut']
+        highcut = self.filterParameters['highcut']
+        notch_freq = self.filterParameters['notch_freq']
+        sample_rate = self.filterParameters['sample_rate']
+
+        self.pasabanda = Filter(lowcut=lowcut, highcut=highcut, notch_freq=notch_freq, notch_width=2.0, sample_rate=sample_rate)
+
         if self.typeSesion == 0:
             print("Inicio de sesión de entrenamiento")
             logging.info("Inicio de sesión de entrenamiento")

@@ -153,8 +153,6 @@ if __name__ == "__main__":
 
     ## extraemos los ids de los canales seleccionados
     eegChannels = eeglogger.board.get_eeg_channels(board_id)
-    selectedChannelsIds = [eegChannels.index(i) for i in selectedChannels]
-
 
     eeglogger.startStreaming() #iniciamos la adquisición de datos
 
@@ -162,7 +160,7 @@ if __name__ == "__main__":
     print("Debemos esperar para completar el buffer")
     time.sleep(trialDuration) #esperamos a que se adquieran los datos
 
-    newData = eeglogger.getData(trialDuration)[selectedChannelsIds]
+    newData = eeglogger.getData(trialDuration)[eegChannels]
     print("Forma del array de datos [canales, muestras]: ",newData.shape)
 
     print("Guardando datos...")

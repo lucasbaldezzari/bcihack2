@@ -77,7 +77,7 @@ class SupervisionAPP(QDialog):
 
     def update_plot(self, data):
         for count, channel in enumerate(self.canales):
-            self.curves[count].setData(data[channel].tolist())
+            self.curves[count].setData(data[count].tolist())
         self.update_FFT(data)
 
     def _init_barras(self):
@@ -126,7 +126,7 @@ class SupervisionAPP(QDialog):
     def update_FFT(self, data):
         data = abs(np.fft.fft(data))[:,:100]
         for count, channel in enumerate(self.canales):
-            self.curves2[count].setData(data[channel].tolist())
+            self.curves2[count].setData(data[count].tolist())
 
     def actualizar_orden(self, texto:str):
         """

@@ -1,6 +1,6 @@
 {
     "typeSesion": 1,
-    "cueType": 1,
+    "cueType": 0,
     "ntrials": 1,
     "classes": [
         1,
@@ -26,7 +26,7 @@
     "subjectName": "subject_test",
     "sesionNumber": 1,
     "boardParams": {
-        "boardName": "synthetic",
+        "boardName": "cyton",
         "channels": [
             1,
             2,
