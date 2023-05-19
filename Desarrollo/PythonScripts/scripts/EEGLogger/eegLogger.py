@@ -151,8 +151,6 @@ if __name__ == "__main__":
     
     trialDuration = 2 #duración del trial en segundos
 
-    eeglogger.board.get_eeg_channels(board_id)
-
     ## extraemos los ids de los canales seleccionados
     eegChannels = eeglogger.board.get_eeg_channels(board_id)
     selectedChannelsIds = [eegChannels.index(i) for i in selectedChannels]

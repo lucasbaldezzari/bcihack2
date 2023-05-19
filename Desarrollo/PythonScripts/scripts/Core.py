@@ -77,7 +77,7 @@ class Core(QMainWindow):
 
         self.configAPP = configAPP
         self.indicatorAPP = indicatorAPP
-        self.supervisionAPP = supervisionAPP
+        # self.supervisionAPP = supervisionAPP
 
         #Parámetros generales para la sesións
         self.configParameters = configParameters
@@ -97,6 +97,10 @@ class Core(QMainWindow):
         #Parámetros para inicar la placa openbci
         self.boardParams = configParameters["boardParams"]
         self.channels = self.boardParams["channels"]
+        self.serialPort = self.boardParams["serialPort"]
+        self.boardName = self.boardParams["boardName"]
+
+        self.supervisionAPP = supervisionAPP(self.clasesNames, self.channels)
 
         #parámetros del filtro
         self.filterParameters = configParameters["filterParameters"]
@@ -182,6 +186,10 @@ class Core(QMainWindow):
         self.subjectName = newParameters["subjectName"]
         self.sesionNumber = newParameters["sesionNumber"]
         self.boardParams = newParameters["boardParams"]
+        self.channels = self.boardParams["channels"]
+        self.serialPort = self.boardParams["serialPort"]
+        self.boardName = self.boardParams["boardName"]
+
         self.channels = self.boardParams["channels"]
 
         self.filterParameters = newParameters["filterParameters"]
@@ -306,12 +314,17 @@ class Core(QMainWindow):
         
         print("Seteando EEGLogger...")
         logging.info("Seteando EEGLogger...")
-        board, board_id = setupBoard(boardName = "synthetic", serial_port = "COM5")
+        board, board_id = setupBoard(boardName = self.boardName, serial_port = self.serialPort)
         self.eeglogger = EEGLogger(board, board_id)
         self.eeglogger.connectBoard()
         time.sleep(1) #esperamos 1 segundo para que se conecte la placa
         print("Iniciando streaming de EEG...")
         logging.info("Iniciando streaming de EEG...")
+
+        channels_names = self.eeglogger.board.get_eeg_channels(board_id)
+        
+        self.selectedChannelsIds = [channels_names.index(i) for i in self.channels]
+
         if startStreaming:
             self.eeglogger.startStreaming()#iniciamos streaming de EEG
             print("Esperamos para estabilizar señal de EEG...")
@@ -608,6 +621,6 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    core = Core(parameters, ConfigAPP("config.json"), IndicatorAPP(), SupervisionAPP())
+    core = Core(parameters, ConfigAPP("config.json"), IndicatorAPP(), SupervisionAPP)
 
     sys.exit(app.exec_())

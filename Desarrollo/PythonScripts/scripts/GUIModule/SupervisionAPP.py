@@ -50,8 +50,6 @@ class SupervisionAPP(QDialog):
         self._init_barras()
         self._init_FFT()
 
-        self.update_bars()
-        
     def _init_timeseries(self):
         self.plots = list()
         self.curves = list()

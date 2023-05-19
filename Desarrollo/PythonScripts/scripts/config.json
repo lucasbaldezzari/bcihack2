@@ -28,9 +28,9 @@
     "boardParams": {
         "boardName": "synthetic",
         "channels": [
-            13,
-            14,
-            15
+            1,
+            2,
+            3
         ],
         "serialPort": "COM5"
     },
