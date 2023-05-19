@@ -6,21 +6,131 @@ import pyqtgraph as pg
 import sys
 import os
 import numpy as np
+import pyqtgraph as pg
+from pyqtgraph import LabelItem
 
 class SupervisionAPP(QDialog):
     """
     Interfaz gráfica para supervisar las sesiones
     """
-    def __init__(self):
+    def __init__(self, clases:list, canales:list):
         super().__init__()
+        
         ui_path = os.path.join(os.path.dirname(__file__), 'supervision.ui')
         uic.loadUi(ui_path, self)
-        pg.setConfigOptions(antialias=True)
-        self.traces = dict()
-        self.x = np.array([0])
-        self.y = np.array([0])
+        
+        self.canales = canales
 
-    def actualizar_orden(self, texto):
+        pg.setConfigOptions(antialias=True)
+
+        # create a new QGraphicsScene
+        scene = QGraphicsScene()
+        self.graphicsView.setScene(scene)
+        self.graphics_window = pg.GraphicsLayoutWidget(title='BrainFlow Plot', size=(500, 300))
+        self.graphics_window.setBackground('w')
+        scene.addWidget(self.graphics_window)
+
+        # create a new QGraphicsScene
+        scene2 = QGraphicsScene()
+        self.graphicsBars.setScene(scene2)
+        self.graphics_window2 = pg.GraphicsLayoutWidget(title='Bars', size=(400, 200))
+        self.graphics_window2.setBackground('w')
+        scene2.addWidget(self.graphics_window2)
+
+        # create a new QGraphicsScene
+        scene3 = QGraphicsScene()
+        self.graphicsFFT.setScene(scene3)
+        self.graphics_window3 = pg.GraphicsLayoutWidget(title='FFT', size=(500, 300))
+        self.graphics_window3.setBackground('w')
+        scene3.addWidget(self.graphics_window3)
+
+        self.clases = clases
+
+        self._init_timeseries()
+        self._init_barras()
+        self._init_FFT()
+
+        self.update_bars()
+        
+    def _init_timeseries(self):
+        self.plots = list()
+        self.curves = list()
+        colores = ['#FF5733', '#C70039', '#900C3F', '#581845', '#F7DC6F', '#F1C40F', '#9B59B6',
+                              '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400', 
+                             '#EC7063', '#D91E18', '#7D3C98']
+        for i in range(len(self.numero_canales)):
+            p = self.graphics_window.addPlot(row=i, col=0)
+            p.showAxis('left', False)
+            p.setMenuEnabled('left', False)
+            
+            p.setMenuEnabled('bottom', False)
+            subtitle_label = LabelItem(f"Canal {i}", justify='center')
+            subtitle_label.setText(f"Canal {i}", color='black', size='10pt', bold=True)
+            subtitle_label.setPos(0.5, 1)  # Posición arriba y centrada
+            subtitle_label.setParentItem(p.graphicsItem())  # Agregar el label al subplot
+
+            p.showAxis('top', False)  # Ocultar el eje superior
+
+            p.showAxis('bottom', False)
+
+            self.plots.append(p)
+            curve = p.plot(pen = colores[i])
+            self.curves.append(curve)
+
+    def update_plot(self, data):
+        for count, channel in enumerate(self.numero_canales):
+            self.curves[count].setData(data[channel].tolist())
+        self.update_FFT(data)
+
+    def _init_barras(self):
+        self.plots2 = list()
+        self.bars = list()
+        colores = ['#FF5733', '#C70039', '#900C3F', '#581845', '#F7DC6F', '#F1C40F', '#9B59B6',
+                              '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400', 
+                             '#EC7063', '#D91E18', '#7D3C98']
+       
+        br = self.graphics_window2.addPlot(row=0, col=0)
+        br.showAxis('left', True)
+        br.setMenuEnabled('left', False)
+        br.showAxis('bottom', True)
+        br.setMenuEnabled('bottom', False)
+        self.plots2.append(br)
+        bottom_axis = br.getAxis('bottom')
+        bottom_axis.setTicks([[(i, self.clases[i]) for i in range(len(self.clases))]])
+
+        for i in range(len(self.clases)):
+            bar = pg.BarGraphItem(x=[i], height=[0], width=0.5, brush=pg.mkBrush(colores[i]))
+            br.addItem(bar)
+            self.bars.append(bar)
+        
+    def update_bars(self, data = [0.5, 0.5]):
+        for i, bar in enumerate(self.bars):
+            bar.setOpts(height=data[i])
+
+    def _init_FFT(self):
+        self.plots3 = list()
+        self.curves2 = list()
+        colores = ['#FF5733', '#C70039', '#900C3F', '#581845', '#F7DC6F', '#F1C40F', '#9B59B6',
+                              '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400', 
+                             '#EC7063', '#D91E18', '#7D3C98']
+        
+        p = self.graphics_window3.addPlot(row=0, col=0)
+        p.showAxis('left', True)
+        p.setMenuEnabled('left', False)
+        p.showAxis('bottom', True)
+        p.setMenuEnabled('bottom', False)
+        self.plots3.append(p)
+
+        for i in range(len(self.numero_canales)):            
+            curve = p.plot(pen = colores[i])
+            self.curves2.append(curve)
+
+    def update_FFT(self, data):
+        data = abs(np.fft.fft(data))[:,:100]
+        for count, channel in enumerate(self.numero_canales):
+            self.curves2[count].setData(data[channel].tolist())
+
+    def actualizar_orden(self, texto:str):
         """
         Actualiza la etiqueta que da la orden
             texto (str): texto de la orden
@@ -50,25 +160,6 @@ class SupervisionAPP(QDialog):
         
         except:
             pass
-
-    def actualizar_grafica(self, name, tiempo, datos):
-        """
-        Actualiza el grafico de Canal Tension vs Tiempo
-            name (str): nombre del canal
-            tiempo (list): vector tiempo adquirido
-            datos (list): vector de tension adquirido
-        """
-        if len(self.x) > 1000:
-            self.x = np.concatenate((tiempo[:int(len(datos[0]))], self.x[:-int(len(datos[0]))]))
-            self.y = np.concatenate((datos[0], self.y[:-int(len(datos[0]))])) 
-        else:
-            self.x = np.concatenate((self.x, tiempo[:int(len(datos[0]))]))
-            self.y = np.concatenate((self.y, datos[0])) 
-        
-        if name in self.traces:
-            self.traces[name].setData(self.x, self.y)
-        else:
-            self.traces[name] = self.graphicsView.plot(pen='w')
     
     def actualizar_info(self, sesion:int, trial:float, etapa:int, canales:str):
         """
@@ -81,6 +172,7 @@ class SupervisionAPP(QDialog):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    _ventana = SupervisionAPP()
+    _ventana = SupervisionAPP(['AD', 'DP'], [1,2,3])
+
     _ventana.show()
     app.exec_()
