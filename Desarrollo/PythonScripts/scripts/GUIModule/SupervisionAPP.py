@@ -58,7 +58,7 @@ class SupervisionAPP(QDialog):
         colores = ['#FF5733', '#C70039', '#900C3F', '#581845', '#F7DC6F', '#F1C40F', '#9B59B6',
                               '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400', 
                              '#EC7063', '#D91E18', '#7D3C98']
-        for i in range(len(self.numero_canales)):
+        for i in range(len(self.canales)):
             p = self.graphics_window.addPlot(row=i, col=0)
             p.showAxis('left', False)
             p.setMenuEnabled('left', False)
@@ -78,7 +78,7 @@ class SupervisionAPP(QDialog):
             self.curves.append(curve)
 
     def update_plot(self, data):
-        for count, channel in enumerate(self.numero_canales):
+        for count, channel in enumerate(self.canales):
             self.curves[count].setData(data[channel].tolist())
         self.update_FFT(data)
 
@@ -121,13 +121,13 @@ class SupervisionAPP(QDialog):
         p.setMenuEnabled('bottom', False)
         self.plots3.append(p)
 
-        for i in range(len(self.numero_canales)):            
+        for i in range(len(self.canales)):            
             curve = p.plot(pen = colores[i])
             self.curves2.append(curve)
 
     def update_FFT(self, data):
         data = abs(np.fft.fft(data))[:,:100]
-        for count, channel in enumerate(self.numero_canales):
+        for count, channel in enumerate(self.canales):
             self.curves2[count].setData(data[channel].tolist())
 
     def actualizar_orden(self, texto:str):
