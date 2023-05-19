@@ -587,7 +587,7 @@ if __name__ == "__main__":
         "sesionNumber": 1, #número de sesión
         "boardParams": { 
             "boardName": "synthetic", #Board de registro
-            "channels": [13,14,15], #[0, 1, 2, 3, 4, 5, 6, 7], #Canales de registro
+            "channels": [1,2,3], #[0, 1, 2, 3, 4, 5, 6, 7], #Canales de registro
             "serialPort": "COM5" #puerto serial
         },
         "filterParameters": {

@@ -137,20 +137,26 @@ if __name__ == "__main__":
     if debbuging:
         logging.basicConfig(level=logging.DEBUG)
 
-    boardName = "synthetic"
+    boardName = "cyton"
+    selectedChannels = [1,2,3]
 
     #IMPORTENTE: Chequear en que puerto esta conectada la OpenBCI.  
     puerto = "COM5"
 
     #usamos setupBoard para generar un objeto BoardShim y un id de placa
-    board, board_id = setupBoard(boardName = "synthetic", serial_port = "COM5") 
+    board, board_id = setupBoard(boardName = boardName, serial_port = "COM5") 
 
     eeglogger = EEGLogger(board, board_id) #instanciamos un objeto para adquirir señales de EEG desde la placa OpenBCI
     eeglogger.connectBoard() #nos conectamos a la placa
     
     trialDuration = 2 #duración del trial en segundos
 
-    eeglogger.board.get_eeg_names(board_id)
+    eeglogger.board.get_eeg_channels(board_id)
+
+    ## extraemos los ids de los canales seleccionados
+    eegChannels = eeglogger.board.get_eeg_channels(board_id)
+    selectedChannelsIds = [eegChannels.index(i) for i in selectedChannels]
+
 
     eeglogger.startStreaming() #iniciamos la adquisición de datos
 
@@ -158,12 +164,8 @@ if __name__ == "__main__":
     print("Debemos esperar para completar el buffer")
     time.sleep(trialDuration) #esperamos a que se adquieran los datos
 
-    newData = eeglogger.getData(trialDuration)
-    # print(newData)
+    newData = eeglogger.getData(trialDuration)[selectedChannelsIds]
     print("Forma del array de datos [canales, muestras]: ",newData.shape)
-    eeglogger.addData(newData[:16])
-
-    print(eeglogger.rawData.shape)
 
     print("Guardando datos...")
     eeglogger.saveData(newData, fileName = "subject1.npy", path = "", append=True) #guardamos los datos en un archivo .npy
