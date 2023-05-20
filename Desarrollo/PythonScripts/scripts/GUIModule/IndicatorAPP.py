@@ -91,7 +91,7 @@ class IndicatorAPP(QDialog):
         if mostrar:
             self.cruz.setVisible(True)
             self.Subir(self.label_orden)
-            winsound.Beep(440, 1000)
+            # winsound.Beep(440, 1000)
         else:
             self.cruz.setVisible(False)
             self.Centrar(self.label_orden)

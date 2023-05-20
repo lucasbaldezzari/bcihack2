@@ -26,7 +26,7 @@ class SupervisionAPP(QDialog):
         # create a new QGraphicsScene
         scene = QGraphicsScene()
         self.graphicsView.setScene(scene)
-        self.graphics_window = pg.GraphicsLayoutWidget(title='BrainFlow Plot', size=(500, 300))
+        self.graphics_window = pg.GraphicsLayoutWidget(title='EEG Plot', size=(500, 300))
         self.graphics_window.setBackground('w')
         scene.addWidget(self.graphics_window)
 
@@ -52,6 +52,10 @@ class SupervisionAPP(QDialog):
         #El shape es (canales, tiempo)
         self.data = np.zeros((len(self.canales), int(self.sample_rate*t_lenght)))
 
+        self.colores = ['#fb7e7b', '#ebcb5b', '#77aa99', '#581845', '#F7DC6F', '#F1C40F', '#9B59B6',
+                        '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400',
+                        '#EC7063', '#D91E18', '#7D3C98']
+
         self._init_timeseries()
         self._init_barras()
         self._init_FFT()
@@ -59,9 +63,6 @@ class SupervisionAPP(QDialog):
     def _init_timeseries(self):
         self.plots = list()
         self.curves = list()
-        colores = ['#FF5733', '#C70039', '#900C3F', '#581845', '#F7DC6F', '#F1C40F', '#9B59B6',
-                              '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400',
-                             '#EC7063', '#D91E18', '#7D3C98']
 
         for i in range(len(self.canales)):
             p = self.graphics_window.addPlot(row=i, col=0)
@@ -79,10 +80,10 @@ class SupervisionAPP(QDialog):
             p.showAxis('bottom', False)
 
             self.plots.append(p)
-            curve = p.plot(pen = colores[i])
+            curve = p.plot(pen = self.colores[i])
             self.curves.append(curve)
 
-    def update_plot(self, newData):
+    def update_plots(self, newData):
 
         samplesToRemove = newData.shape[1] #muestras a eliminar del buffer interno de datos
         ## giro el buffer interno de datos
@@ -90,17 +91,14 @@ class SupervisionAPP(QDialog):
         ## reemplazo los ultimos datos del buffer interno con newData
         self.data[:, -samplesToRemove:] = newData
 
-        for count, channel in enumerate(self.canales):
-            self.curves[count].setData(self.data[count].tolist())
+        for canal in range(len(self.canales)):
+            self.curves[canal].setData(self.data[canal].tolist())
 
         self.update_FFT(self.data)
 
     def _init_barras(self):
         self.plots2 = list()
         self.bars = list()
-        colores = ['#FF5733', '#C70039', '#900C3F', '#581845', '#F7DC6F', '#F1C40F', '#9B59B6',
-                              '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400',
-                             '#EC7063', '#D91E18', '#7D3C98']
 
         br = self.graphics_window2.addPlot(row=0, col=0)
         br.showAxis('left', True)
@@ -112,7 +110,7 @@ class SupervisionAPP(QDialog):
         bottom_axis.setTicks([[(i, self.clases[i]) for i in range(len(self.clases))]])
 
         for i in range(len(self.clases)):
-            bar = pg.BarGraphItem(x=[i], height=[0], width=0.5, brush=pg.mkBrush(colores[i]))
+            bar = pg.BarGraphItem(x=[i], height=[0], width=0.5, brush=pg.mkBrush(self.colores[i]))
             br.addItem(bar)
             self.bars.append(bar)
 
@@ -123,9 +121,6 @@ class SupervisionAPP(QDialog):
     def _init_FFT(self):
         self.plots3 = list()
         self.curves2 = list()
-        colores = ['#FF5733', '#C70039', '#900C3F', '#581845', '#F7DC6F', '#F1C40F', '#9B59B6',
-                              '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400',
-                             '#EC7063', '#D91E18', '#7D3C98']
 
         p = self.graphics_window3.addPlot(row=0, col=0)
         p.showAxis('left', True)
@@ -135,7 +130,7 @@ class SupervisionAPP(QDialog):
         self.plots3.append(p)
 
         for i in range(len(self.canales)):
-            curve = p.plot(pen = colores[i])
+            curve = p.plot(pen = self.colores[i])
             self.curves2.append(curve)
 
     def update_FFT(self, data):

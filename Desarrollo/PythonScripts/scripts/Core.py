@@ -523,8 +523,8 @@ class Core(QMainWindow):
         data = self.eeglogger.getData(self.__supervisionAPPTime/1000  , removeDataFromBuffer = False)[self.channels]
         # data = self.filter.fit_transform(data.reshape(1,data.shape[0],data.shape[1]))
         # #actualizamos la gráfica de EEG
-        # self.supervisionAPP.update_plot(data.reshape(data.shape[1],data.shape[2]))
-        self.supervisionAPP.update_plot(data)
+        # self.supervisionAPP.update_plots(data.reshape(data.shape[1],data.shape[2]))
+        self.supervisionAPP.update_plots(data)
 
     def classifyEEG(self):
         """Función para clasificar EEG
