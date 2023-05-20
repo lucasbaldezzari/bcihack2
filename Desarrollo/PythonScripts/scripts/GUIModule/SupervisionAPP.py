@@ -26,21 +26,21 @@ class SupervisionAPP(QDialog):
         # create a new QGraphicsScene
         scene = QGraphicsScene()
         self.graphicsView.setScene(scene)
-        self.graphics_window = pg.GraphicsLayoutWidget(title='EEG Plot', size=(500, 300))
+        self.graphics_window = pg.GraphicsLayoutWidget(title='EEG Plot', size=(950, 300))
         self.graphics_window.setBackground('w')
         scene.addWidget(self.graphics_window)
 
         # create a new QGraphicsScene
         scene2 = QGraphicsScene()
         self.graphicsBars.setScene(scene2)
-        self.graphics_window2 = pg.GraphicsLayoutWidget(title='Bars', size=(400, 200))
+        self.graphics_window2 = pg.GraphicsLayoutWidget(title='Bars', size=(400, 250))
         self.graphics_window2.setBackground('w')
         scene2.addWidget(self.graphics_window2)
 
         # create a new QGraphicsScene
         scene3 = QGraphicsScene()
         self.graphicsFFT.setScene(scene3)
-        self.graphics_window3 = pg.GraphicsLayoutWidget(title='FFT', size=(500, 300))
+        self.graphics_window3 = pg.GraphicsLayoutWidget(title='FFT', size=(500, 250))
         self.graphics_window3.setBackground('w')
         scene3.addWidget(self.graphics_window3)
 

@@ -400,6 +400,7 @@ class Core(QMainWindow):
             self.eegThreadTimer.stop()
             self.feedbackThreadTimer.stop()
             self.eeglogger.stopBoard()
+            self.supervisionAPPTimer.stop()
             self.closeApp()
         else:
             pass
