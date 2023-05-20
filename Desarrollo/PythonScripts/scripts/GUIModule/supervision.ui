@@ -23,25 +23,25 @@
   <widget class="QLabel" name="label_orden_6">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>20</x>
      <y>20</y>
-     <width>289</width>
+     <width>191</width>
      <height>25</height>
     </rect>
    </property>
    <property name="font">
     <font>
-     <family>Verdana</family>
+     <family>Berlin Sans FB</family>
      <pointsize>16</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
+     <weight>50</weight>
+     <bold>false</bold>
     </font>
    </property>
    <property name="styleSheet">
     <string notr="true">color: rgb(245, 245, 245);</string>
    </property>
    <property name="text">
-    <string>SupervisionAPP</string>
+    <string>SupervisionAPP V1.0</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
@@ -130,7 +130,7 @@ background-color: rgb(255, 255, 255);</string>
 color: rgb(0, 0, 0);</string>
     </property>
     <property name="text">
-     <string> Espectro en Frecuencias</string>
+     <string> Espectro de Frecuencias</string>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -206,7 +206,7 @@ color: rgb(0, 0, 0);</string>
    </property>
    <property name="font">
     <font>
-     <family>Verdana</family>
+     <family>Berlin Sans FB</family>
      <pointsize>14</pointsize>
     </font>
    </property>
@@ -324,7 +324,55 @@ border-color: rgb(0, 0, 0);
     </layout>
    </widget>
   </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>620</y>
+     <width>141</width>
+     <height>141</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-image: url(:/logo1/logo1.png);
+background-image: url(:/logo1/logo1.png);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="pixmap">
+    <pixmap>images/Logo Hackathon 2022-2023 AxonNexus v1.0.png</pixmap>
+   </property>
+   <property name="scaledContents">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>360</x>
+     <y>630</y>
+     <width>141</width>
+     <height>141</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-image: url(:/logo1/logo1.png);
+background-image: url(:/logo1/logo1.png);</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="pixmap">
+    <pixmap>images/06-isologotipo-para-fondo-blanco.png</pixmap>
+   </property>
+   <property name="scaledContents">
+    <bool>true</bool>
+   </property>
+  </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="images/logo1.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -116,7 +116,8 @@ class Core(QMainWindow):
         self.serialPort = self.boardParams["serialPort"]
         self.boardName = self.boardParams["boardName"]
 
-        self.supervisionAPP = supervisionAPP(self.clasesNames, self.channels)
+        ##Me quedo con la primeras letras de las palabras de self.clasesNames
+        self.supervisionAPP = supervisionAPP([str(clase) for clase in self.classes], self.channels)
 
         #parámetros del filtro
         self.filterParameters = configParameters["filterParameters"]
@@ -626,7 +627,7 @@ if __name__ == "__main__":
         "typeSesion": 1, #0: Entrenamiento, 1: Feedback, 2: Online
         "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
         "classes": [1, 2, 3, 4, 5], #Clases a clasificar
-        "clasesNames": ["mover Mano Izquierda", "mover Mano Derecha", "mover Ambas Manos", "mover Ambos Pies", "Rest"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
+        "clasesNames": ["Mano Izquierda", "Mano Derecha", "Ambas Manos", "Pies", "Rest"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
         "ntrials": 1, #Número de trials por clase
         "startingTimes": [2, 2.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
         "cueDuration": 4, #En segundos

@@ -10,10 +10,10 @@
         5
     ],
     "clasesNames": [
-        "mover Mano Izquierda",
-        "mover Mano Derecha",
-        "mover Ambas Manos",
-        "mover Ambos Pies",
+        "Mano Izquierda",
+        "Mano Derecha",
+        "Ambas Manos",
+        "Pies",
         "Rest"
     ],
     "startingTimes": [
