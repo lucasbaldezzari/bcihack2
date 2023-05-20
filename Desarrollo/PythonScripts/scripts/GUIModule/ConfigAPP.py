@@ -79,7 +79,7 @@ class ConfigAPP(QDialog):
             #Parámetros para inicar la placa openbci
             configParameters["boardParams"] = dict()
             configParameters["boardParams"]['boardName'] = self.desplegable_placa.currentText()
-            configParameters["boardParams"]['channels'] = [1,2,3] #ESTA LINEA HAY QUE ADAPTARLA A LA APP DE CONFIG
+            configParameters["boardParams"]['channels'] = [0,2,3] #ESTA LINEA HAY QUE ADAPTARLA A LA APP DE CONFIG
             configParameters["boardParams"]["serialPort"] = self.line_puerto.text()
 
             #parámetros del filtro

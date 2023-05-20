@@ -15,10 +15,10 @@ class SupervisionAPP(QDialog):
     """
     def __init__(self, clases:list, canales:list):
         super().__init__()
-        
+
         ui_path = os.path.join(os.path.dirname(__file__), 'supervision.ui')
         uic.loadUi(ui_path, self)
-        
+
         self.canales = canales
 
         pg.setConfigOptions(antialias=True)
@@ -46,6 +46,12 @@ class SupervisionAPP(QDialog):
 
         self.clases = clases
 
+        self.sample_rate = 250.
+        t_lenght = 10 # segundos de señal
+        #Creo un numpyarray para hacer de buffer de datos que se mostrará en pantalla
+        #El shape es (canales, tiempo)
+        self.data = np.zeros((len(self.canales), int(self.sample_rate*t_lenght)))
+
         self._init_timeseries()
         self._init_barras()
         self._init_FFT()
@@ -54,13 +60,14 @@ class SupervisionAPP(QDialog):
         self.plots = list()
         self.curves = list()
         colores = ['#FF5733', '#C70039', '#900C3F', '#581845', '#F7DC6F', '#F1C40F', '#9B59B6',
-                              '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400', 
+                              '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400',
                              '#EC7063', '#D91E18', '#7D3C98']
+
         for i in range(len(self.canales)):
             p = self.graphics_window.addPlot(row=i, col=0)
             p.showAxis('left', False)
             p.setMenuEnabled('left', False)
-            
+
             p.setMenuEnabled('bottom', False)
             subtitle_label = LabelItem(f"Canal {i}", justify='center')
             subtitle_label.setText(f"Canal {i}", color='black', size='10pt', bold=True)
@@ -75,18 +82,26 @@ class SupervisionAPP(QDialog):
             curve = p.plot(pen = colores[i])
             self.curves.append(curve)
 
-    def update_plot(self, data):
+    def update_plot(self, newData):
+
+        samplesToRemove = newData.shape[1] #muestras a eliminar del buffer interno de datos
+        ## giro el buffer interno de datos
+        self.data = np.roll(self.data, -samplesToRemove, axis=1)
+        ## reemplazo los ultimos datos del buffer interno con newData
+        self.data[:, -samplesToRemove:] = newData
+
         for count, channel in enumerate(self.canales):
-            self.curves[count].setData(data[count].tolist())
-        self.update_FFT(data)
+            self.curves[count].setData(self.data[count].tolist())
+
+        self.update_FFT(self.data)
 
     def _init_barras(self):
         self.plots2 = list()
         self.bars = list()
         colores = ['#FF5733', '#C70039', '#900C3F', '#581845', '#F7DC6F', '#F1C40F', '#9B59B6',
-                              '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400', 
+                              '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400',
                              '#EC7063', '#D91E18', '#7D3C98']
-       
+
         br = self.graphics_window2.addPlot(row=0, col=0)
         br.showAxis('left', True)
         br.setMenuEnabled('left', False)
@@ -100,7 +115,7 @@ class SupervisionAPP(QDialog):
             bar = pg.BarGraphItem(x=[i], height=[0], width=0.5, brush=pg.mkBrush(colores[i]))
             br.addItem(bar)
             self.bars.append(bar)
-        
+
     def update_bars(self, data = [0.5, 0.5]):
         for i, bar in enumerate(self.bars):
             bar.setOpts(height=data[i])
@@ -109,9 +124,9 @@ class SupervisionAPP(QDialog):
         self.plots3 = list()
         self.curves2 = list()
         colores = ['#FF5733', '#C70039', '#900C3F', '#581845', '#F7DC6F', '#F1C40F', '#9B59B6',
-                              '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400', 
+                              '#8E44AD', '#2980B9', '#2ECC71', '#27AE60', '#E67E22', '#D35400',
                              '#EC7063', '#D91E18', '#7D3C98']
-        
+
         p = self.graphics_window3.addPlot(row=0, col=0)
         p.showAxis('left', True)
         p.setMenuEnabled('left', False)
@@ -119,7 +134,7 @@ class SupervisionAPP(QDialog):
         p.setMenuEnabled('bottom', False)
         self.plots3.append(p)
 
-        for i in range(len(self.canales)):            
+        for i in range(len(self.canales)):
             curve = p.plot(pen = colores[i])
             self.curves2.append(curve)
 
@@ -139,9 +154,9 @@ class SupervisionAPP(QDialog):
         """
         Actualiza la barra de progreso del trial
             tiempo_actual (float): tiempo actual del trial en segundos. No debe ser mayor al tiempo de trial total
-            etapa (int): etapa actual cuando se actualiza la barra. 
-                0: preparacion; 
-                1: accion; 
+            etapa (int): etapa actual cuando se actualiza la barra.
+                0: preparacion;
+                1: accion;
                 2: descanso;
         """
         try:
@@ -155,10 +170,10 @@ class SupervisionAPP(QDialog):
 
             if etapa == 2:
                 self.progressBar.setStyleSheet("QProgressBar::chunk {background-color: red;}")
-        
+
         except:
             pass
-    
+
     def actualizar_info(self, sesion:int, trial:float, etapa:int, canales:str):
         """
         Para actualizar los campos de información en la interfaz de superivisión

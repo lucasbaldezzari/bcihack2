@@ -34,7 +34,24 @@ class Core(QMainWindow):
     RavelTransformer y Classifier. Este hilo deberá ser el que controle los tiempos de de inicio/inter-trial, el tiempo
     del cue y el de descanso. Además, deberá ser el encargado de enviar los comandos al dispositivo de control (o bien,
     se puede hacer otro para el control de la comunicación con el dispositivo.)
-    NOTA 2: Se debe pensar en un hilo para el control de la GUI.
+    
+
+    FLUJO BÁSICO DEL PROGRAMA
+    Si bien se pueden tener tres tipos de sesiones diferentes, el flujo básico del programa es el siguiente:
+    1. Se inicia el contrsuctor. Dentro del mismo se configuran parámetros importantes y se inicializan las clases
+    ConfigAPP, IndicatorAPP y SupervisionAPP. Además, se configuran los timers para controlar el inicio de la sesión,
+    el final de la sesión y el tiempo de cada trial. Finalmente se llama showGUIAPPs() para mostrar las GUI el cual
+    inica las app y el timer configAppTimer.
+    2. Una vez que se inicia la sesión, se cierra la app de configuración y se llama a la función self.start() para iniciar
+    el timer self.iniSesionTimer el cual controla self.startSesion() quien inicia la comunicación con la placa y dependiendo
+    el tipo de sesión iniciará el timer self.eegThreadTimer o self.feedbackThreadTimer.
+    3. Estos timers controla los procesos dependiendo del tipo de sesión. Pero de manera general se encargan de controlar
+    el tiempo de cada trial y de cada fase del trial. Por ejemplo, en el caso de la sesión de entrenamiento, el timer
+    self.eegThreadTimer controla el tiempo de cada trial y de cada fase del trial. En la fase de inicio, se muestra la cruz
+    y se espera un tiempo aleatorio entre self.startingTimes[0] y self.startingTimes[1]. Luego, se pasa a la fase de cue
+    y finalmente a la fase de finalización del trial. En esta última fase se guardan los datos de EEG y se incrementa el
+    número de trial. Este proceso se repite hasta que se alcanza el último trial de la sesión.
+
     """
     def __init__(self, configParameters, configAPP, indicatorAPP, supervisionAPP):
         """Constructor de la clase
@@ -77,7 +94,6 @@ class Core(QMainWindow):
 
         self.configAPP = configAPP
         self.indicatorAPP = indicatorAPP
-        # self.supervisionAPP = supervisionAPP
 
         #Parámetros generales para la sesións
         self.configParameters = configParameters
@@ -165,7 +181,7 @@ class Core(QMainWindow):
         self.configAppTimer.timeout.connect(self.checkConfigApp)
 
         #timer para actualizar la supervisionAPP
-        self.__supervisionAPPTime = 100 #ms
+        self.__supervisionAPPTime = 10 #ms
         self.supervisionAPPTimer = QTimer()
         self.supervisionAPPTimer.setInterval(self.__supervisionAPPTime )
         self.supervisionAPPTimer.timeout.connect(self.updateSupervisionAPP)
@@ -504,15 +520,16 @@ class Core(QMainWindow):
         ##Actualizamos gráficas de EEG y FFT
 
         #obtenemos los datos de EEG
-        data = self.eeglogger.getData(self.__supervisionAPPTime , removeDataFromBuffer = False)[self.channels]
-        data = self.pasabanda.fit_transform(data.reshape(1,data.shape[0],data.shape[1]))
-        #actualizamos la gráfica de EEG
-        self.supervisionAPP.update_plot(data.reshape(data.shape[1],data.shape[2]))
+        data = self.eeglogger.getData(self.__supervisionAPPTime/1000  , removeDataFromBuffer = False)[self.channels]
+        # data = self.filter.fit_transform(data.reshape(1,data.shape[0],data.shape[1]))
+        # #actualizamos la gráfica de EEG
+        # self.supervisionAPP.update_plot(data.reshape(data.shape[1],data.shape[2]))
+        self.supervisionAPP.update_plot(data)
 
     def classifyEEG(self):
         """Función para clasificar EEG
         La función se llama cada vez que se activa el timer self.classifyEEGTimer. La duración
-        del timer esta dada por self.classifyEEGTimer.setInterval(self.lenToClassify*1000).
+        del timer esta dada por self.classifyEEGTimer.setInterval().
 
         Se obtiene un nuevo trozo de EEG de longitud self.lenToClassify segundos, se añade al
         buffer de datos a clasificar y se clasifica. El resultado de la clasificación se almacena
@@ -523,13 +540,17 @@ class Core(QMainWindow):
         la tarea.
         """
         newData = self.eeglogger.getData(self.lenToClassify, removeDataFromBuffer = False)[self.channels]
-        samplesToRemove = int(self.lenToClassify*self.sample_rate)
+        samplesToRemove = int(self.lenToClassify*self.sample_rate) #muestras a eliminar del buffer interno de datos
+
         self._dataToClasify = np.concatenate((self._dataToClasify[:,samplesToRemove:], newData), axis = 1)
+
         channels, samples = self._dataToClasify.shape
+
         #camibamos la forma de los datos para que sea compatible con el modelo
         trialToPredict = self._dataToClasify.reshape(1,channels,samples)
         self.prediction = self.pipeline.predict(trialToPredict) #aplicamos data al pipeline
         self.probas = self.pipeline.predict_proba(trialToPredict) #obtenemos las probabilidades de cada clase
+
         #nos quedamos con la probabilida de la clase actual
         probaClaseActual = self.probas[0][self.classes.index(self.trialsSesion[self.__trialNumber])]
         #creo un número aleatorio para simular la probabilidad de la clase actual
@@ -546,45 +567,45 @@ class Core(QMainWindow):
         
         if self.typeSesion == 1:
             self.indicatorAPP.actualizar_orden("Iniciando sesión de feedback") #actualizamos app
+
         self.iniSesionTimer.start()
 
     def startSesion(self):
-        """Método para iniciar timers del Core"""
-        self.iniSesionTimer.stop()
+        """Método para iniciar timers del Core, además
+        se configuran las carpetas de almacenamiento y se guarda el archivo de configuración de la sesión.
+        Se setea el setEEGLogger para comunicación con la placa.
+        """
+        self.iniSesionTimer.stop() #detenemos timer de inicio de sesión
         self.setFolders(rootFolder = self.rootFolder) #configuramos las carpetas de almacenamiento
         self.saveConfigParameters(self.eegStoredFolder+self.eegFileName[:-4]+"_config.json") #guardamos los parámetros de configuración
         
-        lowcut = self.filterParameters['lowcut']
-        highcut = self.filterParameters['highcut']
-        notch_freq = self.filterParameters['notch_freq']
-        sample_rate = self.filterParameters['sample_rate']
-
-        self.pasabanda = Filter(lowcut=lowcut, highcut=highcut, notch_freq=notch_freq, notch_width=2.0, sample_rate=sample_rate)
+        #Creamos un filtro pasabanda que usaremos para mostrar la señal de EEG en la supervisionAPP
+        self.setFilter()
+        
+        self.setEEGLogger() #seteamos EEGLogger
+        self.makeAndMixTrials() #generamos y mezclamos los trials de la sesión
+        self.checkTrialsTimer.start()
 
         if self.typeSesion == 0:
             print("Inicio de sesión de entrenamiento")
             logging.info("Inicio de sesión de entrenamiento")
-            self.setEEGLogger()
-            self.makeAndMixTrials()
-            self.checkTrialsTimer.start()
+            
             self.eegThreadTimer.start() #iniciamos timer para controlar hilo entrenamiento
             
         elif self.typeSesion == 1:
-            self.setEEGLogger()
+            print("Inicio de sesión de Feedback")
+            logging.info("Inicio de sesión de Feedback")
+
             if not self.__customPipeline:
                 self.setPipeline() #cargamos pipeline desde archivo. ESTO ES LO RECOMENDABLE
             else: #si se ha seleccionado un pipeline personalizado, lo cargamos
                 self.setFilter() #seteamos filtro
-                # self.setCSP() #seteamos CSP
-                # self.RavelTransformer() #seteamos RavelTransformer
-                # self.setClassifier() #seteamos clasificador
                 self.setPipeline(filter = self.filter) #seteamos pipeline
-            print("Inicio de sesión de Feedback")
-            self.makeAndMixTrials()
-            self.checkTrialsTimer.start()
+
             self.feedbackThreadTimer.start() #iniciamos timer para controlar hilo entrenamiento
 
         elif self.typeSesion == 2:
+            ##TODO
             pass
         
     def closeApp(self):
@@ -614,7 +635,7 @@ if __name__ == "__main__":
         "sesionNumber": 1, #número de sesión
         "boardParams": { 
             "boardName": "synthetic", #Board de registro
-            "channels": [1,2,3], #[0, 1, 2, 3, 4, 5, 6, 7], #Canales de registro
+            "channels": [0,2,3], #[0, 1, 2, 3, 4, 5, 6, 7], #Canales de registro
             "serialPort": "COM5" #puerto serial
         },
         "filterParameters": {
