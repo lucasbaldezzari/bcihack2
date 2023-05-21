@@ -528,6 +528,8 @@ class Core(QMainWindow):
         # self.supervisionAPP.update_plots(data.reshape(data.shape[1],data.shape[2]))
         self.supervisionAPP.update_plots(data)
 
+        
+
     def classifyEEG(self):
         """Función para clasificar EEG
         La función se llama cada vez que se activa el timer self.classifyEEGTimer. La duración
@@ -552,6 +554,9 @@ class Core(QMainWindow):
         trialToPredict = self._dataToClasify.reshape(1,channels,samples)
         self.prediction = self.pipeline.predict(trialToPredict) #aplicamos data al pipeline
         self.probas = self.pipeline.predict_proba(trialToPredict) #obtenemos las probabilidades de cada clase
+
+        #actualizo barras de probabilidad en supervision app
+        self.supervisionAPP.update_bars(self.probas[0])
 
         #nos quedamos con la probabilida de la clase actual
         probaClaseActual = self.probas[0][self.classes.index(self.trialsSesion[self.__trialNumber])]
@@ -637,7 +642,7 @@ if __name__ == "__main__":
         "sesionNumber": 1, #número de sesión
         "boardParams": { 
             "boardName": "synthetic", #Board de registro
-            "channels": [0,2,3], #[0, 1, 2, 3, 4, 5, 6, 7], #Canales de registro
+            "channels": [0, 1, 2], #[0, 1, 2, 3, 4, 5, 6, 7], #Canales de registro
             "serialPort": "COM5" #puerto serial
         },
         "filterParameters": {
