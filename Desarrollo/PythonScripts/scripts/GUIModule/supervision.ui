@@ -201,7 +201,7 @@ color: rgb(0, 0, 0);</string>
      <x>10</x>
      <y>40</y>
      <width>501</width>
-     <height>291</height>
+     <height>321</height>
     </rect>
    </property>
    <property name="font">
@@ -221,26 +221,26 @@ background-color: rgb(255, 255, 255);</string>
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>30</y>
+      <y>40</y>
       <width>411</width>
-      <height>111</height>
+      <height>121</height>
      </rect>
     </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
     </property>
-    <widget class="QLabel" name="label_orden">
+    <widget class="QLabel" name="label_trial_time">
      <property name="font">
       <font>
        <family>Verdana</family>
-       <pointsize>12</pointsize>
+       <pointsize>10</pointsize>
       </font>
      </property>
      <property name="styleSheet">
       <string notr="true">color: rgb(0, 0, 0);</string>
      </property>
      <property name="text">
-      <string>Comenzando...</string>
+      <string>Progreso del trial...</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -266,15 +266,15 @@ border-color: rgb(0, 0, 0);
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>160</y>
+      <x>30</x>
+      <y>200</y>
       <width>431</width>
       <height>111</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QLabel" name="label_sesion">
+      <widget class="QLabel" name="label_sesion_type">
        <property name="font">
         <font>
          <pointsize>12</pointsize>
@@ -286,38 +286,38 @@ border-color: rgb(0, 0, 0);
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_trial">
+      <widget class="QLabel" name="label_trial_duration">
        <property name="font">
         <font>
          <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>Tiempo del Trial:</string>
+        <string>Tiempo total trial actual:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_etapa">
+      <widget class="QLabel" name="label_trial_phase">
        <property name="font">
         <font>
          <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>Etapa Actual:</string>
+        <string>Fase del trial:</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_canal">
+      <widget class="QLabel" name="label_actual_trial">
        <property name="font">
         <font>
          <pointsize>12</pointsize>
         </font>
        </property>
        <property name="text">
-        <string>Canales Seleccionados:</string>
+        <string>Trial actual / Trials Totales</string>
        </property>
       </widget>
      </item>

@@ -68,11 +68,19 @@ class SupervisionAPP(QDialog):
         #colores para las barras de probabilidad
         self.colores_barras = ['#8199c8', '#b58fbb', '#77aa99', '#edcf5b', '#fa7f7c', '#F1C40F', '#9B59B6','#8E44AD']
 
+        import matplotlib
+        #obtengo la paleta de colores summer_r
+        self.colormap_timeBar = matplotlib.colormaps["YlGn"]
+        del matplotlib
+
+        self.tiempo_actual = 0 #tiempo actual del trial. Su usa para la barra de progreso
+        self.tipo_sesiones = ["Entrenamiento", "Calibración/Feedback", "Online"]
+
         self._init_timeseries()
         self._init_barras()
         self._init_FFT()
 
-        self.update_bars([0.0 for i in range(len(self.clases))])
+        self.update_propbars([0.0 for i in range(len(self.clases))])
 
     def _init_timeseries(self):
         self.plots = list()
@@ -169,7 +177,7 @@ class SupervisionAPP(QDialog):
             br.addItem(bar)
             self.bars.append(bar)
 
-    def update_bars(self, data = [0.5, 0.5]):
+    def update_propbars(self, data = [0.5, 0.5]):
         for i, bar in enumerate(self.bars):
             bar.setOpts(height=round(data[i]*100,2))
 
@@ -191,42 +199,46 @@ class SupervisionAPP(QDialog):
         """
         self.label_orden.setText(texto)
 
-    def update_timebar(self, tiempo_total, tiempo_actual, etapa):
+    def update_timebar(self, tiempo_total, delta_tiempo, phase):
         """
         Actualiza la barra de progreso del trial
             tiempo_actual (float): tiempo actual del trial en segundos. No debe ser mayor al tiempo de trial total
-            etapa (int): etapa actual cuando se actualiza la barra.
+            phase (int): phase actual cuando se actualiza la barra.
                 0: preparacion;
                 1: accion;
                 2: descanso;
         """
         try:
-            self.progressBar.setValue(int(tiempo_actual*100/tiempo_total))
+            self.tiempo_actual += delta_tiempo
+            progreso = int(self.tiempo_actual *100/tiempo_total)
+            colormap = self.colormap_timeBar(progreso)
+            color_barra = f"background-color: rgb({colormap[0]*255}, {colormap[1]*255}, {colormap[2]*255});"
+            self.progressBar.setValue(progreso)
 
-            if etapa == 0:
-                self.progressBar.setStyleSheet("QProgressBar::chunk {background-color: green;}")
+            self.progressBar.setStyleSheet("QProgressBar::chunk {" + color_barra + "}")
 
-            if etapa == 1:
-                self.progressBar.setStyleSheet("QProgressBar::chunk {background-color: orange;}")
-
-            if etapa == 2:
-                self.progressBar.setStyleSheet("QProgressBar::chunk {background-color: red;}")
+            if phase == 0:
+                self.tiempo_actual = 0
 
         except:
-            pass
+            print("Error al actualizar la barra de progreso")
 
-    def actualizar_info(self, sesion:int, trial:float, etapa:int, canales:str):
+    def update_info(self, sesion:int, trial_duration:float, phase:int, trial_actual:int, trials_totales:int):
         """
         Para actualizar los campos de información en la interfaz de superivisión
         """
-        self.label_sesion.setText(f'Tipo de Sesión: {sesion}')
-        self.label_trial.setText(f'Tiempo del Trial: {trial} s')
-        self.label_etapa.setText(f'Estapa Actual: {etapa}')
-        self.label_etapa.setText(f'Canales Seleccionados: {canales}')
+        self.label_sesion_type.setText(f'Tipo de Sesión: {self.tipo_sesiones[sesion]}')
+        self.label_trial_duration.setText(f'Tiempo del Trial: {trial_duration} s')
+        self.label_trial_time.setText(f'{round(self.tiempo_actual,1)} s')
+        self.label_trial_phase.setText(f'Estapa Actual: {phase}')
+        self.label_actual_trial.setText(f'Trial actual / Trials Totales: {trial_actual+1}/{trials_totales}')
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     _ventana = SupervisionAPP(['AD', 'DP'], [1,2,3])
+
+    _ventana.update_info(1, 10, 2, 10, 100)
+    _ventana.update_timebar(10, 2, 2)
 
     _ventana.show()
     app.exec_()

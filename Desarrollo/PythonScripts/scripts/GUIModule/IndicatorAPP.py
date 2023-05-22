@@ -29,14 +29,14 @@ class IndicatorAPP(QDialog):
 
         #obtenemos el background de label_orden
         self.background_color = self.label_orden.palette().color(QPalette.Background).name()
-        self.font_color = "rgb(25,50,200)" #self.label_orden.palette().color(QPalette.Base)
+        self.font_color = "rgb(25,50,200)"
 
-        from matplotlib.pyplot import cm
+        import matplotlib
         #obtengo la paleta de colores summer_r
-        self.colormap_barra = cm.get_cmap('summer_r')
-        del cm
+        self.colormap_barra = matplotlib.colormaps["summer_r"]
+        del matplotlib
 
-    def actualizar_orden(self, texto, fontsize = 36, background = None, border = "1px", font_color = "black"):
+    def update_order(self, texto, fontsize = 36, background = None, border = "1px", font_color = "black"):
         """
         Actualiza la etiqueta que da la orden
             texto (str): texto de la orden
