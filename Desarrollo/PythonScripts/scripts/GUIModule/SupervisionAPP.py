@@ -184,14 +184,14 @@ class SupervisionAPP(QDialog):
         for canal in range(len(self.canales)):
             self.curves2[canal].setData(fline, data[canal])
 
-    def actualizar_orden(self, texto:str):
+    def update_order(self, texto:str):
         """
         Actualiza la etiqueta que da la orden
             texto (str): texto de la orden
         """
         self.label_orden.setText(texto)
 
-    def actualizar_barra(self, tiempo_total, tiempo_actual, etapa):
+    def update_timebar(self, tiempo_total, tiempo_actual, etapa):
         """
         Actualiza la barra de progreso del trial
             tiempo_actual (float): tiempo actual del trial en segundos. No debe ser mayor al tiempo de trial total

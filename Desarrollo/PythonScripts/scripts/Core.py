@@ -415,7 +415,7 @@ class Core(QMainWindow):
             print(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
             logging.info(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
             self.indicatorAPP.showCruz(True) #mostramos la cruz
-            self.indicatorAPP.actualizar_orden("Fijar la mirada en la cruz...")
+            self.indicatorAPP.update_order("Fijar la mirada en la cruz...")
             #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
             startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
             self.__startingTime = startingTime
@@ -428,14 +428,14 @@ class Core(QMainWindow):
             logging.info("Iniciamos fase cue del trial")
             claseActual = self.trialsSesion[self.__trialNumber]
             classNameActual = self.clasesNames[self.classes.index(claseActual)]
-            self.indicatorAPP.actualizar_orden(f"{classNameActual}", fontsize = 46,
+            self.indicatorAPP.update_order(f"{classNameActual}", fontsize = 46,
                                               background = "rgb(38,38,38)", font_color = "white")
             self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
             self.eegThreadTimer.setInterval(int(self.cueDuration * 1000))
 
         elif self.__trialPhase == 2:
             logging.info("Iniciamos fase de finalización del trial")
-            self.indicatorAPP.actualizar_orden("Fin de tarea...")
+            self.indicatorAPP.update_order("Fin de tarea...")
             self.__trialPhase = -1 #Fase para guardar datos de EEG
             self.eegThreadTimer.setInterval(int(self.finishDuration * 1000))
 
@@ -458,7 +458,7 @@ class Core(QMainWindow):
             print(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
             logging.info(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
             self.indicatorAPP.showCruz(True) #mostramos la cruz
-            self.indicatorAPP.actualizar_orden("Fijar la mirada en la cruz...")
+            self.indicatorAPP.update_order("Fijar la mirada en la cruz...")
             #Generamos un número aleatorio entre self.startingTimes[0] y self.startingTimes[1], redondeado a 1 decimal
             startingTime = round(random.uniform(self.startingTimes[0], self.startingTimes[1]), 1)
             self.__startingTime = startingTime
@@ -471,7 +471,7 @@ class Core(QMainWindow):
             self.indicatorAPP.showCruz(False)
             claseActual = self.trialsSesion[self.__trialNumber]
             classNameActual = self.clasesNames[self.classes.index(claseActual)]
-            self.indicatorAPP.actualizar_orden(f"{classNameActual}", fontsize = 46,
+            self.indicatorAPP.update_order(f"{classNameActual}", fontsize = 46,
                                               background = "rgb(38,38,38)", font_color = "white")
             self.indicatorAPP.showBar(True)
             self.indicatorAPP.actualizar_barra(0) #iniciamos la barra en 0%
@@ -488,7 +488,7 @@ class Core(QMainWindow):
             self.classifyEEGTimer.stop() #detenemos el timer de clasificación
             self.indicatorAPP.showBar(False)
             logging.info("Iniciamos fase de finalización del trial")
-            self.indicatorAPP.actualizar_orden("Fin de tarea...")
+            self.indicatorAPP.update_order("Fin de tarea...")
             self.__trialPhase = -1 #volvemos a la fase inicial del trial
             self.feedbackThreadTimer.setInterval(int(self.finishDuration * 1000))
 
@@ -507,7 +507,7 @@ class Core(QMainWindow):
         """Función para configurar la sesión de entrenamiento usando self.confiAPP.
         """
         self.indicatorAPP.show() #mostramos la APP
-        self.indicatorAPP.actualizar_orden("Configurando la sesión...")
+        self.indicatorAPP.update_order("Configurando la sesión...")
         self.supervisionAPP.show() #mostramos la APP
         self.configAPP.show() #mostramos la APP
         self.configAppTimer.start()
@@ -571,10 +571,10 @@ class Core(QMainWindow):
         print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         logging.info(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         if self.typeSesion == 0:
-            self.indicatorAPP.actualizar_orden("Iniciando sesión de entrenamiento") #actualizamos app
+            self.indicatorAPP.update_order("Iniciando sesión de entrenamiento") #actualizamos app
         
         if self.typeSesion == 1:
-            self.indicatorAPP.actualizar_orden("Iniciando sesión de feedback") #actualizamos app
+            self.indicatorAPP.update_order("Iniciando sesión de feedback") #actualizamos app
 
         self.iniSesionTimer.start()
 
