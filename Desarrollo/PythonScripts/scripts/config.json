@@ -17,12 +17,12 @@
         "Rest"
     ],
     "startingTimes": [
-        2,
-        3
+        1,
+        1
     ],
     "cueDuration": 4.0,
-    "finishDuration": 4.0,
-    "lenToClassify": 0.1,
+    "finishDuration": 1.0,
+    "lenToClassify": 0.3,
     "subjectName": "subject_test",
     "sesionNumber": 1,
     "boardParams": {

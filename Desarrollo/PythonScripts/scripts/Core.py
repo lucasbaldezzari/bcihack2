@@ -106,7 +106,7 @@ class Core(QMainWindow):
         self.startingTimes = configParameters["startingTimes"]
         self.cueDuration = configParameters["cueDuration"]
         self.finishDuration = configParameters["finishDuration"]
-        self.lenToClassify = configParameters["lenToClassify"]
+        self.lenToClassify = configParameters["lenToClassify"] #400 milisegundos mostro un buen resultado en graficación
         self.subjectName = configParameters["subjectName"]
         self.sesionNumber = configParameters["sesionNumber"]
 
@@ -476,10 +476,13 @@ class Core(QMainWindow):
             self.indicatorAPP.showBar(True)
             self.indicatorAPP.actualizar_barra(0) #iniciamos la barra en 0%
             self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
+
+            # Tomo los datos de EEG de la duración del cue y los guardo en self._dataToClasify 
+            # Los datos dentro de self._dataToClasify se van actualizando en cada entrada a la función classifyEEG
             self._dataToClasify = self.eeglogger.getData(self.cueDuration, removeDataFromBuffer=False)[self.channels]
-            self.classifyEEGTimer.start()
-            
+            self.classifyEEGTimer.start() #inicio el timer para clasificar el EEG
             self.feedbackThreadTimer.setInterval(int((self.cueDuration + self.lenToClassify*0.05) * 1000))
+            #La suma de self.cueDuration + self.lenToClassify*0.05 es para darle un pequeño margen de tiempo
 
         elif self.__trialPhase == 2:
             self.classifyEEGTimer.stop() #detenemos el timer de clasificación
@@ -492,6 +495,7 @@ class Core(QMainWindow):
         else:
             #Al finalizar el trial, guardamos los datos de EEG
             logging.info("Guardando datos de EEG")
+            self.listasGraficasClasiffier.append(self._dataToClasify)
             newData = self.eeglogger.getData(self.__startingTime + self.cueDuration + self.finishDuration, removeDataFromBuffer=False)[self.channels]
             self.eeglogger.saveData(newData, fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
             self.saveEvents() #guardamos los eventos de la sesión
@@ -528,8 +532,6 @@ class Core(QMainWindow):
         # self.supervisionAPP.update_plots(data.reshape(data.shape[1],data.shape[2]))
         self.supervisionAPP.update_plots(data)
 
-        
-
     def classifyEEG(self):
         """Función para clasificar EEG
         La función se llama cada vez que se activa el timer self.classifyEEGTimer. La duración
@@ -546,7 +548,8 @@ class Core(QMainWindow):
         newData = self.eeglogger.getData(self.lenToClassify, removeDataFromBuffer = False)[self.channels]
         samplesToRemove = int(self.lenToClassify*self.sample_rate) #muestras a eliminar del buffer interno de datos
 
-        self._dataToClasify = np.concatenate((self._dataToClasify[:,samplesToRemove:], newData), axis = 1)
+        self._dataToClasify = np.roll(self._dataToClasify, -samplesToRemove, axis=1)
+        self._dataToClasify[:, -samplesToRemove:] = newData
 
         channels, samples = self._dataToClasify.shape
 
@@ -560,8 +563,6 @@ class Core(QMainWindow):
 
         #nos quedamos con la probabilida de la clase actual
         probaClaseActual = self.probas[0][self.classes.index(self.trialsSesion[self.__trialNumber])]
-        #creo un número aleatorio para simular la probabilidad de la clase actual
-        probaClaseActual = np.random.rand()
         self.indicatorAPP.actualizar_barra(probaClaseActual) #actualizamos la barra de probabilidad
         logging.info("Dato clasificado", self.prediction)
         
@@ -666,3 +667,4 @@ if __name__ == "__main__":
     core = Core(parameters, ConfigAPP("config.json"), IndicatorAPP(), SupervisionAPP)
 
     sys.exit(app.exec_())
+
