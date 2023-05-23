@@ -76,6 +76,12 @@ class SupervisionAPP(QDialog):
         self.tiempo_actual = 0 #tiempo actual del trial. Su usa para la barra de progreso
         self.reset_timeBar = False #para resetear la barra de progreso
         self.tipo_sesiones = ["Entrenamiento", "Calibración/Feedback", "Online"]
+        self.fases = {
+            0: "Descanso",
+            1: "Preparación",
+            2: "Acción",
+            -1: "Descanso"
+        } ## Los nombres de las fases se defasan para estar en concordancia con el Core.py
 
         self._init_timeseries()
         self._init_barras()
@@ -231,15 +237,18 @@ class SupervisionAPP(QDialog):
         """
         self.label_sesion_type.setText(f'Tipo de Sesión: {self.tipo_sesiones[sesion]}')
         self.label_trial_duration.setText(f'Tiempo del Trial: {trial_duration} s')
-        self.label_trial_time.setText(f'Progreso: {round(self.tiempo_actual,1)} s')
-        self.label_trial_phase.setText(f'Fase Actual: {phase}')
+        if phase == 0 or self.reset_timeBar:
+            self.label_trial_time.setText(f'Progreso: {0.0} s')
+        else:
+            self.label_trial_time.setText(f'Progreso: {round(self.tiempo_actual,1)} s')
+        self.label_trial_phase.setText(f'Fase Actual: {self.fases[phase]}')
         self.label_actual_trial.setText(f'Trial actual / Trials Totales: {trial_actual+1}/{trials_totales}')
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     _ventana = SupervisionAPP(['AD', 'DP'], [1,2,3])
 
-    _ventana.update_info(1, 10, 2, 10, 100)
+    _ventana.update_info(1, 10, 1, 10, 100)
     _ventana.update_timebar(10, 1, 2)
 
     _ventana.show()

@@ -341,6 +341,8 @@ class Core(QMainWindow):
         print("Iniciando streaming de EEG...")
         logging.info("Iniciando streaming de EEG...")
 
+        self.supervisionAPP.label_trial_time.setText("Iniciando streaming. Estabilizando señal de EEG.")
+
         channels_names = self.eeglogger.board.get_eeg_channels(board_id)
 
         if startStreaming:
