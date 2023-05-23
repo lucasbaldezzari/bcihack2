@@ -70,7 +70,7 @@ class SupervisionAPP(QDialog):
 
         import matplotlib
         #obtengo la paleta de colores summer_r
-        self.colormap_timeBar = matplotlib.colormaps["YlGn"]
+        self.colormap_timeBar = matplotlib.colormaps["Blues"]
         del matplotlib
 
         self.tiempo_actual = 0 #tiempo actual del trial. Su usa para la barra de progreso
@@ -229,8 +229,8 @@ class SupervisionAPP(QDialog):
         """
         self.label_sesion_type.setText(f'Tipo de Sesión: {self.tipo_sesiones[sesion]}')
         self.label_trial_duration.setText(f'Tiempo del Trial: {trial_duration} s')
-        self.label_trial_time.setText(f'{round(self.tiempo_actual,1)} s')
-        self.label_trial_phase.setText(f'Estapa Actual: {phase}')
+        self.label_trial_time.setText(f'Progreso: {round(self.tiempo_actual,1)} s')
+        self.label_trial_phase.setText(f'Fase Actual: {phase}')
         self.label_actual_trial.setText(f'Trial actual / Trials Totales: {trial_actual+1}/{trials_totales}')
 
 if __name__ == "__main__":
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     _ventana = SupervisionAPP(['AD', 'DP'], [1,2,3])
 
     _ventana.update_info(1, 10, 2, 10, 100)
-    _ventana.update_timebar(10, 2, 2)
+    _ventana.update_timebar(10, 1, 2)
 
     _ventana.show()
     app.exec_()
