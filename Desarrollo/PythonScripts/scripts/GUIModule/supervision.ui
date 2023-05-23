@@ -25,7 +25,7 @@
     <rect>
      <x>20</x>
      <y>10</y>
-     <width>191</width>
+     <width>351</width>
      <height>25</height>
     </rect>
    </property>
@@ -41,7 +41,7 @@
     <string notr="true">color: rgb(245, 245, 245);</string>
    </property>
    <property name="text">
-    <string>SupervisionAPP V1.0</string>
+    <string>SupervisionAPP V1.0 - BCIHack 2023</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
@@ -201,7 +201,7 @@ color: rgb(0, 0, 0);</string>
      <x>10</x>
      <y>40</y>
      <width>501</width>
-     <height>321</height>
+     <height>491</height>
     </rect>
    </property>
    <property name="font">
@@ -269,7 +269,7 @@ border-color: rgb(0, 0, 0);
       <x>30</x>
       <y>200</y>
       <width>431</width>
-      <height>111</height>
+      <height>151</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -277,7 +277,7 @@ border-color: rgb(0, 0, 0);
       <widget class="QLabel" name="label_sesion_type">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <pointsize>14</pointsize>
         </font>
        </property>
        <property name="text">
@@ -289,7 +289,7 @@ border-color: rgb(0, 0, 0);
       <widget class="QLabel" name="label_trial_duration">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <pointsize>14</pointsize>
         </font>
        </property>
        <property name="text">
@@ -301,7 +301,7 @@ border-color: rgb(0, 0, 0);
       <widget class="QLabel" name="label_trial_phase">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <pointsize>14</pointsize>
         </font>
        </property>
        <property name="text">
@@ -313,7 +313,7 @@ border-color: rgb(0, 0, 0);
       <widget class="QLabel" name="label_actual_trial">
        <property name="font">
         <font>
-         <pointsize>12</pointsize>
+         <pointsize>14</pointsize>
         </font>
        </property>
        <property name="text">
@@ -323,52 +323,101 @@ border-color: rgb(0, 0, 0);
      </item>
     </layout>
    </widget>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>660</y>
-     <width>141</width>
-     <height>141</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background-image: url(:/logo1/logo1.png);
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>390</y>
+      <width>111</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-image: url(:/logo1/logo1.png);
 background-image: url(:/logo1/logo1.png);</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="pixmap">
-    <pixmap>images/Logo Hackathon 2022-2023 AxonNexus v1.0.png</pixmap>
-   </property>
-   <property name="scaledContents">
-    <bool>true</bool>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>360</x>
-     <y>670</y>
-     <width>141</width>
-     <height>141</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">background-image: url(:/logo1/logo1.png);
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>images/logoutec.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>410</y>
+      <width>111</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-image: url(:/logo1/logo1.png);
 background-image: url(:/logo1/logo1.png);</string>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="pixmap">
-    <pixmap>images/06-isologotipo-para-fondo-blanco.png</pixmap>
-   </property>
-   <property name="scaledContents">
-    <bool>true</bool>
-   </property>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>images/logoibio.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>390</y>
+      <width>91</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-image: url(:/logo1/logo1.png);
+background-image: url(:/logo1/logo1.png);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>images/Logo Hackathon 2022-2023 AxonNexus v1.0.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="Line" name="line">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>370</y>
+      <width>431</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="Line" name="line_2">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>470</y>
+      <width>431</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources>

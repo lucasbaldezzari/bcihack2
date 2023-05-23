@@ -1,7 +1,7 @@
 {
     "typeSesion": 1,
-    "cueType": 1,
-    "ntrials": 1,
+    "cueType": 0,
+    "ntrials": 2,
     "classes": [
         1,
         2,
@@ -17,11 +17,11 @@
         "Rest"
     ],
     "startingTimes": [
-        2,
-        3
+        1,
+        1
     ],
     "cueDuration": 4.0,
-    "finishDuration": 4.0,
+    "finishDuration": 1.0,
     "lenToClassify": 0.3,
     "subjectName": "subject_test",
     "sesionNumber": 1,

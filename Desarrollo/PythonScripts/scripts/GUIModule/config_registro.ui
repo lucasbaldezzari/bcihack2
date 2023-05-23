@@ -372,7 +372,7 @@ background-color: rgb(56,128,204);</string>
            <item>
             <widget class="QLineEdit" name="line_promedio">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="font">
               <font>
@@ -394,7 +394,7 @@ background-color: rgb(56,128,204);</string>
            <item>
             <widget class="QLineEdit" name="line_canales">
              <property name="enabled">
-              <bool>false</bool>
+              <bool>true</bool>
              </property>
              <property name="font">
               <font>
@@ -563,8 +563,8 @@ background-color: rgb(56,128,204);</string>
     <rect>
      <x>20</x>
      <y>50</y>
-     <width>271</width>
-     <height>23</height>
+     <width>279</width>
+     <height>29</height>
     </rect>
    </property>
    <property name="font">
@@ -617,6 +617,25 @@ background-color: rgb(56,128,204);</string>
     <widget class="QWidget" name="layoutWidget">
      <layout class="QVBoxLayout" name="verticalLayout_8">
       <item>
+       <widget class="QLabel" name="label_18">
+        <property name="font">
+         <font>
+          <family>MS Shell Dlg 2</family>
+          <pointsize>12</pointsize>
+          <weight>50</weight>
+          <italic>false</italic>
+          <bold>false</bold>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">color: rgb(255, 255, 255);</string>
+        </property>
+        <property name="text">
+         <string>Intervalo Tiempo Inicio</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="label_10">
         <property name="font">
          <font>
@@ -654,8 +673,12 @@ background-color: rgb(56,128,204);</string>
         </property>
        </widget>
       </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="layoutWidget">
+     <layout class="QVBoxLayout" name="verticalLayout_7">
       <item>
-       <widget class="QLabel" name="label_18">
+       <widget class="QLineEdit" name="line_inicio">
         <property name="font">
          <font>
           <family>MS Shell Dlg 2</family>
@@ -669,14 +692,10 @@ background-color: rgb(56,128,204);</string>
          <string notr="true">color: rgb(255, 255, 255);</string>
         </property>
         <property name="text">
-         <string>Intervalo Tiempo Inicio</string>
+         <string/>
         </property>
        </widget>
       </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="layoutWidget">
-     <layout class="QVBoxLayout" name="verticalLayout_7">
       <item>
        <widget class="QLineEdit" name="line_tiempo_accion">
         <property name="font">
@@ -712,25 +731,6 @@ background-color: rgb(56,128,204);</string>
         </property>
         <property name="text">
          <string>0.1</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="line_inicio">
-        <property name="font">
-         <font>
-          <family>MS Shell Dlg 2</family>
-          <pointsize>12</pointsize>
-          <weight>50</weight>
-          <italic>false</italic>
-          <bold>false</bold>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">color: rgb(255, 255, 255);</string>
-        </property>
-        <property name="text">
-         <string/>
         </property>
        </widget>
       </item>
@@ -1515,10 +1515,10 @@ QPushButton:hover{background-color:orange;}</string>
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>540</x>
+     <x>560</x>
      <y>10</y>
-     <width>291</width>
-     <height>31</height>
+     <width>267</width>
+     <height>33</height>
     </rect>
    </property>
    <property name="font">
