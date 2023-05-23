@@ -90,10 +90,10 @@ class TrialsHandler():
     
 if __name__ == "__main__":
 
-    file = "data/dummyTest/eegdata/sesion1/sn1_ts0_ct0_r1.npy"
+    file = "data\subject_test\eegdata\sesion1\sn1_ts1_ct1_r2.npy"
     rawEEG = np.load(file)
 
-    eventosFile = "data/dummyTest/eegdata/sesion1/sn1_ts0_ct0_r1_events.txt"
+    eventosFile = "data\subject_test\eegdata\sesion1\sn1_ts1_ct1_r2_events.txt"
 
     eventos = pd.read_csv(eventosFile, sep = ",")
 
@@ -105,8 +105,26 @@ if __name__ == "__main__":
     t = np.arange(0, rawEEG[1].shape[0]/250., 1/250.)
 
     import matplotlib.pyplot as plt
-    plt.plot(t[:1000], rawEEG[5][:1000])
+    plt.plot(t[:], rawEEG[0,:])
     plt.xlabel("Tiempo (s)")
     plt.ylabel("Amplitud (uV)")
     plt.show()
+
+    trials = trialhandler.trials
+    t = np.arange(0, trials.shape[2]/250., 1/250.)
+
+    #graficamos cada trial en un subplot. Cada subplot en una fila
+
+    #stilo ggplot
+    plt.style.use('ggplot')
+    fig, axs = plt.subplots(trials.shape[0], 1, sharex=True, sharey=True)
+    for i in range(trials.shape[0]):
+        axs[i].plot(t[:], trials[i,0,:])
+        axs[i].set_title("Trial {}".format(i+1))
+        axs[i].set_xlabel("Tiempo (s)")
+        axs[i].set_ylabel("Amplitud (uV)")
+    #titulo del gráfico
+    fig.suptitle("Trials para board synthetic - Sesión Calibración")
+    plt.show()
+    
 
