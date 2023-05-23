@@ -372,7 +372,7 @@ background-color: rgb(56,128,204);</string>
            <item>
             <widget class="QLineEdit" name="line_promedio">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <property name="font">
               <font>
@@ -394,7 +394,7 @@ background-color: rgb(56,128,204);</string>
            <item>
             <widget class="QLineEdit" name="line_canales">
              <property name="enabled">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <property name="font">
               <font>
@@ -563,8 +563,8 @@ background-color: rgb(56,128,204);</string>
     <rect>
      <x>20</x>
      <y>50</y>
-     <width>279</width>
-     <height>29</height>
+     <width>271</width>
+     <height>23</height>
     </rect>
    </property>
    <property name="font">
@@ -1515,10 +1515,10 @@ QPushButton:hover{background-color:orange;}</string>
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>560</x>
+     <x>540</x>
      <y>10</y>
-     <width>267</width>
-     <height>33</height>
+     <width>291</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="font">

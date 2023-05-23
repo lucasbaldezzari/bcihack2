@@ -1,6 +1,7 @@
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+import numpy as np
 from PyQt5 import uic
 import sys
 import json
@@ -36,7 +37,6 @@ class ConfigAPP(QDialog):
 
             #Parámetros para inicar la placa openbci
             self.desplegable_placa.setCurrentText(configParameters["boardParams"]['boardName'])
-            self.line_canales.setText(f'{configParameters["boardParams"]["channels"]}')
             self.line_puerto.setText(f'{configParameters["boardParams"]["serialPort"]}')
 
             #parámetros del filtro
@@ -79,7 +79,7 @@ class ConfigAPP(QDialog):
             #Parámetros para inicar la placa openbci
             configParameters["boardParams"] = dict()
             configParameters["boardParams"]['boardName'] = self.desplegable_placa.currentText()
-            configParameters["boardParams"]['channels'] = eval(self.line_canales.text()) 
+            configParameters["boardParams"]['channels'] = [0,2,3] #ESTA LINEA HAY QUE ADAPTARLA A LA APP DE CONFIG
             configParameters["boardParams"]["serialPort"] = self.line_puerto.text()
 
             #parámetros del filtro
@@ -121,8 +121,8 @@ class ConfigAPP(QDialog):
     def Cerrar(self):
         self.close()
 
-# if __name__ == "__main__":
-app = QApplication(sys.argv)
-_ventana = ConfigAPP("config.json")
-_ventana.show()
-app.exec_()
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    _ventana = ConfigAPP("config.json")
+    _ventana.show()
+    app.exec_()
