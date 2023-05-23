@@ -32,6 +32,12 @@ El siguiente repositorio será utilizado para almacenar bibliografía, set de da
 - [Estudiante Ing. Biomédica. GALVÁN Maximiliano - maximiliano.galvan@utec.edu.uy](https://www.linkedin.com/in/maximiliano-g-b0628825a/)
 - [Téc. MAR Walter - walter.mar@utec.edu.uy](https://www.linkedin.com/in/walter-mar-6b2104195/?originalSubdomain=uy)
 
+### Demo sistema
+
+Demostración del sistema al día 23/5/2023.
+
+![animation](https://github.com/lucasbaldezzari/bcihack2/assets/21134083/7acf2000-d3af-4217-a934-7afd6348635d)
+
 ## Discord
 
 Puedes visitarnos en Discord en nuestro canal [Uruguay BCI](https://discord.gg/7e6ZdFgh).
