@@ -448,6 +448,7 @@ class Core(QMainWindow):
             self.eeglogger.saveData(newData[self.channels], fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
             self.saveEvents() #guardamos los eventos de la sesión
             self.__trialPhase = 0 #volvemos a la fase inicial del trial
+            self.supervisionAPP.reset_timeBar = True
             self.__trialNumber += 1 #incrementamos el número de trial
             self.trainingEEGThreadTimer.setInterval(1)
 
@@ -542,7 +543,7 @@ class Core(QMainWindow):
                                             len(self.trialsSesion))
             
             self.supervisionAPP.update_timebar(self.__startingTime + self.cueDuration + self.finishDuration,
-                                            self.__supervisionAPPTime/1000, self.__trialPhase)
+                                               self.__supervisionAPPTime/1000, self.__trialPhase)
 
     def classifyEEG(self):
         """Función para clasificar EEG

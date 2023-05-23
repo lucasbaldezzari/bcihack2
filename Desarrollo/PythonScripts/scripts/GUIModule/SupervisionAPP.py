@@ -74,6 +74,7 @@ class SupervisionAPP(QDialog):
         del matplotlib
 
         self.tiempo_actual = 0 #tiempo actual del trial. Su usa para la barra de progreso
+        self.reset_timeBar = False #para resetear la barra de progreso
         self.tipo_sesiones = ["Entrenamiento", "Calibración/Feedback", "Online"]
 
         self._init_timeseries()
@@ -217,8 +218,9 @@ class SupervisionAPP(QDialog):
 
             self.progressBar.setStyleSheet("QProgressBar::chunk {" + color_barra + "}")
 
-            if phase == 0:
+            if phase == 0 or self.reset_timeBar:
                 self.tiempo_actual = 0
+                self.reset_timeBar = False
 
         except:
             print("Error al actualizar la barra de progreso")
