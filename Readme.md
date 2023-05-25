@@ -48,7 +48,7 @@ En esta sección se encuentra el código fuente de los diferentes scripts en pyt
 
 La siguiente imagen muestra el diagrama de bloques V1.4 de la BCI.
 
-![Diagrama de bloques](bloques.png)
+![Diagrama de bloques](/Desarrollo/PythonScripts/bloques.png)
 
 A continuación, se resume lo contenido dentro de cada directorio.
 
