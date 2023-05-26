@@ -118,6 +118,7 @@ class Core(QMainWindow):
 
         ##Me quedo con la primeras letras de las palabras de self.clasesNames
         self.supervisionAPP = supervisionAPP([str(clase) for clase in self.classes], self.channels)
+        # self.supervisionAPP.setFilter(Filter(8,18,50,2,250., 1))
 
         #parámetros del filtro
         self.filterParameters = configParameters["filterParameters"]
@@ -685,4 +686,3 @@ if __name__ == "__main__":
     core = Core(parameters, ConfigAPP("config.json"), IndicatorAPP(), SupervisionAPP)
 
     sys.exit(app.exec_())
-

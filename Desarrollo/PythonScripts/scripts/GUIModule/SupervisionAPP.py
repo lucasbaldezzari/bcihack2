@@ -25,7 +25,7 @@ class SupervisionAPP(QDialog):
         self.umbral_calsificacion = umbral_clasificacion #% umbral de clasificación
 
         self.sample_rate = 250.
-        self.t_lenght = 10 # segundos de señal
+        self.t_lenght = 2 # segundos de señal
         #Creo un numpyarray para hacer de buffer de datos que se mostrará en pantalla
         #El shape es (canales, tiempo)
         self.data = np.zeros((len(self.canales), int(self.sample_rate*self.t_lenght)))
