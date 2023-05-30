@@ -41,6 +41,10 @@ class SupervisionAPP(QDialog):
 
         pg.setConfigOptions(antialias=True)
 
+        self.desplegable_escala.currentIndexChanged.connect(self.change_scale)
+
+        self.escalas = ['Auto', 50e-6, 100e-6, 200e-6, 400e-6, 1e-3, 10e-3, 100e-3, 1, 10, 100]
+
         # new QGraphicsScene for timeseries EEG data
         scene = QGraphicsScene()
         self.graphicsView.setScene(scene)
@@ -100,7 +104,7 @@ class SupervisionAPP(QDialog):
             p.showGrid(x=True, y=True)
 
             ax0 = p.getAxis('left') #para manipular el axis izquierdo (eje y)
-            ax0.setStyle(showValues=False)
+            ax0.setStyle(showValues=True)
             ax0.setLabel(f"C{self.canales[i]}", color=self.colores_eeg[i], size='14pt', bold=True)
 
             ## Creo eje inferior
@@ -112,9 +116,23 @@ class SupervisionAPP(QDialog):
             p.showAxis('top', False)  # Ocultar el eje superior
             p.showAxis('bottom', True)
 
+            self.plots.append(p)
+
             # p.addLegend(size=(2,0), offset=(-0.5,-0.1))# agrego leyenda por cada gráfico
             curve = p.plot(pen = self.colores_eeg[i], name = f'Canal {i}')
             self.curves.append(curve)
+    
+    def change_scale(self):
+        indice = self.desplegable_escala.currentIndex()
+
+        if indice == 0:
+            for p in self.plots:
+                p.enableAutoRange(axis='y')
+
+        else:
+            limites = self.escalas[indice]
+            for p in self.plots:
+                p.setRange(yRange=(-limites, limites))
 
     def _init_FFT(self):
         self.plots3 = list()
