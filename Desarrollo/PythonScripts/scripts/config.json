@@ -1,7 +1,7 @@
 {
     "typeSesion": 0,
     "cueType": 1,
-    "ntrials": 10,
+    "ntrials": 3,
     "classes": [
         1,
         2
@@ -17,7 +17,7 @@
     "cueDuration": 4.0,
     "finishDuration": 3.0,
     "lenToClassify": 0.3,
-    "subjectName": "test_mordiendo",
+    "subjectName": "subject_test",
     "sesionNumber": 2,
     "boardParams": {
         "boardName": "synthetic",

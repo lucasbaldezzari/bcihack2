@@ -356,7 +356,7 @@ class Core(QMainWindow):
             self.supervisionAPPTimer.start()
 
     def setFilter(self):
-        """Función para setear el filtro de EEG.
+        """Función para setear el filtro de EEG que usaremos en la supervisiónAPP
         - Los parámetros del filtro se obtienen a partir de self.parameters['filterParameters']"""
 
         lowcut = self.filterParameters['lowcut']
@@ -366,9 +366,19 @@ class Core(QMainWindow):
         sample_rate = self.filterParameters['sample_rate']
         axisToCompute = self.filterParameters['axisToCompute']
 
+        # self.max_laps = 5 #máxima cantidad de datos a concatenar
+
+        # self.filterAcum = 0
+        # self.dataToFilter = np.zeros((len(self.channels), self.max_laps))
+
+        # self.filter = Filter(lowcut=lowcut, highcut=highcut, notch_freq=notch_freq, notch_width=notch_width,
+        #                      sample_rate=sample_rate, axisToCompute = 1,
+        #                      padlen = int(self.__supervisionAPPTime * sample_rate/1000/2)*self.max_laps)
+
         self.filter = Filter(lowcut=lowcut, highcut=highcut, notch_freq=notch_freq, notch_width=notch_width,
-                             sample_rate=sample_rate, axisToCompute = axisToCompute)
-        
+                             sample_rate=sample_rate, axisToCompute = 1,
+                             padlen = int(self.__supervisionAPPTime * sample_rate/1000)-1)
+
     def setPipeline(self, **pipelineBlocks):
         """Función para setear el pipeline para el procesamiento y clasificación de EEG.
         Parametros:
@@ -532,10 +542,23 @@ class Core(QMainWindow):
         ##Actualizamos gráficas de EEG y FFT
 
         #obtenemos los datos de EEG
-        data = self.eeglogger.getData(self.__supervisionAPPTime/1000  , removeDataFromBuffer = False)[self.channels]
-        # data = self.filter.fit_transform(data.reshape(1,data.shape[0],data.shape[1]))
-        # #actualizamos la gráfica de EEG
-        # self.supervisionAPP.update_plots(data.reshape(data.shape[1],data.shape[2]))
+        data = self.eeglogger.getData(self.__supervisionAPPTime/1000, removeDataFromBuffer = False)[self.channels]
+
+        # if self.filterAcum == 0:
+        #     self.dataToFilter = data
+        #     self.filterAcum += data.shape[1]
+        # else:
+        #     self.filterAcum += data.shape[1]
+        #     self.dataToFilter = np.concatenate((self.dataToFilter, data), axis = 1)
+
+        # #chequeo que la cantidad de datos acumulados sea igual o mayor a la cantidad de muestras necesarias para aplicar el filtro
+        # if self.filterAcum >= self.max_laps:
+        #     #filtramos self.dataToFilter
+        #     self.supervisionAPP.update_plots(self.filter.fit_transform(self.dataToFilter))
+        #     self.filterAcum = 0
+        #     self.data = np.zeros((len(self.channels), self.max_laps))
+
+        # self.supervisionAPP.update_plots(self.filter.fit_transform(data))
         self.supervisionAPP.update_plots(data)
 
         if self.session_started:
@@ -687,3 +710,19 @@ if __name__ == "__main__":
     core = Core(parameters, ConfigAPP("config.json", InfoAPP), IndicatorAPP(), SupervisionAPP)
 
     sys.exit(app.exec_())
+
+# ##cargo el archivo data\subject_test\eegdata\sesion2\sn2_ts0_ct1_r13.npy
+# import numpy as np
+# data = np.load("data/subject_test/eegdata/sesion2/sn2_ts0_ct1_r13.npy")
+
+# filtro = Filter(lowcut=8, highcut=12, notch_freq=50, notch_width=2,
+#                         sample_rate=250, axisToCompute = 1,
+#                         padlen = 0)
+
+# dataFiltrada = filtro.fit_transform(data)
+
+# import matplotlib.pyplot as plt
+
+# plt.plot(data[1,:200])
+# plt.plot(dataFiltrada[1,:200])
+# plt.show()

@@ -8,7 +8,7 @@ class Filter(BaseEstimator, TransformerMixin):
     La clase se puede usar como un objeto de sklearn, por lo que se puede usar en un pipeline de sklearn."""
 
     def __init__(self, lowcut = 8.0, highcut = 30.0, notch_freq = 50.0, notch_width = 2.0, sample_rate = 250.0,
-                 axisToCompute = 2):
+                 axisToCompute = 2, padlen = None):
         """Inicializa el objeto con los parámetros de filtrado.
         -lowcut: Frecuencia de corte inferior del filtro pasa banda.
         -highcut: Frecuencia de corte superior del filtro pasa banda.
@@ -24,6 +24,7 @@ class Filter(BaseEstimator, TransformerMixin):
         self.notch_width = notch_width
         self.sample_rate = sample_rate
         self.axisToCompute = axisToCompute
+        self.padlen = padlen
 
         self.b, self.a = butter(5, [self.lowcut, self.highcut], btype='bandpass', fs=self.sample_rate)
         self.b_notch, self.a_notch = iirnotch(self.notch_freq, self.notch_width, self.sample_rate)
@@ -38,8 +39,8 @@ class Filter(BaseEstimator, TransformerMixin):
         -signal: Es la señal en un numpy array de la forma [n-trials, canales, muestras]."""
 
         signal = signal - np.mean(signal, axis=self.axisToCompute, keepdims=True)
-        signal = filtfilt(self.b, self.a, signal, axis = self.axisToCompute) #aplicamos el filtro pasa banda
-        signal = filtfilt(self.b_notch, self.a_notch, signal, axis = self.axisToCompute) #aplicamos el filtro notch
+        signal = filtfilt(self.b, self.a, signal, axis = self.axisToCompute, padlen = self.padlen) #aplicamos el filtro pasa banda
+        signal = filtfilt(self.b_notch, self.a_notch, signal, axis = self.axisToCompute, padlen = self.padlen) #aplicamos el filtro notch
         return signal
 
 if __name__ == "__main__":
