@@ -22,6 +22,7 @@ from PyQt5.QtCore import *
 from GUIModule.IndicatorAPP import IndicatorAPP
 from GUIModule.ConfigAPP import ConfigAPP
 from GUIModule.SupervisionAPP import SupervisionAPP
+from GUIModule.InfoAPP import InfoAPP
 
 from sklearn.pipeline import Pipeline
 
@@ -683,6 +684,6 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
 
-    core = Core(parameters, ConfigAPP("config.json"), IndicatorAPP(), SupervisionAPP)
+    core = Core(parameters, ConfigAPP("config.json", InfoAPP), IndicatorAPP(), SupervisionAPP)
 
     sys.exit(app.exec_())

@@ -5,11 +5,10 @@ from PyQt5 import uic
 import sys
 import json
 import os
-from GUIModule.InfoAPP import InfoAPP
 
 class ConfigAPP(QDialog):
 
-    def __init__(self, fileName):
+    def __init__(self, fileName, InfoAPP):
         super().__init__()
         ui_path = os.path.join(os.path.dirname(__file__), "config_registro.ui")
         uic.loadUi(ui_path, self)
@@ -20,7 +19,7 @@ class ConfigAPP(QDialog):
         self.btn_guardar.clicked.connect(self.Guardar) #Solo reescribe el .json
         self.btn_info.clicked.connect(self.Informacion) #Solo reescribe el .json
         self.configParameters = self.Cargar() #establece los valores al inicio en base al archivo .json
-        self.info_app = InfoAPP()
+        self.info_app = InfoAPP
 
     def Cargar(self):
         with open(self.fileName, 'r') as fp:
@@ -129,6 +128,7 @@ class ConfigAPP(QDialog):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    _ventana = ConfigAPP("config.json")
+    from InfoAPP import InfoAPP
+    _ventana = ConfigAPP("config.json", InfoAPP())
     _ventana.show()
     app.exec_()
