@@ -5,7 +5,7 @@ from PyQt5 import uic
 import sys
 import json
 import os
-# from InfoAPP import InfoAPP
+from InfoAPP import InfoAPP
 
 class ConfigAPP(QDialog):
 
@@ -18,9 +18,9 @@ class ConfigAPP(QDialog):
         self.btn_iniciar.clicked.connect(self.Inicio) #Guarda en .json e inicia la interfaz de entrenamiento
         self.btn_regresar.clicked.connect(self.Cerrar) #Cierra la interfaz
         self.btn_guardar.clicked.connect(self.Guardar) #Solo reescribe el .json
-        # self.btn_info.clicked.connect(self.Informacion) #Solo reescribe el .json
+        self.btn_info.clicked.connect(self.Informacion) #Solo reescribe el .json
         self.configParameters = self.Cargar() #establece los valores al inicio en base al archivo .json
-        # self.info_app = InfoAPP()
+        self.info_app = InfoAPP()
 
     def Cargar(self):
         with open(self.fileName, 'r') as fp:

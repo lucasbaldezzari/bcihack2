@@ -6,7 +6,7 @@ import os
 
 
 class EEGLogger():
-    """Clase para adquirir/registrar señales de EEG a partir de las placas Cyton o Ganglion de OpenBCI"""
+    """Clase para adquirir/registrar señales de EEG a partir de las placas Cyton, Ganglion o Synthetic de OpenBCI"""
 
     def __init__(self, board, board_id) -> None:
         """Constructor de la clase
