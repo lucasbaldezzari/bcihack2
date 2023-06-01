@@ -5,7 +5,7 @@ from PyQt5 import uic
 import sys
 import json
 import os
-from InfoAPP import InfoAPP
+from GUIModule.InfoAPP import InfoAPP
 
 class ConfigAPP(QDialog):
 
@@ -121,8 +121,8 @@ class ConfigAPP(QDialog):
 
         self.is_open = False
     
-    # def Informacion(self):
-    #     self.info_app.show()
+    def Informacion(self):
+        self.info_app.show()
 
     def Cerrar(self):
         self.close()
