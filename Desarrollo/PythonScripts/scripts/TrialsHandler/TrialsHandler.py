@@ -23,6 +23,7 @@ class TrialsHandler():
         self.sample_rate = sample_rate
         self.labels = self.getLabels()
         self.trials = self.getTrials() #array de numpy con los trials de la forma [trials, channels, samples]
+        self.classesName = self.getClassesName() #tupla con los nombres de las clases y su número de clase
 
     def getTrials(self):
         """Función para extraer los trials dentro de self.rawEEG"""
@@ -76,7 +77,25 @@ class TrialsHandler():
 
         return trialsArray
             
+    def getClassesName(self):
+        """Función para obtener las etiquetas de los trials"""
+        #Obtenemos los nombres de las clases. Cada nomrbe de clase se asocia con su número de clase.
+        #Formamos una tupla con los valores únicos de la columna className y classNumber
+        #Ordenamos los de la tupla por el número de clase
 
+        #Nos quedamos con las columnas className y classNumber del dataframe de eventos
+        clases = self.eventos[["className", "classNumber"]]
+        #Eliminamos los duplicados
+        clases = clases.drop_duplicates()
+        #Ordenamos por classNumber
+        clases = clases.sort_values(by="classNumber")
+        # #Convertimos a tupla
+        # clases = clases.to_records(index=False)
+        # #Convertimos a lista
+        # clases = tuple(clases)
+
+        return clases["className"].values.tolist(), clases["classNumber"].values.tolist()
+        
     def getLabels(self):
         """Función para obtener las etiquetas de los trials"""
         #Nos quedamos con la columna classNumber del dataframe de eventos. La pasamos a un array de numpy

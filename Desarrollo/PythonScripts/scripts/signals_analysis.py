@@ -4,43 +4,36 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-filter = Filter(5, 48, 50, 2, 250., 2)
+filter = Filter(8, 12, 50, 2, 250., 2)
 
-file = "data\mordiendo\eegdata\sesion1\sn1_ts0_ct1_r2.npy"
+file = "data\pablo_testing\eegdata\sesion1\sn1_ts0_ct1_r2.npy"
 rawEEG = np.load(file)
 
-eventosFile = "data\mordiendo\eegdata\sesion1\sn1_ts0_ct1_r2_events.txt"
+eventosFile = "data\pablo_testing\eegdata\sesion1\sn1_ts0_ct1_r2_events.txt"
 eventos = pd.read_csv(eventosFile, sep = ",")
 
-tinit = 1#el tiempo de inicio se considera ANTES del cue
-tmax = 6
+channelsName = ["C3", "CZ", "C4"]
+
+tinit = 1 #el tiempo de inicio se considera ANTES del cue
+tmax = 6 #el tiempo máximo debe considerarse entre el cue y el final del trial
+
 trialhandler = TrialsHandler(rawEEG, eventos, tinit = tinit, tmax = tmax, reject=None, sample_rate=250.)
+trialhandler.eventos.head()
 
-trials = trialhandler.getTrials()
-labels = trialhandler.getLabels()
-trials.shape
-labels
+classesName, classesLabel = trialhandler.classesName
+labels = trialhandler.labels
+raw_trials = filter.fit_transform(trialhandler.trials) #extraemos los trials y los filtramos
 
-#Clase 1 = Morder, Clase 2 = Rest
-trials_c1 = trials[labels == 1]
-trials_c2 = trials[labels == 2]
+trials_x_clase = np.zeros((len(classesName),int(raw_trials.shape[0]/len(classesName)), raw_trials.shape[1], raw_trials.shape[2]))
 
-#filtramos
-trials_c1 = filter.fit_transform(trials_c1)
-trials_c2 = filter.fit_transform(trials_c2)
+#Por cada label dentro de classNames, filtramos los trials y lo guardamos en la posición correspondiente dentro de trials
+for label in classesLabel:
+    trials_x_clase[label-1,:,:,:] = raw_trials[labels == label]
 
-## Grafico de la señal en los tres canales para el trial 1 de trials_c1
-## Coloco una linea vertical en el tiempo tinicio
-## Cada canal en un suplot
-## Uso un for para crear los subplots
+### Gráfico de la señal sin filtrar.
 
-#eje temporal. El mismo va desde -tinit hasta tmax
-t = np.arange(-tinit, tmax, 1/250.)
-
-trial_n = 1 #trial 1
-
-##seteamos index de eventos a los trialNumber
-##ggplot style
+trial_n = 1 #Selecciono el trial que quiero clasificar
+label = 2 #Selecciono el label que quiero filtrar
 
 eventos.index = eventos["trialNumber"]
 min_tinit = eventos["startingTime"].min()
@@ -48,42 +41,50 @@ startingTime = eventos.loc[trial_n]["startingTime"]
 cue_duration = eventos.loc[trial_n]["cueDuration"]
 finish_time = eventos.loc[trial_n]["finishDuration"]
 
-trozo_inicial = startingTime - min_tinit
+trozo_inicial = startingTime - tinit
 trozo_final = tmax - cue_duration
 
-plt.style.use('seaborn')
+#eje temporal. El mismo va desde -tinit hasta tmax
+t = np.arange(-tinit, tmax, 1/250.)
+
+plt.style.use('default')
 plt.figure(figsize=(10, 10))
 for i in range(3):
     plt.subplot(3, 1, i+1)
-    plt.plot(t, trials_c1[trial_n-1, i, :])
+    plt.plot(t, trials_x_clase[label-1,trial_n-1, i, :])
     #linea vertical en el tiempo de inicio del cue. Linea punteada
-    plt.axvline(x=trozo_inicial, color="#656ccf", linestyle="--")
+    plt.axvline(x = 0, color="#656ccf", linestyle="--")
     #agrego un rectangulo de color verde con fondo transparente entre el tiempo de inicio del cue y el tiempo del cue
-    plt.axvspan(trozo_inicial, trozo_inicial + cue_duration, color="#65cf70", alpha=0.2)
+    plt.axvspan(0, cue_duration, color="#65cf70", alpha=0.2)
     plt.xlabel("Tiempo (s)")
     plt.ylabel("Amplitud (uV)")
-    plt.title("Canal {}".format(i+1))
+    plt.title("Canal {}".format(channelsName[i]))
 
-plt.suptitle("Señal de los tres canales para el trial 1 de trials_c1")
+plt.suptitle(f"Señal para el trial {trial_n} - Clase {classesName[classesLabel.index(label)]}")
 #dismiuimos el espacio entre subplots
 plt.tight_layout()
 plt.show()
 
-## repito las gráficas pero para la clase 2
+## promedio los trials
 
+trials_promedio = trials_x_clase.mean(axis=1)
+
+##Grafico tres canales en tres subplots
+plt.style.use('default')
 plt.figure(figsize=(10, 10))
 for i in range(3):
     plt.subplot(3, 1, i+1)
-    plt.plot(t, trials_c2[trial_n-1, i, :])
+    plt.plot(t, trials_promedio[label-1, i, :])
     #linea vertical en el tiempo de inicio del cue. Linea punteada
-    plt.axvline(x=trozo_inicial, color="#656ccf", linestyle="--")
+    plt.axvline(x = 0, color="#656ccf", linestyle="--")
     #agrego un rectangulo de color verde con fondo transparente entre el tiempo de inicio del cue y el tiempo del cue
-    plt.axvspan(trozo_inicial, trozo_inicial + cue_duration, color="#65cf70", alpha=0.2)
+    plt.axvspan(0, cue_duration, color="#65cf70", alpha=0.2)
+    #cambiamos el color del fondo de toda la figura a gris
     plt.xlabel("Tiempo (s)")
     plt.ylabel("Amplitud (uV)")
-    plt.title("Canal {}".format(i+1))
+    plt.title("Canal {}".format(channelsName[i]))
 
-plt.suptitle("Señal de los tres canales para el trial 1 de trials_c2")
+plt.suptitle(f"Promedio sobre {trial_n} - Clase {classesName[classesLabel.index(label)]}")
 #dismiuimos el espacio entre subplots
 plt.tight_layout()
 plt.show()
