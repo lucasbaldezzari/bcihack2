@@ -29,6 +29,8 @@ class SupervisionAPP(QDialog):
         #Creo un numpyarray para hacer de buffer de datos que se mostrará en pantalla
         #El shape es (canales, tiempo)
         self.data = np.zeros((len(self.canales), int(self.sample_rate*self.t_lenght)))
+        self.acumForFFT_smooth = 10 #cantidad a acumular para suavizar la FFT
+        self.acumForFFT = 0
 
         #creo eje tiempo
         self.tline = np.linspace(0, self.t_lenght, int(self.sample_rate*self.t_lenght))
@@ -168,6 +170,7 @@ class SupervisionAPP(QDialog):
 
         self.update_FFT(self.data)
 
+
     def _init_barras(self):
         self.plots2 = list()
         self.bars = list()
@@ -214,8 +217,23 @@ class SupervisionAPP(QDialog):
 
         fline = np.linspace(self.fmin, self.fmax, data.shape[1])
 
-        for canal in range(len(self.canales)):
-            self.curves2[canal].setData(fline, data[canal])
+        if self.acumForFFT == 0:
+            self.smoothFFT = data
+            self.acumForFFT += 1
+        else:
+            self.smoothFFT += data
+            self.acumForFFT += 1
+
+        if self.acumForFFT == self.acumForFFT_smooth:
+            data = self.smoothFFT/self.acumForFFT_smooth
+            for canal in range(len(self.canales)):
+                        self.curves2[canal].setData(fline, data[canal])
+            self.acumForFFT = 0
+
+        
+
+        # for canal in range(len(self.canales)):
+        #     self.curves2[canal].setData(fline, data[canal])
 
     def update_order(self, texto:str):
         """

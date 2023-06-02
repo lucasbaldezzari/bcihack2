@@ -182,7 +182,7 @@ class Core(QMainWindow):
 
         #timer para controlar la app de configuración
         self.configAppTimer = QTimer()
-        self.configAppTimer.setInterval(1) #1 ms
+        self.configAppTimer.setInterval(5) #ms
         self.configAppTimer.timeout.connect(self.checkConfigApp)
 
         #timer para actualizar la supervisionAPP
@@ -544,22 +544,8 @@ class Core(QMainWindow):
         #obtenemos los datos de EEG
         data = self.eeglogger.getData(self.__supervisionAPPTime/1000, removeDataFromBuffer = False)[self.channels]
 
-        # if self.filterAcum == 0:
-        #     self.dataToFilter = data
-        #     self.filterAcum += data.shape[1]
-        # else:
-        #     self.filterAcum += data.shape[1]
-        #     self.dataToFilter = np.concatenate((self.dataToFilter, data), axis = 1)
-
-        # #chequeo que la cantidad de datos acumulados sea igual o mayor a la cantidad de muestras necesarias para aplicar el filtro
-        # if self.filterAcum >= self.max_laps:
-        #     #filtramos self.dataToFilter
-        #     self.supervisionAPP.update_plots(self.filter.fit_transform(self.dataToFilter))
-        #     self.filterAcum = 0
-        #     self.data = np.zeros((len(self.channels), self.max_laps))
-
-        # self.supervisionAPP.update_plots(self.filter.fit_transform(data))
-        self.supervisionAPP.update_plots(data)
+        self.supervisionAPP.update_plots(self.filter.fit_transform(data))
+        # self.supervisionAPP.update_plots(data)
 
         if self.session_started:
             #actualizamos información de la sesión

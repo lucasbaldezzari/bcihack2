@@ -23,10 +23,10 @@
     "cueDuration": 4.0,
     "finishDuration": 4.0,
     "lenToClassify": 0.3,
-    "subjectName": "testing",
+    "subjectName": "pablo_testing",
     "sesionNumber": 1,
     "boardParams": {
-        "boardName": "synthetic",
+        "boardName": "cyton",
         "channels": [
             1,
             2,

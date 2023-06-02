@@ -8,7 +8,7 @@ class Filter(BaseEstimator, TransformerMixin):
     La clase se puede usar como un objeto de sklearn, por lo que se puede usar en un pipeline de sklearn."""
 
     def __init__(self, lowcut = 8.0, highcut = 30.0, notch_freq = 50.0, notch_width = 2.0, sample_rate = 250.0,
-                 axisToCompute = 2, padlen = None):
+                 axisToCompute = 2, padlen = None, order = 4):
         """Inicializa el objeto con los parámetros de filtrado.
         -lowcut: Frecuencia de corte inferior del filtro pasa banda.
         -highcut: Frecuencia de corte superior del filtro pasa banda.
@@ -26,8 +26,8 @@ class Filter(BaseEstimator, TransformerMixin):
         self.axisToCompute = axisToCompute
         self.padlen = padlen
 
-        self.b, self.a = butter(5, [self.lowcut, self.highcut], btype='bandpass', fs=self.sample_rate)
-        self.b_notch, self.a_notch = iirnotch(self.notch_freq, self.notch_width, self.sample_rate)
+        self.b, self.a = butter(order, [self.lowcut, self.highcut], btype='bandpass', fs=self.sample_rate)
+        self.b_notch, self.a_notch = iirnotch(self.notch_freq, 20, self.sample_rate)
 
     def fit(self, X = None, y=None):
         """Métod fit. No hace nada."""

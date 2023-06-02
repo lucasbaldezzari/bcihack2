@@ -23,10 +23,10 @@
     "cueDuration": 4.0,
     "finishDuration": 4.0,
     "lenToClassify": 0.3,
-    "subjectName": "testing",
-    "sesionNumber": 1,
+    "subjectName": "darlia_testing",
+    "sesionNumber": 2,
     "boardParams": {
-        "boardName": "synthetic",
+        "boardName": "cyton",
         "channels": [
             1,
             2,
