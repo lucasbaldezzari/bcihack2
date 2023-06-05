@@ -64,7 +64,9 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
         - component_order: str. Es el método a utilizar para ordenar los componentes. Puede ser "mutual_info" o "shuffle". Por defecto es "mutual_info"
 
         Para más información sobre los parámetros (excepto method y n_classes), ver la documentación de mne.decoding.csp"""
-
+        
+        #chequeamos si method es válido
+        assert method in ["ovo", "ova"], "method debe ser 'ovo' u 'ova'"
         self.method = method
         self.n_classes = n_classes
         self.n_components = n_components

@@ -16,7 +16,8 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
         - method: método por el cual extraer las caracerísticas. Puede ser welch o hilbert.
         - sample_rate: frecuencia de muestreo de la señal.
         - axisToCompute: eje a lo largo del cual se calculará la transformada."""
-
+        
+        assert method in ["hilbert", "welch"], "method debe ser 'hilbert' o 'welch'"
         self.method = method
         self.sample_rate = sample_rate
         self.axisToCompute = axisToCompute
