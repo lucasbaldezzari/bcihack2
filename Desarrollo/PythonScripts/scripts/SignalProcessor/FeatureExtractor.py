@@ -21,6 +21,7 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
         self.method = method
         self.sample_rate = sample_rate
         self.axisToCompute = axisToCompute
+        self.band_values = band_values
 
     def fit(self, X = None, y=None):
         """No hace nada"""
@@ -36,9 +37,17 @@ class FeatureExtractor(BaseEstimator, TransformerMixin):
         if self.method == "welch":
             """Retorna la potencia de la señal en la forma [n_trials, canales, power_samples]"""
             self.freqs, self.power = welch(signal, axis=self.axisToCompute) #trnasformada de Welch
-            
             self.freqs = self.freqs*self.sample_rate
-            return self.power
+
+            if self.band_values:
+                self.freqs_indexes = np.where((self.freqs >= self.band_values[0]) & (self.freqs <= self.band_values[1]))[0]
+                #retornamos los valores de frecuencias que se encuentran en el rango de interés
+                self.freqs = self.freqs[self.freqs_indexes]
+                self.power = self.power[:, :, self.freqs_indexes]
+                return self.power
+        
+            else:
+                return self.power
         
         if self.method == "hilbert":
             """Retorna la potencia de la señal en la forma [n_trials, canales, power_samples]"""
