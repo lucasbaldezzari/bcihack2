@@ -531,7 +531,7 @@ class Core(QMainWindow):
 
     def updateSupervisionAPP(self):
         """Función para actualizar la APP de supervisión."""
-        ##Actualizamos gráficas de EEG y FFT
+        ##Actualizamos gráficas de EEG y FFTgit
 
         #obtenemos los datos de EEG
         data = self.eeglogger.getData(self.__supervisionAPPTime/1000, removeDataFromBuffer = False)[self.channels]
@@ -688,21 +688,3 @@ if __name__ == "__main__":
     core = Core(parameters, ConfigAPP("config.json", InfoAPP), IndicatorAPP(), SupervisionAPP)
 
     sys.exit(app.exec_())
-
-# ##cargo el archivo data\subject_test\eegdata\sesion2\sn2_ts0_ct1_r13.npy
-import numpy as np
-data = np.load("data\Testing\eegdata\sesion1\sn1_ts0_ct1_r1.npy")
-
-data.shape
-
-# filtro = Filter(lowcut=8, highcut=12, notch_freq=50, notch_width=2,
-#                         sample_rate=250, axisToCompute = 1,
-#                         padlen = 0)
-
-# dataFiltrada = filtro.fit_transform(data)
-
-import matplotlib.pyplot as plt
-
-plt.plot(data[1,:200])
-plt.plot(dataFiltrada[1,:200])
-plt.show()
