@@ -339,6 +339,7 @@ class Core(QMainWindow):
         board, board_id = setupBoard(boardName = self.boardName, serial_port = self.serialPort)
         self.eeglogger = EEGLogger(board, board_id)
         self.eeglogger.connectBoard()
+        self.eeglogger.setStreamingChannels(self.channels)
         time.sleep(1) #esperamos 1 segundo para que se conecte la placa
         print("Iniciando streaming de EEG...")
         logging.info("Iniciando streaming de EEG...")
@@ -365,15 +366,6 @@ class Core(QMainWindow):
         notch_width = self.filterParameters['notch_width']
         sample_rate = self.filterParameters['sample_rate']
         axisToCompute = self.filterParameters['axisToCompute']
-
-        # self.max_laps = 5 #máxima cantidad de datos a concatenar
-
-        # self.filterAcum = 0
-        # self.dataToFilter = np.zeros((len(self.channels), self.max_laps))
-
-        # self.filter = Filter(lowcut=lowcut, highcut=highcut, notch_freq=notch_freq, notch_width=notch_width,
-        #                      sample_rate=sample_rate, axisToCompute = 1,
-        #                      padlen = int(self.__supervisionAPPTime * sample_rate/1000/2)*self.max_laps)
 
         self.filter = Filter(lowcut=lowcut, highcut=highcut, notch_freq=notch_freq, notch_width=notch_width,
                              sample_rate=sample_rate, axisToCompute = 1,
@@ -512,8 +504,8 @@ class Core(QMainWindow):
         else:
             #Al finalizar el trial, guardamos los datos de EEG
             logging.info("Guardando datos de EEG")
-            newData = self.eeglogger.getData(self.__startingTime + self.cueDuration + self.finishDuration, removeDataFromBuffer=False)[self.channels]
-            self.eeglogger.saveData(newData, fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
+            newData = self.eeglogger.getData(self.__startingTime + self.cueDuration + self.finishDuration, removeDataFromBuffer=False)
+            self.eeglogger.saveData(newData[self.channels], fileName = self.eegFileName, path = self.eegStoredFolder, append=True)
             self.saveEvents() #guardamos los eventos de la sesión
             self.__trialPhase = 0 #volvemos a la fase inicial del trial
             self.__trialNumber += 1 #incrementamos el número de trial
@@ -698,8 +690,10 @@ if __name__ == "__main__":
     sys.exit(app.exec_())
 
 # ##cargo el archivo data\subject_test\eegdata\sesion2\sn2_ts0_ct1_r13.npy
-# import numpy as np
-# data = np.load("data/subject_test/eegdata/sesion2/sn2_ts0_ct1_r13.npy")
+import numpy as np
+data = np.load("data\Testing\eegdata\sesion1\sn1_ts0_ct1_r1.npy")
+
+data.shape
 
 # filtro = Filter(lowcut=8, highcut=12, notch_freq=50, notch_width=2,
 #                         sample_rate=250, axisToCompute = 1,
@@ -707,8 +701,8 @@ if __name__ == "__main__":
 
 # dataFiltrada = filtro.fit_transform(data)
 
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
-# plt.plot(data[1,:200])
-# plt.plot(dataFiltrada[1,:200])
-# plt.show()
+plt.plot(data[1,:200])
+plt.plot(dataFiltrada[1,:200])
+plt.show()

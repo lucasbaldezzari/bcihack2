@@ -12,8 +12,8 @@ class EEGLogger():
         """Constructor de la clase
         - board: objeto de la clase BoardShim
         - board_id: id de la placa. Puede ser BoardIds.CYTON_BOARD.value o BoardIds.GANGLION_BOARD.value o BoardIds.SYNTHETIC_BOARD.value
+        - channelsSelected: Lista con los ids de los canales seleccionados. Por defecto son los canales 1, 2 y 3.
         """
-
         self.board = board
         self.board_id = board_id
         self.eeg_channels = BoardShim.get_eeg_channels(board_id)
@@ -81,6 +81,28 @@ class EEGLogger():
             print("Error al guardar los datos")
             print(e)
 
+    def setStreamingChannels(self, channelsSelected = [1,2,3]):
+        """
+        Función para desactivar los canales que no se van a utilizar.
+        - channelsSelected: lista con los ids de los canales a utilizar. Por defecto son los canales 1, 2 y 3.
+        
+        Doc:
+        - https://docs.openbci.com/Cyton/CytonSDK/#channel-setting-commands
+        - https://docs.openbci.com/Ganglion/GanglionSDK/
+        """
+        #chqueamos que la boardid sea la cyton
+        if self.board_id == BoardIds.CYTON_BOARD.value:
+            #obtengo los canales de la cyton
+            cytonChannels = BoardShim.get_eeg_channels(BoardIds.CYTON_BOARD.value)
+            #Aquellos canalos que no utilizamos son desactivados
+            for channel in cytonChannels:
+                if channel not in channelsSelected:
+                    print(self.board.config_board(f"x{channel}100000X"))
+                    time.sleep(0.1)
+
+        elif self.board_id == BoardIds.GANGLION_BOARD.value:
+            pass #para implementar en caso de usar la Ganglion
+
 def setupBoard(boardName = "synthetic", serial_port = None):
     """Función para configurar la conexión a la placa.
     - boardName (str): tipo de placa. Puede ser cyton, ganglion o synthetic.
@@ -144,17 +166,21 @@ if __name__ == "__main__":
     puerto = "COM5"
 
     #usamos setupBoard para generar un objeto BoardShim y un id de placa
-    board, board_id = setupBoard(boardName = boardName, serial_port = "COM5") 
+    board, board_id = setupBoard(boardName = boardName, serial_port = "COM5")
 
     eeglogger = EEGLogger(board, board_id) #instanciamos un objeto para adquirir señales de EEG desde la placa OpenBCI
+
     eeglogger.connectBoard() #nos conectamos a la placa
+    eeglogger.setStreamingChannels(selectedChannels) #configuramos los canales que vamos a utilizar
     
     trialDuration = 2 #duración del trial en segundos
-
+    
     ## extraemos los ids de los canales seleccionados
     eegChannels = eeglogger.board.get_eeg_channels(board_id)
 
     eeglogger.startStreaming() #iniciamos la adquisición de datos
+
+    time.sleep(1) #esperamos un segundo para que se estabilice la señal
 
     print("Adquiriendo datos por primera vez...")
     print("Debemos esperar para completar el buffer")
@@ -164,7 +190,7 @@ if __name__ == "__main__":
     print("Forma del array de datos [canales, muestras]: ",newData.shape)
 
     print("Guardando datos...")
-    eeglogger.saveData(newData, fileName = "subject1.npy", path = "", append=True) #guardamos los datos en un archivo .npy
+    # eeglogger.saveData(newData, fileName = "subject1.npy", path = "", append=True) #guardamos los datos en un archivo .npy
 
     print("Detenemos la adquisición de datos")
     eeglogger.stopBoard()
