@@ -19,7 +19,7 @@ El siguiente repositorio será utilizado para almacenar bibliografía, set de da
 
 **NOTA**: Queda pendiente mejorar el resumen del proyecto.
 
-## Director proyecto
+## Director y autor del proyecto
 
 [MSc. Bioing. BALDEZZARI Lucas](https://www.linkedin.com/in/lucasbaldezzari/)
 
