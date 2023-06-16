@@ -106,7 +106,7 @@ fe_welch = FeatureExtractor(method="welch", sample_rate=250., axisToCompute=3) #
 trials_x_clase_welch = fe_welch.fit_transform(trials_x_clase)
 
 trial = 3
-indices = np.where((fe_welch.freqs >= 5) & (fe_welch.freqs <= 30))[0]
+indices = np.where((fe_welch.freqs >= 5) & (fe_welch.freqs <= 18))[0]
 
 colors = ["#1e81b0", "#c13f48", "#65cf70", "#f5b041", "#5d6d7e"]
 
@@ -128,7 +128,7 @@ plt.show()
 
 
 #Extractor de características para datos de la forma [n_trials, n_channels, n_samples]
-fe_welch = FeatureExtractor(method="welch", sample_rate=250., axisToCompute=2)
+fe_welch = FeatureExtractor(method="welch", sample_rate=250., axisToCompute=2) #instanciamos el extractor de características
 
 #extraemos las características para cada trial
 izq_features = fe_welch.fit_transform(izq)
@@ -137,9 +137,10 @@ ambasManos_features = fe_welch.fit_transform(ambasManos)
 ambosPies_features = fe_welch.fit_transform(ambosPies)
 rest_features = fe_welch.fit_transform(rest)
 
+
 ## Graficamos las características para dos clases
 ## Obtenemos las frecuencias entre 5 y 30 Hz a partir de fe.self.freqs
-indices = np.where((fe_welch.freqs >= 5) & (fe_welch.freqs <= 30))[0]
+indices = np.where((fe_welch.freqs >= 5) & (fe_welch.freqs <= 18))[0]
 #-1 left, 1 right
 trial = 1
 clase1 = 1
