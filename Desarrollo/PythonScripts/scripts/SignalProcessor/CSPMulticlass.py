@@ -143,6 +143,13 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
 
         assert X.shape[0] == y.shape[0], "X e y deben tener la misma cantidad de trials"
 
+        ##ordeno los trials en base a los valores dentro de y
+        #obtengo los índices de los trials ordenados
+        indices = np.argsort(y)
+        #ordeno los trials en base a los índices
+        X = X[indices]
+        y = y[indices]
+
         if self.method == "ovo":
             classlist = np.unique(y)
             class_combinations = list(itertools.combinations(classlist, 2))

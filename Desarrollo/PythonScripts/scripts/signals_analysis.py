@@ -202,10 +202,33 @@ lda.fit(X_train_welch_ravel, y_train) #entrenamos el clasificador
 
 X_test_csp = cspmulticlass.transform(X_test) #aplico el filtro CSP a los datos de entrenamiento
 X_test_welch = fe_welch.fit_transform(X_test_csp) #aplico el extractor de características welch a los datos de entrenamiento
-trials, componentes, frecuencias = X_test_welch.shape
 
+trials, componentes, frecuencias = X_test_welch.shape
 X_test_welch = X_test_welch[:,:,[indices]].reshape(trials, componentes, len(indices))
 X_test_welch_ravel = raveltransformer.fit_transform(X_test_welch)
 
+# plt.plot(X_test_welch_ravel[0,:])
+# plt.plot(X_test_welch_ravel[1,:])
+# plt.show()
+
 #Evaluamos rápidamente el clasificador sobre los datos de test
 print(f"El accuracy es {lda.score(X_test_welch_ravel, y_test)*100}%")
+
+# #### REORDENANDO ****************
+# indexes = np.array([np.arange(i, X_test_csp.shape[1], 2) for i in range(2)]).ravel()
+
+# X_test_csp = X_test_csp[:,indexes,:] #reoordenamos los componentes
+
+# X_test_welch = fe_welch.fit_transform(X_test_csp) #aplico el extractor de características welch a los datos de entrenamiento
+
+# trials, componentes, frecuencias = X_test_welch.shape
+# X_test_welch = X_test_welch[:,:,[indices]].reshape(trials, componentes, len(indices))
+# X_test_welch_ravel = raveltransformer.fit_transform(X_test_welch)
+
+# plt.plot(X_test_welch_ravel[1,:])
+# plt.plot(X_test_welch_ravel[2,:])
+# plt.plot(X_test_welch_ravel[3,:])
+# plt.show()
+
+# #Evaluamos rápidamente el clasificador sobre los datos de test
+# print(f"El accuracy es {lda.score(X_test_welch_ravel, y_test)*100}%")
