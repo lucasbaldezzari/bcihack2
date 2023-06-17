@@ -25,8 +25,9 @@ class Filter(BaseEstimator, TransformerMixin):
         self.sample_rate = sample_rate
         self.axisToCompute = axisToCompute
         self.padlen = padlen
+        self.order = order
 
-        self.b, self.a = butter(order, [self.lowcut, self.highcut], btype='bandpass', fs=self.sample_rate)
+        self.b, self.a = butter(self.order, [self.lowcut, self.highcut], btype='bandpass', fs=self.sample_rate)
         self.b_notch, self.a_notch = iirnotch(self.notch_freq, 20, self.sample_rate)
 
     def fit(self, X = None, y=None):
