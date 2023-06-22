@@ -1182,9 +1182,9 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
    <widget class="QLabel" name="label_19">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>270</x>
       <y>130</y>
-      <width>135</width>
+      <width>171</width>
       <height>20</height>
      </rect>
     </property>
@@ -1201,7 +1201,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
      <string notr="true">color: rgb(255, 255, 255);</string>
     </property>
     <property name="text">
-     <string>Tiempo a Clasificar</string>
+     <string>Tiempo de clasificación</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_28">
@@ -1364,9 +1364,9 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
    <widget class="QLineEdit" name="line_tiempoClasif">
     <property name="geometry">
      <rect>
-      <x>160</x>
+      <x>460</x>
       <y>130</y>
-      <width>391</width>
+      <width>91</width>
       <height>25</height>
      </rect>
     </property>
@@ -1434,6 +1434,56 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="line_ventanaClasif">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>130</y>
+      <width>81</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>MS Shell Dlg 2</family>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_33">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>130</y>
+      <width>141</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>MS Shell Dlg 2</family>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string>Tiempo clasificador</string>
     </property>
    </widget>
   </widget>

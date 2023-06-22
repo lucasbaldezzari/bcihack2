@@ -1,6 +1,6 @@
 {
     "typeSesion": 0,
-    "cueType": 1,
+    "cueType": 0,
     "ntrials": 5,
     "classes": [
         1,
@@ -23,10 +23,11 @@
     "cueDuration": 4.0,
     "finishDuration": 4.0,
     "lenToClassify": 0.3,
-    "subjectName": "Testing",
+    "lenForClassifier": 4.0,
+    "subjectName": "sujeto_prueba",
     "sesionNumber": 1,
     "boardParams": {
-        "boardName": "cyton",
+        "boardName": "synthetic",
         "channels": [
             1,
             2,

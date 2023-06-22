@@ -33,6 +33,7 @@ class ConfigAPP(QDialog):
             self.line_tiempo_accion.setText(f'{configParameters["cueDuration"]}')
             self.line_tiempo_descanso.setText(f'{configParameters["finishDuration"]}')
             self.line_tiempoClasif.setText(f'{configParameters["lenToClassify"]}')
+            self.line_ventanaClasif.setText(f'{configParameters["lenForClassifier"]}') #nuevo parámetro
             self.line_sujeto.setText(f'{configParameters["subjectName"]}')
             self.line_sesion.setText(f'{configParameters["sesionNumber"]}')
 
@@ -75,6 +76,7 @@ class ConfigAPP(QDialog):
             configParameters["cueDuration"]= float(self.line_tiempo_accion.text())
             configParameters["finishDuration"] = float(self.line_tiempo_descanso.text())
             configParameters["lenToClassify"] = float(self.line_tiempoClasif.text())
+            configParameters["lenForClassifier"] = float(self.line_ventanaClasif.text())
             configParameters["subjectName"] = self.line_sujeto.text()
             configParameters["sesionNumber"] = int(self.line_sesion.text())
 

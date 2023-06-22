@@ -66,7 +66,8 @@ class Core(QMainWindow):
             Estos valores se usan para generar un tiempo aleatorio entre estos valores.
             -cueDuration (float): Duración del cue en segundos.
             -finishDuration (float): Duración del tiempo de finalización en segundos.
-            -lenToClassify (float): Duración de la señal a clasificar en segundos.
+            -lenToClassify (float): Tiempo a usar para clasificar la señal de EEG.
+            -lenForClassifier (float): Tiempo total de EEG para alimentar el clasificador.
             -subjectName (str): Nombre del sujeto.
             -sesionNumber (int): Número de la sesión.
             -boardParams (dict): Diccionario con los parámetros de la placa. Los parámetros son:
@@ -107,7 +108,8 @@ class Core(QMainWindow):
         self.startingTimes = configParameters["startingTimes"]
         self.cueDuration = configParameters["cueDuration"]
         self.finishDuration = configParameters["finishDuration"]
-        self.lenToClassify = configParameters["lenToClassify"] #400 milisegundos mostro un buen resultado en graficación
+        self.lenToClassify = configParameters["lenToClassify"]
+        self.lenForClassifier = configParameters["lenForClassifier"]
         self.subjectName = configParameters["subjectName"]
         self.sesionNumber = configParameters["sesionNumber"]
 
@@ -205,6 +207,7 @@ class Core(QMainWindow):
         self.cueDuration = newParameters["cueDuration"]
         self.finishDuration = newParameters["finishDuration"]
         self.lenToClassify = newParameters["lenToClassify"]
+        self.lenForClassifier = newParameters["lenForClassifier"]
         self.subjectName = newParameters["subjectName"]
         self.sesionNumber = newParameters["sesionNumber"]
         self.boardParams = newParameters["boardParams"]
@@ -441,6 +444,17 @@ class Core(QMainWindow):
             self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
             self.trainingEEGThreadTimer.setInterval(int(self.cueDuration * 1000))
 
+            ##genero un array de 5 elementos con números elatotios entre 0 y 1
+            ##Estos números representan la probabilidad de que se muestre cada barra
+            ##La suma de estos números debe ser 1
+            ##Esto se hace para que la barra se mueva de manera aleatoria
+            ##Si se quiere que la barra se mueva de manera lineal, se puede usar un array de 5 elementos
+
+            probas = np.random.rand(5)
+            probas = probas/np.sum(probas)
+
+            self.supervisionAPP.update_propbars(probas)
+
         elif self.__trialPhase == 2:
             logging.info("Iniciamos fase de finalización del trial")
             self.indicatorAPP.update_order("Fin de tarea...")
@@ -660,6 +674,7 @@ if __name__ == "__main__":
         "cueDuration": 4, #En segundos
         "finishDuration": 3, #En segundos
         "lenToClassify": 1.0, #Trozo de señal a clasificar, en segundos
+        "lenForClassifier": 4.0,
         "subjectName": "subject_test", #nombre del sujeto
         "sesionNumber": 1, #número de sesión
         "boardParams": { 
