@@ -8,11 +8,6 @@ Esta clase hará uso de la clase mne.decoding.csp para generar los filtros CSP. 
 2) El método fit recibe los datos de entrenamiento y las etiquetas de clase. Estos datos se utilizarán para entrenar cada filtro CSP. El método fit retorna self
 3) El método transform recibe los datos a transformar y retorna los datos transformados. Este método no se utiliza para entrenar los filtros CSP.
 
-
- filters_ attribute only returns the top m CSP filters, meaning the m filters with the largest eigenvalues. These m filters are the ones that capture the most discriminative information between the two classes.
-
-When transform_into='csp_space', the transform() method applies these top m filters to the input data, resulting in a new feature space that is projected onto the CSP components. 
-
 IMPORTANTE: Debemos tener en cuenta que el método mne.decoding.csp posee un atributo filters_. El mismo posee la matriz de filtros espaciales luego de aplicar
 fit(). La clase CSP devuelve sólo los m filtros con las mayores autovalores. Estos m filtros son los que capturan la información discriminante más importante
 entre las dos clases. Cuando transform_into='csp_space', el método transform() aplica estos m filtros a los datos de entrada, resultando en un nuevo espacio de

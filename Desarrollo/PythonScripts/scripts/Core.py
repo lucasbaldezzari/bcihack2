@@ -502,7 +502,8 @@ class Core(QMainWindow):
 
             # Tomo los datos de EEG de la duración del cue y los guardo en self._dataToClasify 
             # Los datos dentro de self._dataToClasify se van actualizando en cada entrada a la función classifyEEG
-            self._dataToClasify = self.eeglogger.getData(self.cueDuration, removeDataFromBuffer=False)[self.channels]
+            # self._dataToClasify = self.eeglogger.getData(self.cueDuration, removeDataFromBuffer=False)[self.channels]
+            self._dataToClasify = self.eeglogger.getData(self.lenForClassifier, removeDataFromBuffer=False)[self.channels]
             self.classifyEEGTimer.start() #inicio el timer para clasificar el EEG
             self.feedbackThreadTimer.setInterval(int((self.cueDuration + self.lenToClassify*0.05) * 1000))
             #La suma de self.cueDuration + self.lenToClassify*0.05 es para darle un pequeño margen de tiempo
@@ -703,3 +704,4 @@ if __name__ == "__main__":
     core = Core(parameters, ConfigAPP("config.json", InfoAPP), IndicatorAPP(), SupervisionAPP)
 
     sys.exit(app.exec_())
+
