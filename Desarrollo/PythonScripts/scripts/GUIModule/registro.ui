@@ -17,7 +17,7 @@
    <string>IndicatorApp</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-color: rgb(240, 240, 240);</string>
+   <string notr="true">background-color: rgb(150, 150, 150);</string>
   </property>
   <widget class="QLabel" name="label_accion">
    <property name="geometry">
