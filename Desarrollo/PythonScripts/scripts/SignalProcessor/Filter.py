@@ -8,7 +8,7 @@ class Filter(BaseEstimator, TransformerMixin):
     La clase se puede usar como un objeto de sklearn, por lo que se puede usar en un pipeline de sklearn."""
 
     def __init__(self, lowcut = 8.0, highcut = 30.0, notch_freq = 50.0, notch_width = 2.0, sample_rate = 250.0,
-                 axisToCompute = 2, padlen = None, order = 4):
+                 axisToCompute = 2, padlen = None, order = 4, discard_samples = 0):
         """Inicializa el objeto con los parámetros de filtrado.
         -lowcut: Frecuencia de corte inferior del filtro pasa banda.
         -highcut: Frecuencia de corte superior del filtro pasa banda.
@@ -26,6 +26,7 @@ class Filter(BaseEstimator, TransformerMixin):
         self.axisToCompute = axisToCompute
         self.padlen = padlen
         self.order = order
+        self.discard_samples = int(discard_samples*self.sample_rate) #muestras a descartar al inicio de la señal filtrada
 
         self.b, self.a = butter(self.order, [self.lowcut, self.highcut], btype='bandpass', fs=self.sample_rate)
         self.b_notch, self.a_notch = iirnotch(self.notch_freq, 20, self.sample_rate)
@@ -42,7 +43,7 @@ class Filter(BaseEstimator, TransformerMixin):
         signal = signal - np.mean(signal, axis=self.axisToCompute, keepdims=True)
         signal = filtfilt(self.b, self.a, signal, axis = self.axisToCompute, padlen = self.padlen) #aplicamos el filtro pasa banda
         signal = filtfilt(self.b_notch, self.a_notch, signal, axis = self.axisToCompute, padlen = self.padlen) #aplicamos el filtro notch
-        return signal
+        return signal[..., self.discard_samples:] #descartamos las primeras muestras
 
 if __name__ == "__main__":
 

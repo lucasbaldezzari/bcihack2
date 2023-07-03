@@ -4,18 +4,20 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-filter = Filter(8, 12, 50, 2, 250., 2)
+descartar = 0 #descartamos los 0.1 segundos del filtro
+filter = Filter(8, 12, 50, 1, 250., 2, None, 4, descartar)
 
-file = "data\pablo_testing\eegdata\sesion1\sn1_ts0_ct1_r2.npy"
+file = "data\sujeto_2\eegdata\sesion1\sn1_ts0_ct1_r2.npy"
 rawEEG = np.load(file)
 
-eventosFile = "data\pablo_testing\eegdata\sesion1\sn1_ts0_ct1_r2_events.txt"
+eventosFile = "data\sujeto_2\eegdata\sesion1\sn1_ts0_ct1_r2_events.txt"
 eventos = pd.read_csv(eventosFile, sep = ",")
 
 channelsName = ["C3", "CZ", "C4"]
+channelsSelected = [1,3]
 
-tinit = -0.1 #el tiempo de inicio se considera ANTES del cue
-tmax = 4.1 #el tiempo máximo debe considerarse entre el cue y el final del trial
+tinit = descartar #el tiempo de inicio se considera ANTES del cue
+tmax = 4.0 #el tiempo máximo debe considerarse entre el cue y el final del trial
 
 trialhandler = TrialsHandler(rawEEG, eventos, tinit = tinit, tmax = tmax, reject=None, sample_rate=250.)
 trialhandler.eventos.head()
@@ -47,7 +49,8 @@ trozo_inicial = startingTime - tinit
 trozo_final = tmax - cue_duration
 
 #eje temporal. El mismo va desde -tinit hasta tmax
-t = np.arange(-tinit, tmax, 1/250.)
+t = np.arange(-tinit+descartar, tmax, 1/250.)
+t.shape
 
 plt.style.use('default')
 plt.figure(figsize=(10, 10))
@@ -140,7 +143,7 @@ rest_features = fe_welch.fit_transform(rest)
 
 ## Graficamos las características para dos clases
 ## Obtenemos las frecuencias entre 5 y 30 Hz a partir de fe.self.freqs
-indices = np.where((fe_welch.freqs >= 5) & (fe_welch.freqs <= 18))[0]
+indices = np.where((fe_welch.freqs >= 5) & (fe_welch.freqs <= 28))[0]
 #-1 left, 1 right
 trial = 1
 clase1 = 1
@@ -215,7 +218,7 @@ X_test_welch_ravel = raveltransformer.fit_transform(X_test_welch)
 #Evaluamos rápidamente el clasificador sobre los datos de test
 print(f"El accuracy es {lda.score(X_test_welch_ravel, y_test)*100}%")
 
-# #### REORDENANDO ****************
+# ### REORDENANDO ****************
 # indexes = np.array([np.arange(i, X_test_csp.shape[1], 2) for i in range(2)]).ravel()
 
 # X_test_csp = X_test_csp[:,indexes,:] #reoordenamos los componentes
@@ -231,5 +234,5 @@ print(f"El accuracy es {lda.score(X_test_welch_ravel, y_test)*100}%")
 # plt.plot(X_test_welch_ravel[3,:])
 # plt.show()
 
-# #Evaluamos rápidamente el clasificador sobre los datos de test
+# # Evaluamos rápidamente el clasificador sobre los datos de test
 # print(f"El accuracy es {lda.score(X_test_welch_ravel, y_test)*100}%")

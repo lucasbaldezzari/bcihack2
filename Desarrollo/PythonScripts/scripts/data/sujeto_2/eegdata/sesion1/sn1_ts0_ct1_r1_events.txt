@@ -1,2 +1,0 @@
-trialNumber,classNumber,className,prediction,probabilities,startingTime,cueDuration,finishDuration,trialTime,trialTime(legible)
-1,4,Pies,-1,-1,3.0,4.0,3.0,1688138814.2043426,30/06/2023 12:26:54
