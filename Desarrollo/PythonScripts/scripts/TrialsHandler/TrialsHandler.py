@@ -5,7 +5,7 @@ import pandas as pd
 class TrialsHandler():
     """Clase para obtener los trials a partir de raw data"""
 
-    def __init__(self, rawEEG, eventos, tinit = 1, tmax = 4, reject = None, sample_rate = 250.) -> None:
+    def __init__(self, rawEEG, eventos, tinit = 1, tmax = 4, reject = None, sample_rate = 250., trialsToRemove = None) -> None:
         """Constructor de la clase Trials
         Parametros:
             - rawEEG (numpy.array): array de numpy con la señal de EEG de la forma [channels, samples]
@@ -24,6 +24,9 @@ class TrialsHandler():
         self.labels = self.getLabels()
         self.trials = self.getTrials() #array de numpy con los trials de la forma [trials, channels, samples]
         self.classesName = self.getClassesName() #tupla con los nombres de las clases y su número de clase
+        #chequeamos si hay trials que remover
+        if trialsToRemove is not None:
+            self.removeTrials(trialsToRemove)
 
     def getTrials(self):
         """Función para extraer los trials dentro de self.rawEEG"""
@@ -106,6 +109,29 @@ class TrialsHandler():
         """Función para guardar los trials en un archivo .npy"""
         np.save(filename, self.trials)
         print("Se han guardado los trials en {}".format(filename))
+
+    def removeTrials(self, trialsToRemove:list):
+        """Función para remover trials usando la lista de trialsToRemove.
+        A partir de trialsToRemove removemos los indices de self.eventos, luego actualiamos
+        self.trials y self.labels"""
+
+        ##chequeamos que trialsToRemove sea una lista
+        if not isinstance(trialsToRemove, list):
+            raise TypeError("trialsToRemove debe ser una lista")
+        
+        ##chequeamos que los valores de los trials existan cómo indices
+        if not all(trial in self.eventos.index for trial in trialsToRemove):
+            raise ValueError("Los valores de trialsToRemove no existen cómo índices en self.eventos")
+        
+        else:
+            #removemos los trials de self.eventos
+            self.eventos = self.eventos.drop(trialsToRemove)
+            #eliminamos los trials de self.trials
+            self.trials = np.delete(self.trials, trialsToRemove, axis=0)
+            #eliminamos los trials de self.labels
+            self.labels = np.delete(self.labels, trialsToRemove, axis=0)
+
+            print("Se han removido los trials {}".format(trialsToRemove))
     
 if __name__ == "__main__":
 
