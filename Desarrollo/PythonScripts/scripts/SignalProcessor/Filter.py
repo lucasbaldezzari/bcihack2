@@ -58,14 +58,8 @@ if __name__ == "__main__":
     signalleftFiltered = filtro.fit_transform(signalleft)
     sognalrightFiltered = filtro.fit_transform(signalright)
 
-
-    # signalFiltered = signalpros.fit_transform(signal,highcut=36.0, notch_freq=50.0, notch_width=2.0)
-
     ### Grafico para comparar señal original y señal filtrada
     import matplotlib.pyplot as plt
     plt.plot(signalleftFiltered[0,28,:], label = "Filtrada")
     plt.plot(signalleft[0,28,:], label = "Original")
     plt.show()
-
-    # with open("testsignal_filtered.npy", "wb") as f:
-    #     np.save(f, signalFiltered)
