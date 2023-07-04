@@ -46,7 +46,6 @@ class Concatenate():
         Por cada TrialsHandler.trials, concatenamos los trials para mantenerlo de la forma
         [trials, canales, muestras]
         """
-
         return np.concatenate([th.trials for th in self.thlist], axis=0)
         
     def getLabels(self):
@@ -54,7 +53,15 @@ class Concatenate():
         Concatenamos los lables de cada trialsHandler uno seguido al otro en un array 1D
         """
 
-        return np.array([th.labels for th in self.thlist]).flatten()
+        total = sum([len(th.labels) for th in self.thlist])
+        labels = np.zeros(total, dtype=int)
+
+        i = 0
+        for th in self.thlist:
+            labels[i:i+len(th.labels)] = th.labels
+            i += len(th.labels)
+
+        return labels
 
     
     def getClassesName(self):
@@ -82,12 +89,12 @@ if __name__ == "__main__":
     rawEEG_2 = np.load(file)
     eventos_2 = pd.read_csv(eventosFile, sep = ",")
 
-    th_1 = TrialsHandler(rawEEG_1, eventos_1, tinit = 0.5, tmax = 4, reject=None, sample_rate=250.)
+    th_1 = TrialsHandler(rawEEG_1, eventos_1, tinit = 0.5, tmax = 4, reject=None, sample_rate=250., trialsToRemove = [29,30])
     th_2 = TrialsHandler(rawEEG_2, eventos_2, tinit = 0.5, tmax = 4, reject=None, sample_rate=250.)
 
     concat = Concatenate([th_1, th_2])
 
-    print(concat.eventos.head(-1))
+    print(concat.eventos.shape)
     print(concat.trials.shape)
     print(concat.labels.shape)
     print(concat.classesName)

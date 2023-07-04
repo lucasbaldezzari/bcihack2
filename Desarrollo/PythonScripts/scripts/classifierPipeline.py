@@ -26,24 +26,27 @@ import pickle
 
 
 ### ********** Cargamos los datos **********
-
-file = "data\sujeto_2\eegdata\sesion1\sn1_ts0_ct1_r2.npy"
-eventosFile = "data\sujeto_2\eegdata\sesion1\sn1_ts0_ct1_r2_events.txt"
+file = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct1_r1.npy"
+eventosFile = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct1_r1_events.txt"
 rawEEG_1 = np.load(file)
 eventos_1 = pd.read_csv(eventosFile, sep = ",")
 
-file = "data\sujeto_2\eegdata\sesion2\sn2_ts0_ct1_r1.npy"
-eventosFile = "data\sujeto_2\eegdata\sesion2\sn2_ts0_ct1_r1_events.txt"
+file = "data\sujeto_1\eegdata\sesion2\sn2_ts0_ct0_r1.npy"
+eventosFile = "data\sujeto_1\eegdata\sesion2\sn2_ts0_ct0_r1_events.txt"
 rawEEG_2 = np.load(file)
 eventos_2 = pd.read_csv(eventosFile, sep = ",")
 
 #Creamos objetos para manejar los trials
-th_1 = TrialsHandler(rawEEG_1, eventos_1, tinit = 0, tmax = 3, reject=None, sample_rate=250.)
-th_2 = TrialsHandler(rawEEG_2, eventos_2, tinit = 0, tmax = 3, reject=None, sample_rate=250.)
+th_1 = TrialsHandler(rawEEG_1, eventos_1, tinit = 0, tmax = 3, reject=None, sample_rate=250., trialsToRemove = [29,30])
+th_2 = TrialsHandler(rawEEG_2, eventos_2, tinit = 0, tmax = 3, reject=None, sample_rate=250., trialsToRemove = [1])
 
 dataConcatenada = Concatenate([th_1, th_2])#concatenamos datos
 
+channelsSelected = [0,1,2] #C3 y C4
+
 trials = dataConcatenada.trials
+#me quedo con channelsSelected
+trials = trials[:,channelsSelected,:]
 labels = dataConcatenada.labels
 classesName, labelsNames = dataConcatenada.classesName
 
@@ -80,7 +83,7 @@ param_grid_lda = {
     'pasabanda__lowcut': [5, 8],
     'pasabanda__highcut': [12],
     'cspmulticlase__n_components': [2],
-    'cspmulticlase__method': ["ovo"],
+    'cspmulticlase__method': ["ovo","ova"],
     'cspmulticlase__n_classes': [len(np.unique(labels))],
     'cspmulticlase__reg': [0.01],
     'cspmulticlase__log': [None],
