@@ -1,4 +1,4 @@
-from EEGLogger.EEGLogger import EEGLogger, setupBoard
+from EEGLogger.eegLogger import EEGLogger, setupBoard
 
 from SignalProcessor.Filter import Filter
 from SignalProcessor.RavelTransformer import RavelTransformer
@@ -551,7 +551,7 @@ class Core(QMainWindow):
         #obtenemos los datos de EEG
         data = self.eeglogger.getData(self.__supervisionAPPTime/1000, removeDataFromBuffer = False)[self.channels]
 
-        self.supervisionAPP.update_plots(self.filter.fit_transform(data))
+        # self.supervisionAPP.update_plots(self.filter.fit_transform(data))
         # self.supervisionAPP.update_plots(data)
 
         if self.session_started:
