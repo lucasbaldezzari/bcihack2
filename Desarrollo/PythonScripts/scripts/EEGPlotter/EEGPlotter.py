@@ -161,11 +161,12 @@ class EEGPlotter:
                         y1=self.y_max,
                         xref='x',
                         yref=f'y{i+1}',
-                        fillcolor='LightSalmon',
+                        fillcolor='#8188a1',
                         opacity=0.2,
                         layer='below',
                         line_width=0,
                         name='tarea')
+                    
         
 
 if __name__ == "__main__":

@@ -37,8 +37,8 @@ labels = trialhandler.labels
 labels = [str(i)+"-"+"C"+str(labels[i-1]) for i in range(1,len(labels)+1)]
 labels
 
-ini_trial = 55
-final_trial = 75
+ini_trial = 0
+final_trial = 15
 trial_duration = 10
 
 ti = int(ini_trial*trial_duration*fm)
