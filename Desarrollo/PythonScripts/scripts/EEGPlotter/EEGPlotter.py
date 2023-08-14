@@ -13,7 +13,7 @@ from plotly.subplots import make_subplots
 
 class EEGPlotter:
 
-    def __init__(self, eeg, fm, paso, window_size, labels, trials_start, trial_duration = None,
+    def __init__(self, eeg, fm, paso, window_size, labels, trials_start, task_window = None,
                  y_max=None, y_min=None):
         """
         Constructor de la clase EEGPlotter
@@ -21,8 +21,9 @@ class EEGPlotter:
         - fm: frecuencia de muestreo (en Hz)
         - paso: tamaño del paso (en segundos) para el slider
         - window_size: tamaño de la ventana (en segundos) para el slider
-        - trial: lista con los números de los trials.
-        - trial_time: lista con los tiempos de inicio de los trials (en segundos)
+        - labels: lista con los números de los trials.
+        - trials_start: array con los tiempos de inicio de los trials (en segundos)
+        - task_window: tupla con el tiempo de inicio de tarea y el tiempo de duración de la tarea. Por defecto es None.
         - y_max: límite superior del eje y
         - y_min: límite inferior del eje y
         """
@@ -37,10 +38,14 @@ class EEGPlotter:
         self.labels = labels
         self.trials_start = trials_start
         self.num_channels, self.num_samples = eeg.shape
-        self.y_max = y_max
-        self.y_min = y_min
 
-        
+        if y_max is None or y_min is None:
+            self.y_max = np.max(eeg)
+            self.y_min = np.min(eeg)
+        else:
+            self.y_max = y_max
+            self.y_min = y_min
+
         self.time_axis = self.getTimeAxis() # Creamos el eje de tiempo
         self.current_time = 0 # Iniciamos el tiempo actual en 0
 
@@ -58,6 +63,15 @@ class EEGPlotter:
         self.setLayout()
 
         self.quitarSpines()
+
+        ## si task_window no es None, generamos un array tomando como referencia los trials_start
+        ## El array tendra la forma [trials_start, 2] en donde la primer columna es el tiempo que marca el elemento en trials_start
+        ## y el segundo elemento es el tiempo de duracion de la tarea
+        if task_window is not None:
+            self.task_window = np.zeros((len(trials_start), 2))
+            self.task_window[:, 0] = task_window[0] + trials_start
+            self.task_window[:, 1] = task_window[0] + trials_start + task_window[1]
+            self.addRects()
 
         # Set slider configuration
         slider_steps = []
@@ -97,8 +111,6 @@ class EEGPlotter:
         return np.arange(0, self.num_samples) / self.fm
     
     def addTraces(self):
-        y0 = np.min(self.eeg)
-        y1 = np.max(self.eeg)
         for i in range(self.num_channels):
             self.fig.add_trace(go.Scatter(x=self.time_axis, y=self.eeg[i], showlegend=False), row=i+1, col=1)
 
@@ -121,8 +133,8 @@ class EEGPlotter:
                         type='line',
                         x0=trial_time,
                         x1=trial_time,
-                        y0=y0,
-                        y1=y1,
+                        y0=self.y_min,
+                        y1=self.y_max,
                         xref='x',
                         yref=f'y{i+1}',
                         line=dict(color='black', width=1, dash='dot'))
@@ -134,6 +146,26 @@ class EEGPlotter:
             yaxis_title='Amplitud $\mu V$',
             showlegend=False,
             height=self.num_channels * 200)  # Ajusta la altura de la figura según el número de canales)
+        
+    ## creamos una función para un rectángulo de color gris con transparencia en los tiempos self.task_window[:, 0] y self.task_window[:, 1]
+    ## para cada trial y cada canal
+    def addRects(self):
+        for i in range(self.num_channels):
+            for j in range(len(self.trials_start)):
+                if 0 <= self.task_window[j, 0] <= self.num_samples / self.fm:
+                    self.fig.add_shape(
+                        type='rect',
+                        x0=self.task_window[j, 0],
+                        x1=self.task_window[j, 1],
+                        y0=self.y_min,
+                        y1=self.y_max,
+                        xref='x',
+                        yref=f'y{i+1}',
+                        fillcolor='LightSalmon',
+                        opacity=0.2,
+                        layer='below',
+                        line_width=0,
+                        name='tarea')
         
 
 if __name__ == "__main__":

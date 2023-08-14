@@ -48,13 +48,7 @@ trials_times = tiempos.values[ini_trial:final_trial] - tiempos.values[ini_trial]
 
 paso = 2 #segundos
 window_size = 10 #segundos
-# eeg_plotter = EEGPlotter(eeg[:,ti:tf], fm, paso, window_size,
-#                          list(labels)[ini_trial:final_trial], trials_times = list(trials_times))
-
-eeg_plotter = EEGPlotter(eeg[:,:int(20*10*fm)], fm, paso, window_size,
-                         labels = list(labels)[:20], trials_start = list(tiempos)[:20])
+eeg_plotter = EEGPlotter(eeg[:,ti:tf], fm, paso, window_size,task_window = (3,4),
+                         labels = labels[ini_trial:final_trial], trials_start = trials_times)
 
 eeg_plotter.plot()
-
-eeg[:,ti:tf].shape
-
