@@ -132,21 +132,43 @@ En el [test-py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo
 Se muestra un resumen debajo,
 
 ```python
-#creamos el pipeline con un pasabanda, un cspmulticlase, un featureExtractor y un LDA
-from sklearn.pipeline import Pipeline
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+### ********** Creamos el pipeline para LDA **********
 
-pipeline = Pipeline([
-    ('pasabanda', Filter(lowcut=8.0, highcut=28.0, notch_freq=50.0, notch_width=2.0, sample_rate=100.0)),
-    ('cspmulticlase', CSPMulticlass(n_components=2, method = "ovo", n_classes = len(np.unique(labels)), reg=None, log=None, norm_trace=False)),
-    ('featureExtractor', FeatureExtractor(method = "welch", sample_rate=100., axisToCompute=2)),
-    ('ravelTransformer', RavelTransformer()),
-    ('lda', LinearDiscriminantAnalysis())
+pipeline_lda = Pipeline([
+    ('pasabanda', filter),
+    ('cspmulticlase', cspmulticlass),
+    ('featureExtractor', featureExtractor),
+    ('ravelTransformer', ravelTransformer),
+    ('lda', lda)
 ])
 
-"""Análisis rápido con el pipeline"""
-pipeline.fit(eeg_train, labels_train)
-print(pipeline.score(eeg_test, labels_test))
+### ********** Grilla de ejemplo **********
+param_grid_lda = {
+    'pasabanda__lowcut': [5, 8],
+    'pasabanda__highcut': [12],
+    'cspmulticlase__n_components': [2],
+    'cspmulticlase__method': ["ovo","ova"],
+    'cspmulticlase__n_classes': [len(np.unique(labels))],
+    'cspmulticlase__reg': [0.01],
+    'cspmulticlase__log': [None],
+    'cspmulticlase__norm_trace': [False],
+    'featureExtractor__method': ["welch", "hilbert"],
+    'featureExtractor__sample_rate': [fm],
+    'featureExtractor__band_values': [[8,12]],
+    'lda__solver': ['svd'],
+    'lda__shrinkage': [None],
+    'lda__priors': [None],
+    'lda__n_components': [None],
+    'lda__store_covariance': [False],
+    'lda__tol': [0.0001, 0.001],
+}
+
+#Creamos el GridSearch para el LDA
+grid_lda = GridSearchCV(pipeline_lda, param_grid_lda, cv=5, n_jobs=1, verbose=1)
+
+### ********** Entrenamos el modelo **********
+grid_lda.fit(eeg_train, labels_train)
+### ******************************************
 ```
 
 #### Responsable
