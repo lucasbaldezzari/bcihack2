@@ -316,7 +316,7 @@ class Core(QMainWindow):
         claseActual = self.trialsSesion[self.__trialNumber]
         classNameActual = self.clasesNames[self.classes.index(claseActual)]
 
-        #obtenemos el timestamp actual
+        #obtenemos el timestamp actual 57-60 desc
         trialTime = time.time()
         #formateamos el timestamp actual a formato legible del tipo DD/MM/YYYY HH:MM:SS
         trialTimeLegible = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(trialTime))
