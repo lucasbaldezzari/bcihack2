@@ -11,6 +11,10 @@ filtro = Filter(8, 18, 50, 2, fm, 1)
 file = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct1_r2.npy"
 rawEEG = np.load(file)
 
+##slected channels
+selected_channels = np.array([1,2,3,4]) -1 
+rawEEG = rawEEG[selected_channels,:]
+
 eeg = filtro.fit_transform(rawEEG)
 
 eventosFile = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct1_r2_events.txt"
@@ -37,8 +41,8 @@ labels = trialhandler.labels
 labels = [str(i)+"-"+"C"+str(labels[i-1]) for i in range(1,len(labels)+1)]
 labels
 
-ini_trial = 0
-final_trial = 15
+ini_trial = 10
+final_trial =20
 trial_duration = 10
 
 ti = int(ini_trial*trial_duration*fm)
