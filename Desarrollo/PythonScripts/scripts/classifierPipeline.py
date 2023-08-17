@@ -37,12 +37,12 @@ rawEEG_2 = np.load(file)
 eventos_2 = pd.read_csv(eventosFile, sep = ",")
 
 #Creamos objetos para manejar los trials
-th_1 = TrialsHandler(rawEEG_1, eventos_1, tinit = 0, tmax = 3, reject=None, sample_rate=250., trialsToRemove = [])
-th_2 = TrialsHandler(rawEEG_2, eventos_2, tinit = 0, tmax = 3, reject=None, sample_rate=250., trialsToRemove = [])
+th_1 = TrialsHandler(rawEEG_1, eventos_1, tinit = 0, tmax = 1.5, reject=None, sample_rate=250., trialsToRemove = [])
+th_2 = TrialsHandler(rawEEG_2, eventos_2, tinit = 0, tmax = 1.5, reject=None, sample_rate=250., trialsToRemove = [])
 
-dataConcatenada = Concatenate([th_1, th_2])#concatenamos datos
+dataConcatenada = Concatenate([th_2])#concatenamos datos
 
-channelsSelected = [0,1,2,3]
+channelsSelected = [0,1,2,3,6,7]
 
 trials = dataConcatenada.trials
 trials.shape
@@ -78,7 +78,7 @@ pipeline_lda = Pipeline([
     ('pasabanda', filter),
     ('cspmulticlase', cspmulticlass),
     ('featureExtractor', featureExtractor),
-    ('ravelTransformer', ravelTransformer),
+    # ('ravelTransformer', ravelTransformer),
     ('lda', lda)
 ])
 
@@ -88,13 +88,13 @@ param_grid_lda = {
     'pasabanda__lowcut': [8],
     'pasabanda__highcut': [18],
     'pasabanda__notch_freq': [50.0],
-    'cspmulticlase__n_components': [3],
-    'cspmulticlase__method': ["ovo","ova"],
+    'cspmulticlase__n_components': [1,2,3],
+    'cspmulticlase__method': ["ovo"],
     'cspmulticlase__n_classes': [len(np.unique(labels))],
     'cspmulticlase__reg': [0.01],
     'cspmulticlase__log': [None],
     'cspmulticlase__norm_trace': [False],
-    'featureExtractor__method': ["welch", "hilbert"],
+    'featureExtractor__method': ["welch"],
     'featureExtractor__sample_rate': [fm],
     'featureExtractor__band_values': [[8,18]],
     'lda__solver': ['svd'],
@@ -216,3 +216,5 @@ df.loc["LDA"] = [acc_lda, precision_lda, recall_lda, f1score_lda]
 df.loc["SVM"] = [acc_svm, precision_svm, recall_svm, f1score_svm]
 
 print(df)
+#LDA      33.0   0.333333  0.333333  0.333333
+#SVM      67.0   0.800000  0.666667  0.625000
