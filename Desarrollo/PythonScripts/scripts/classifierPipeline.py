@@ -26,39 +26,43 @@ import pickle
 
 
 ### ********** Cargamos los datos **********
-file = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct1_r1.npy"
-eventosFile = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct1_r1_events.txt"
+file = "data\sujeto_2\eegdata\sesion1\sn1_ts0_ct0_r1.npy"
+eventosFile = "data\sujeto_2\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt"
 rawEEG_1 = np.load(file)
 eventos_1 = pd.read_csv(eventosFile, sep = ",")
 
-file = "data\sujeto_1\eegdata\sesion2\sn2_ts0_ct0_r1.npy"
-eventosFile = "data\sujeto_1\eegdata\sesion2\sn2_ts0_ct0_r1_events.txt"
+file = "data\sujeto_2\eegdata\sesion1\sn1_ts0_ct1_r1.npy"
+eventosFile = "data\sujeto_2\eegdata\sesion1\sn1_ts0_ct1_r1_events.txt"
 rawEEG_2 = np.load(file)
 eventos_2 = pd.read_csv(eventosFile, sep = ",")
 
 #Creamos objetos para manejar los trials
-th_1 = TrialsHandler(rawEEG_1, eventos_1, tinit = 0, tmax = 3, reject=None, sample_rate=250., trialsToRemove = [29,30])
-th_2 = TrialsHandler(rawEEG_2, eventos_2, tinit = 0, tmax = 3, reject=None, sample_rate=250., trialsToRemove = [1])
+th_1 = TrialsHandler(rawEEG_1, eventos_1, tinit = 0, tmax = 3, reject=None, sample_rate=250., trialsToRemove = [])
+th_2 = TrialsHandler(rawEEG_2, eventos_2, tinit = 0, tmax = 3, reject=None, sample_rate=250., trialsToRemove = [])
 
 dataConcatenada = Concatenate([th_1, th_2])#concatenamos datos
 
-channelsSelected = [0,1,2] #C3 y C4
+channelsSelected = [0,1,2,3] #C3 y C4
 
 trials = dataConcatenada.trials
+trials.shape
 #me quedo con channelsSelected
 trials = trials[:,channelsSelected,:]
 labels = dataConcatenada.labels
 classesName, labelsNames = dataConcatenada.classesName
 
+##filtramos los trials donde los labels sean igual a 1, 2 y 3
+trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
+labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
 ### ********** Separamos los datos en train, validation y test **********
 
-eeg_train, eeg_test, labels_train, labels_test = train_test_split(trials, labels, test_size=0.1, stratify=labels)
-eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_train, labels_train, test_size=0.2, stratify=labels_train)
-
+eeg_train, eeg_test, labels_train, labels_test = train_test_split(trials, labels, test_size=0.1, stratify=labels, random_state=42)
+eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_train, labels_train, test_size=0.2, stratify=labels_train, random_state=42)
+eeg_train.shape
 ### ********** Instanciamos los diferentes objetos que usaremos en el pipeline**********
 
 fm = 250. #frecuencia de muestreo
-filter = Filter(lowcut=5, highcut=12, notch_freq=50.0, notch_width=2, sample_rate=fm, axisToCompute=2, padlen=None, order=4)
+filter = Filter(lowcut=8, highcut=18, notch_freq=50.0, notch_width=2, sample_rate=fm, axisToCompute=2, padlen=None, order=4)
 #Creamos un CSPMulticlass - Método ovo (one vs one)
 cspmulticlass = CSPMulticlass(n_components=2, method = "ovo", n_classes = len(np.unique(labels)), reg = 0.01)
 featureExtractor = FeatureExtractor(method = "welch", sample_rate = fm, axisToCompute=2, band_values=[8,12])
@@ -80,8 +84,9 @@ pipeline_lda = Pipeline([
 ### ********** Creamos la grilla de hiperparámetros **********
 
 param_grid_lda = {
-    'pasabanda__lowcut': [5, 8],
-    'pasabanda__highcut': [12],
+    'pasabanda__lowcut': [8],
+    'pasabanda__highcut': [18],
+    'pasabanda__notch_freq': [50.0],
     'cspmulticlase__n_components': [2],
     'cspmulticlase__method': ["ovo","ova"],
     'cspmulticlase__n_classes': [len(np.unique(labels))],
@@ -148,8 +153,8 @@ pipeline_svc = Pipeline([
 ### ********** Creamos la grilla de hiperparámetros **********
 param_grid_svc = {
     'pasabanda__lowcut': [8],
-    'pasabanda__highcut': [12],
-    'pasabanda__notch_freq': [50.0],
+    'pasabanda__highcut': [18],
+    'pasabanda__notch_freq': [50.],
     'cspmulticlase__n_components': [2],
     'cspmulticlase__method': ["ovo","ova"],
     'cspmulticlase__n_classes': [len(np.unique(labels))],
@@ -200,7 +205,7 @@ precision_svm, recall_svm, f1score_svm, _ = precision_recall_fscore_support(y_tr
 ## Obtenemos el accuracy y lo redondeamos a 2 decimales
 acc_svm = accuracy_score(y_true, y_pred)
 acc_svm = np.round(acc_svm, decimals=2)*100
-print(f"El accuracy del mejor clasificador SVM es de ***{round(acc_svm,2)*100}%***")
+print(f"El accuracy del mejor clasificador SVM es de ***{round(acc_svm,2)}%***")
 
 ### ********** Generamos un dataframe con los resultados del LDA y del SVM **********
 # El dataframe tiene el accuracy, precision, recall y f1-score para el mejor clasificador LDA y SVM
