@@ -12,7 +12,7 @@ from SignalProcessor.Filter import Filter
 from SignalProcessor.CSPMulticlass import CSPMulticlass
 from SignalProcessor.FeatureExtractor import FeatureExtractor
 from SignalProcessor.RavelTransformer import RavelTransformer
-
+    
 ## Clasificadores LDA y SVM
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.svm import SVC
@@ -42,7 +42,7 @@ th_2 = TrialsHandler(rawEEG_2, eventos_2, tinit = 0, tmax = 3, reject=None, samp
 
 dataConcatenada = Concatenate([th_1, th_2])#concatenamos datos
 
-channelsSelected = [0,1,2,3] #C3 y C4
+channelsSelected = [0,1,2,3]
 
 trials = dataConcatenada.trials
 trials.shape
@@ -51,12 +51,13 @@ trials = trials[:,channelsSelected,:]
 labels = dataConcatenada.labels
 classesName, labelsNames = dataConcatenada.classesName
 
-##filtramos los trials donde los labels sean igual a 1, 2 y 3
-trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
-labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
+##filtramos los trials para las clases que nos interesan
+trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 4) | (labels == 5))]
+labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 4) | (labels == 5))]
+
 ### ********** Separamos los datos en train, validation y test **********
 
-eeg_train, eeg_test, labels_train, labels_test = train_test_split(trials, labels, test_size=0.1, stratify=labels, random_state=42)
+eeg_train, eeg_test, labels_train, labels_test = train_test_split(trials, labels, test_size=0.2, stratify=labels, random_state=42)
 eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_train, labels_train, test_size=0.2, stratify=labels_train, random_state=42)
 eeg_train.shape
 ### ********** Instanciamos los diferentes objetos que usaremos en el pipeline**********
@@ -87,7 +88,7 @@ param_grid_lda = {
     'pasabanda__lowcut': [8],
     'pasabanda__highcut': [18],
     'pasabanda__notch_freq': [50.0],
-    'cspmulticlase__n_components': [2],
+    'cspmulticlase__n_components': [3],
     'cspmulticlase__method': ["ovo","ova"],
     'cspmulticlase__n_classes': [len(np.unique(labels))],
     'cspmulticlase__reg': [0.01],
@@ -95,7 +96,7 @@ param_grid_lda = {
     'cspmulticlase__norm_trace': [False],
     'featureExtractor__method': ["welch", "hilbert"],
     'featureExtractor__sample_rate': [fm],
-    'featureExtractor__band_values': [[8,12]],
+    'featureExtractor__band_values': [[8,18]],
     'lda__solver': ['svd'],
     'lda__shrinkage': [None],
     'lda__priors': [None],
@@ -155,7 +156,7 @@ param_grid_svc = {
     'pasabanda__lowcut': [8],
     'pasabanda__highcut': [18],
     'pasabanda__notch_freq': [50.],
-    'cspmulticlase__n_components': [2],
+    'cspmulticlase__n_components': [3],
     'cspmulticlase__method': ["ovo","ova"],
     'cspmulticlase__n_classes': [len(np.unique(labels))],
     'cspmulticlase__reg': [0.01],
@@ -163,7 +164,7 @@ param_grid_svc = {
     'cspmulticlase__norm_trace': [False],
     'featureExtractor__method': ["welch", "hilbert"],
     'featureExtractor__sample_rate': [fm],
-    'featureExtractor__band_values': [[8,12]],
+    'featureExtractor__band_values': [[8,18]],
     'svc__C': [1.0],
     'svc__kernel': ['rbf'],
     'svc__degree': [3],
