@@ -26,13 +26,13 @@ import pickle
 
 
 ### ********** Cargamos los datos **********
-eventosFile = "data\sujeto_4\eegdata\sesion1\sn1_ts0_ct1_r1_events.txt"
-file = "data\sujeto_4\eegdata\sesion1\sn1_ts0_ct1_r1.npy"
+eventosFile = "data\sujeto_8\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt"
+file = "data\sujeto_8\eegdata\sesion1\sn1_ts0_ct0_r1.npy"
 rawEEG_1 = np.load(file)
 eventos_1 = pd.read_csv(eventosFile, sep = ",")
 
-eventosFile = "data\sujeto_4\eegdata\sesion2\sn1_ts0_ct1_r2_events.txt"
-file = "data\sujeto_4\eegdata\sesion2\sn1_ts0_ct1_r2.npy"
+eventosFile = "data\sujeto_8\eegdata\sesion2\sn2_ts0_ct0_r1_events.txt"
+file = "data\sujeto_8\eegdata\sesion2\sn2_ts0_ct0_r1.npy"
 rawEEG_2 = np.load(file)
 eventos_2 = pd.read_csv(eventosFile, sep = ",")
 
@@ -52,8 +52,8 @@ labels = dataConcatenada.labels
 classesName, labelsNames = dataConcatenada.classesName
 
 ##filtramos los trials para las clases que nos interesan
-trials = trials[np.where((labels == 1) | (labels == 2))]
-labels = labels[np.where((labels == 1) | (labels == 2))]
+trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
+labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
 
 ### ********** Separamos los datos en train, validation y test **********
 
