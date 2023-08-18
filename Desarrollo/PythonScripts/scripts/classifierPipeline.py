@@ -26,21 +26,21 @@ import pickle
 
 
 ### ********** Cargamos los datos **********
-file = "data\sujeto_2\eegdata\sesion1\sn1_ts0_ct0_r1.npy"
-eventosFile = "data\sujeto_2\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt"
+eventosFile = "data\sujeto_4\eegdata\sesion1\sn1_ts0_ct1_r1_events.txt"
+file = "data\sujeto_4\eegdata\sesion1\sn1_ts0_ct1_r1.npy"
 rawEEG_1 = np.load(file)
 eventos_1 = pd.read_csv(eventosFile, sep = ",")
 
-file = "data\sujeto_2\eegdata\sesion1\sn1_ts0_ct1_r1.npy"
-eventosFile = "data\sujeto_2\eegdata\sesion1\sn1_ts0_ct1_r1_events.txt"
+eventosFile = "data\sujeto_4\eegdata\sesion2\sn1_ts0_ct1_r2_events.txt"
+file = "data\sujeto_4\eegdata\sesion2\sn1_ts0_ct1_r2.npy"
 rawEEG_2 = np.load(file)
 eventos_2 = pd.read_csv(eventosFile, sep = ",")
 
 #Creamos objetos para manejar los trials
-th_1 = TrialsHandler(rawEEG_1, eventos_1, tinit = 0, tmax = 1.5, reject=None, sample_rate=250., trialsToRemove = [])
-th_2 = TrialsHandler(rawEEG_2, eventos_2, tinit = 0, tmax = 1.5, reject=None, sample_rate=250., trialsToRemove = [])
+th_1 = TrialsHandler(rawEEG_1, eventos_1, tinit = 0, tmax = 4, reject=None, sample_rate=250., trialsToRemove = [])
+th_2 = TrialsHandler(rawEEG_2, eventos_2, tinit = 0, tmax = 4, reject=None, sample_rate=250., trialsToRemove = [])
 
-dataConcatenada = Concatenate([th_2])#concatenamos datos
+dataConcatenada = Concatenate([th_1,th_2])#concatenamos datos
 
 channelsSelected = [0,1,2,3,6,7]
 
@@ -52,8 +52,8 @@ labels = dataConcatenada.labels
 classesName, labelsNames = dataConcatenada.classesName
 
 ##filtramos los trials para las clases que nos interesan
-trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 4) | (labels == 5))]
-labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 4) | (labels == 5))]
+trials = trials[np.where((labels == 1) | (labels == 2))]
+labels = labels[np.where((labels == 1) | (labels == 2))]
 
 ### ********** Separamos los datos en train, validation y test **********
 
@@ -78,7 +78,7 @@ pipeline_lda = Pipeline([
     ('pasabanda', filter),
     ('cspmulticlase', cspmulticlass),
     ('featureExtractor', featureExtractor),
-    # ('ravelTransformer', ravelTransformer),
+    ('ravelTransformer', ravelTransformer),
     ('lda', lda)
 ])
 
@@ -86,7 +86,7 @@ pipeline_lda = Pipeline([
 
 param_grid_lda = {
     'pasabanda__lowcut': [8],
-    'pasabanda__highcut': [18],
+    'pasabanda__highcut': [12,18,28],
     'pasabanda__notch_freq': [50.0],
     'cspmulticlase__n_components': [1,2,3],
     'cspmulticlase__method': ["ovo"],
@@ -154,9 +154,9 @@ pipeline_svc = Pipeline([
 ### ********** Creamos la grilla de hiperparámetros **********
 param_grid_svc = {
     'pasabanda__lowcut': [8],
-    'pasabanda__highcut': [18],
-    'pasabanda__notch_freq': [50.],
-    'cspmulticlase__n_components': [3],
+    'pasabanda__highcut': [12,18,28],
+    'pasabanda__notch_freq': [50.0],
+    'cspmulticlase__n_components': [1,2,3],
     'cspmulticlase__method': ["ovo","ova"],
     'cspmulticlase__n_classes': [len(np.unique(labels))],
     'cspmulticlase__reg': [0.01],
