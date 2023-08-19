@@ -1,5 +1,7 @@
 """Script para generar un pipeline para evaluar diferentes combinaciones de hiperparámetros
 y obtener el mejor modelo para clasificar las señales de EGG.
+
+Script para resolver ISSUE #23
 """
 
 import numpy as np
