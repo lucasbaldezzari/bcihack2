@@ -33,7 +33,7 @@ import pickle
 from sklearn import base
 import itertools
 
-# from mne.decoding import CSP
+from mne.decoding import CSP
 
 class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
     """TODO: Documentación de clase"""

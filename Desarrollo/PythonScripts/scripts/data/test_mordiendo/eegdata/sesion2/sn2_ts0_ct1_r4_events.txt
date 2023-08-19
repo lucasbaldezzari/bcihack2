@@ -1,4 +1,0 @@
-trialNumber,classNumber,className,prediction,probabilities,startingTime,cueDuration,finishDuration,trialTime,trialTime(legible)
-1,1,Morder,-1,-1,2.3,4.0,3.0,1685456192.7283714,30/05/2023 11:16:32
-2,1,Morder,-1,-1,2.3,4.0,3.0,1685456202.8931603,30/05/2023 11:16:42
-3,2,Rest,-1,-1,2.1,4.0,3.0,1685456214.7037911,30/05/2023 11:16:54
