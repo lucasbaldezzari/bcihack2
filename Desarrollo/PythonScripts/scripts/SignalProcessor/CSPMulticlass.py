@@ -200,7 +200,6 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
 
         return X_transformed
 
-
 if __name__ == "__main__":
     import numpy as np
     from SignalProcessor.Filter import Filter
@@ -221,7 +220,7 @@ if __name__ == "__main__":
     trials = trials[:,channelsSelected,:]
 
     ##filtramos los trials para las clases que nos interesan
-    trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 5))]
+    trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 5) )]
     labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 5))]
 
     fm = 250.
@@ -241,17 +240,6 @@ if __name__ == "__main__":
     montage = make_standard_montage('standard_1020')
     info.set_montage(montage)
 
-    marks = dict(marker='o', markerfacecolor='w', markeredgecolor='k',linewidth=0, markersize=10)
-    plot = cspmulticlass.csplist[2].plot_filters(info, show_names=True, mask_params = marks, name_format = "CSP%1d", size=1.5)
-    plot.suptitle("Filtros CSP")
-    #setting label
-    plot.axes[1].set_ylabel("S", size=18)
-    plot2 = cspmulticlass.csplist[0].plot_patterns(info, show_names=True, size = 1.5, show=False)
-    plot2.supxlabel("Componente")
-    plot2.suptitle("Patrones CSP")
-    # cspmulticlass.csplist[2].plot_patterns(info, show_names=True, size = 3.5, show=False)
-    plt.show()
-
     import itertools
 
     if cspmulticlass.method == "ovo":
@@ -263,68 +251,22 @@ if __name__ == "__main__":
         classlist = np.unique(labels)
         y_labels = [f"Clase {str(c)}"  + "vs otras" for c in classlist]
 
-    # Crear una nueva figura y ejes para el gráfico combinado (3 filas, 3 columnas)
-    fig_combined, ax_combined = plt.subplots(3, 3, figsize=(12, 8))
+    #https://github.com/mne-tools/mne-python/blob/main/mne/decoding/csp.py#L252
+    #https://github.com/mne-tools/mne-python/blob/main/mne/decoding/csp.py#L252
+    from mne import EvokedArray
 
-    # Copiar los contenidos de los ejes de los gráficos individuales en los ejes combinados
-    for i in range(3):
-        for j in range(3):
-            if i == 0:
-                # ax_combined[i, j].remove()
-                pass
-            else:
-                ax_combined[i, j] = fig_combined.add_subplot(3, 3, i * 3 + j + 1, sharex=ax_combined[0, 0], sharey=ax_combined[0, 0])
+    cspmulticlass.csplist[0].patterns_.shape
 
-    # Copiar los ejes de los gráficos individuales en los ejes combinados
-    ax_combined[0, 0] = plot.get_axes()[0].get_images()[0]
-    # ax_combined[0, 1] = ax1[1]
-    # ax_combined[0, 2] = ax1[2]
-    # ax_combined[1, 0] = ax2[0]
-    # ax_combined[1, 1] = ax2[1]
-    # ax_combined[1, 2] = ax2[2]
-    # ax_combined[2, 0] = ax3[0]
-    # ax_combined[2, 1] = ax3[1]
-    # ax_combined[2, 2] = ax3[2]
+    csps = np.array([csp.patterns_ for csp in cspmulticlass.csplist])
+    #la forma del array es [n_clases, n_componentes, n_canales], modificamos para formar [n_clases x n_componentes, n_canales]
+    csps = csps.reshape(-1, csps.shape[2])
+    csps.shape
+    evoked = EvokedArray(csps.T, info, tmin=0)
 
-    # Ajustar el espaciado entre los subgráficos
-    fig_combined.tight_layout()
+    cspmulticlass.csplist[0].plot_filters(info, show=True, units = "AU", cbar_fmt="-%0.1f")
 
-    # Mostrar el gráfico combinado
-    plt.show()
-
-    
-
-    # Crear un gráfico original con un subplot
-    fig_original, ax_original = plt.subplots(figsize=(5, 4))
-    x = np.linspace(0, 10, 100)
-    y = np.sin(x)
-    ax_original.plot(x, y)
-    ax_original.set_title('Subplot Original')
-
-    # Crear una nueva figura con subplots
-    fig, axs = plt.subplots(2, 2, figsize=(10, 8))
-
-    # Obtener la imagen del subplot del gráfico original
-    image1 = plot.get_axes()[0].get_images()[0]
-    image2 = plot2.get_axes()[0].get_images()[0]
-    # plot.get_axes()[1].get_images()[0].get_array()
-
-    # Mostrar la imagen en el nuevo subplot
-    axs[0, 0].imshow(image1.get_array(), aspect='auto', extent=image1.get_extent(), origin='lower', cmap = "RdBu_r")
-    axs[0, 0].set_title('Copia del Subplot')
-    axs[0, 1].imshow(image2.get_array(), aspect='auto', extent=image2.get_extent(), origin='lower', cmap = "RdBu_r")
-    axs[0, 1].set_title('Copia del Subplot')
-
-    # Ajustar el espaciado entre los subplots
-    fig.tight_layout()
-
-    # Mostrar la nueva figura con subplots
-    plt.show()
-
-    plot.show()
-
-    plot2.get_axes()[2].get_images()[0]
-
+    filters = EvokedArray(cspmulticlass.csplist[0].filters_.T, info, tmin=0)
+    filters.plot_topomap(times=np.arange(n_components), show=True, colorbar=True)
     
 
     
