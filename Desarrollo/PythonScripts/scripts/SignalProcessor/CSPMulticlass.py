@@ -59,7 +59,7 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
         - component_order: str. Es el método a utilizar para ordenar los componentes. Puede ser "mutual_info" o "shuffle". Por defecto es "mutual_info"
 
         Para más información sobre los parámetros (excepto method y n_classes), ver la documentación de mne.decoding.csp"""
-        
+
         #chequeamos si method es válido
         assert method in ["ovo", "ova"], "method debe ser 'ovo' u 'ova'"
         self.method = method
@@ -79,12 +79,12 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
             self.csplist = [CSP(n_components = self.n_components, reg=reg, log=log, cov_est=cov_est,
                  transform_into=transform_into, norm_trace=norm_trace, cov_method_params=cov_method_params,
                  rank=rank, component_order=component_order) for i in range(int((n_classes*(n_classes-1))/2))]
-            
+
         if method == "ova":
             self.csplist = [CSP(n_components = self.n_components, reg=reg, log=log, cov_est=cov_est,
                  transform_into=transform_into, norm_trace=norm_trace, cov_method_params=cov_method_params,
                  rank=rank, component_order=component_order) for i in range(n_classes)]
-            
+
     def saveCSPList(self, filename, folder = "filtrosCSP"):
         """Método para guardar los filtros CSP en un archivo pickle
 
@@ -100,7 +100,7 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
         #guardamos en un archivo pickle
         with open(folder + "/" + filename, "wb") as f:
             pickle.dump(self.csplist, f)
-        
+
     @staticmethod #método estático para poder cargar filtros CSP sin instanciar la clase
     def loadCSPList(self, filename, folder = "filtrosCSP"):
         """Método para cargar los filtros CSP desde un archivo pickle
@@ -153,17 +153,17 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
                 #índices de las muestras con clase c1 y clase c2
                 index_c1 = np.where(y == c1)
                 index_c2 = np.where(y == c2)
-                
+
                 #trials correspondientes a las clases c1 y c2
                 trials_c1 = X[index_c1]
                 trials_c2 = X[index_c2]
-                
+
                 #concatenamos los trials a utilizar para entrenar el filtro CSP
                 trials = np.concatenate((trials_c1, trials_c2), axis = 0)
-                
+
                 #concatenamos las etiquetas de los trials
                 labels = np.concatenate((np.ones(trials_c1.shape[0]), np.zeros(trials_c2.shape[0])), axis = 0)
-                
+
                 #fitteamos el filtro CSP
                 self.csplist[i].fit(trials, labels)
 
@@ -172,187 +172,170 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
             for i, c in enumerate(classlist):
                 c_index = np.where(y == c) #índices de la clase de interés
                 others_index = np.where(y != c) #índices de las demás clases
-                
+
                 c_trials = X[c_index] #trials de la clase de interes
                 others_trials = X[others_index] #trials de las demás clases
 
                 trials = np.concatenate((c_trials, others_trials), axis = 0)
-                
+
                 c_labels = np.zeros(c_trials.shape[0]) #etiquetas de los trials de la clase de interés
                 others_labels = np.ones(others_trials.shape[0]) #etiquetas de los trials de las demás clases
                 labels = np.concatenate((c_labels, others_labels), axis = 0) #concatenamos las etiquetas
-                
+
                 #fitteamos el filtro CSP
                 self.csplist[i].fit(trials, labels)
 
         return self #el método fit siempre debe retornar self
-    
+
     def transform(self, X, y = None):
         """Para cada csp en self.csplist, se transforman los trials de X
-        
+
         - X: ndarray. Es un arreglo de numpy con los datos de entrenamiento. Tiene el formato (n_trials, n_channels, n_samples)"""
 
         #transformamos los trials de cada clase
         X_transformed = [csp.transform(X) for csp in self.csplist]
-        
+
         #concatenamos los trials de cada clase
         X_transformed = np.concatenate(X_transformed, axis = 1)
-        
+
         return X_transformed
 
 
 if __name__ == "__main__":
+    import numpy as np
+    from SignalProcessor.Filter import Filter
+    from SignalProcessor.CSPMulticlass import CSPMulticlass
+    from sklearn.model_selection import train_test_split, GridSearchCV
+    import mne
+    from mne.channels import make_standard_montage
+    import matplotlib.pyplot as plt
+    from mne.decoding import CSP
 
-    sample_frec = 100.
-    c3, cz, c4 = 26, 28, 30 #canales de interés
+    eeg_file = "SignalProcessor/testData/trials_sujeto8_trainingEEG.npy"
+    trials = np.load(eeg_file)
+    labels = np.load("SignalProcessor/testData/labels_sujeto8_training.npy")
 
-    """Nombre de los canales: ['AF3', 'AF4', 'F5', 'F3', 'F1', 'Fz', 'F2', 'F4', 'F6', 'FC5', 'FC3',
-    'FC1', 'FCz', 'FC2', 'FC4', 'FC6', 'CFC7', 'CFC5', 'CFC3', 'CFC1', 'CFC2', 'CFC4', 'CFC6', 'CFC8',
-    'T7', 'C5', 'C3', 'C1', 'Cz', 'C2', 'C4', 'C6', 'T8', 'CCP7', 'CCP5', 'CCP3', 'CCP1', 'CCP2', 'CCP4',
-    'CCP6', 'CCP8', 'CP5', 'CP3', 'CP1', 'CPz', 'CP2', 'CP4', 'CP6', 'P5', 'P3', 'P1', 'Pz',
-    'P2', 'P4', 'P6', 'PO1', 'PO2', 'O1', 'O2']   """
+    channelsName = ["P3", "P4", "C3", "C4", "F3", "F4", "Pz", "Cz"]
+    channelsSelected = [0,1,2,3,6,7]
+    channelsName = [channelsName[i] for i in channelsSelected]
+    trials = trials[:,channelsSelected,:]
 
-    ## channelsToUse = ["C1", "C2", "C3", "C4", "C5", "C6", "CZ", "CP1", "CP2","CP3","CP4","CPZ", "P1","P2","P3","P4"]
+    ##filtramos los trials para las clases que nos interesan
+    trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 5))]
+    labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 5))]
 
-    channelsToUse = [27, 29, 26, 30, 25, 31, 28, 43, 45, 42, 46, 44, 50, 52, 49, 53]
+    fm = 250.
+    filter = Filter(lowcut=8, highcut=18, notch_freq=50.0, notch_width=2, sample_rate=fm, axisToCompute=2, padlen=None, order=4)
 
-    folder = "testData/"
-    left = np.load(folder+"noisy_eeg_classLeft.npy", allow_pickle=True)[:,channelsToUse,:]
-    right = np.load(folder+"noisy_eeg_classRight.npy", allow_pickle=True)[:,channelsToUse,:]
-    # foot = (right+left) - (right+left).mean(axis = 2, keepdims = True) #simulamos que tenemos datos de la clase foot
-    # foot2 = foot
-    print(left.shape) #[n_channels, n_samples, ntrials]
-    print(right.shape) #[n_channels, n_samples, ntrials]
+    n_components = 3
+    cspmulticlass = CSPMulticlass(n_components=n_components, method = "ovo", n_classes = len(np.unique(labels)), reg = 0.01)
 
-    ##Filtramos los datos con Filter en la banda 8 a 15Hz
-    from Filter import Filter
-    filter = Filter(lowcut= 8.0, highcut=16.0, notch_freq=50.0, notch_width=2.0, sample_rate=100.0)
-    right = filter.fit_transform(right)
-    left = filter.fit_transform(left)
+    trials_filtered = filter.fit_transform(trials)
 
-    #Contactemos los trials de cada clase en un sólo array
-    eegmatrix = np.concatenate((left,right), axis=0) #importante el orden con el que concatenamos
-    # eegmatrix = np.concatenate((left,right, foot, foot2), axis=0) #importante el orden con el que concatenamos
-    print(eegmatrix.shape) #[ n_trials (o n_epochs), n_channels, n_samples]
+    eeg_train, eeg_test, labels_train, labels_test = train_test_split(trials_filtered, labels, test_size=0.2, stratify=labels, random_state=42)
+    eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_train, labels_train, test_size=0.2, stratify=labels_train, random_state=42)
 
-    class_info = {1: "left", 2: "right"} #diccionario para identificar clases. El orden se corresponde con lo que hay eneegmatrix
-    # class_info = {1: "left", 2: "right", 3:"foot", 4:"foot2"} #diccionario para identificar clases. El orden se corresponde con lo que hay eneegmatrix 
-    n_clases = len(list(class_info.keys()))
-
-    #genero las labels
-    n_trials = left.shape[0]
-    totalTrials = eegmatrix.shape[0]
-    labels = np.array([np.full(n_trials, label) for label in class_info.keys()]).reshape(totalTrials)
-    print(labels.shape)
-    print(labels) #las labels se DEBEN corresponder con el orden de los trials en eegmatrix
-
-    ## **************************************************
-    #Separamos los datos en train, test y validación
-    from sklearn.model_selection import train_test_split
-
-    eeg_train, eeg_test, labels_train, labels_test = train_test_split(eegmatrix, labels, test_size=0.2, random_state=10)
-    # eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_train, labels_train, test_size=0.2, random_state=1)
-
-    ## **************************************************
-
-    #instanciamos el objeto CSPMulticlass
-    # cspmulticlass = CSPMulticlass(n_components = 3, method = "ovo", n_classes = len(np.unique(labels)),
-    #                               transform_into="csp_space", reg = 0.03, component_order="mutual_info")
-
-    cspmulticlass = CSPMulticlass(n_components=2, method = "ovo", n_classes = len(np.unique(labels)), reg=None, log=None, norm_trace=False)
-    print(f"Cantidad de filtros CSP a entrenar: {len(cspmulticlass.csplist)}")
-
-    #entrenamos el csp con los datos de entrenamiento
     cspmulticlass.fit(eeg_train, labels_train)
 
-    #aplicamos el csp a los datos de testeo
-    eeg_test_transformed = cspmulticlass.transform(eeg_test)
-    eeg_test_transformed.shape
+    info = mne.create_info(channelsName, fm, "eeg")
+    montage = make_standard_montage('standard_1020')
+    info.set_montage(montage)
 
-    #Extraemos las envolventes de los trials antes y después de aplicar CSP sobre el set de testeo
-    from FeatureExtractor import FeatureExtractor
-
-    fe = FeatureExtractor(method = "hilbert", sample_rate=100., axisToCompute=2)
-
-    #Features separadas por etiqueta
-    left_test_envelope_withCSP = fe.fit_transform(eeg_test_transformed[labels_test == 1])
-    right_test_envelope_withCSP = fe.fit_transform(eeg_test_transformed[labels_test == 2])
-    # foot_test_envelope_withCSP = fe.fit_transform(eeg_test_transformed[labels_train == 3])
-    left_test_envelope_withCSP.shape
-
-    #Graficamos las features para las componentes 1 y 2 obtenidas por el CSP
-    import matplotlib.pyplot as plt
-
-    #cambiamos estilo a seaborn
-    plt.style.use("seaborn")
-
-    sample_frec = 100.
-    t1 = -0.5
-    t2 = 2.5
-    timeline = np.arange(t1,t2,1/sample_frec)
-
-    fig, ax = plt.subplots(1,2, figsize=(10,5))
-    fig.suptitle("Envolventes set de validación con CSP - Promedio sobre trials")
-    ax[0].plot(timeline, left_test_envelope_withCSP.mean(axis = 0)[0], label = "1er componente (izq)")
-    ax[0].plot(timeline, right_test_envelope_withCSP.mean(axis = 0)[0], label = "1er componente (der)")
-    ax[0].legend()
-    ax[0].grid()
-    ax[1].plot(timeline, left_test_envelope_withCSP.mean(axis = 0)[1], label = "2da componente (izq)")
-    ax[1].plot(timeline, right_test_envelope_withCSP.mean(axis = 0)[1], label = "2da componente (der)")
-    ax[1].legend()
-    ax[1].grid()
-    plt.plot()
+    marks = dict(marker='o', markerfacecolor='w', markeredgecolor='k',linewidth=0, markersize=10)
+    plot = cspmulticlass.csplist[2].plot_filters(info, show_names=True, mask_params = marks, name_format = "CSP%1d", size=1.5)
+    plot.suptitle("Filtros CSP")
+    #setting label
+    plot.axes[1].set_ylabel("S", size=18)
+    plot2 = cspmulticlass.csplist[0].plot_patterns(info, show_names=True, size = 1.5, show=False)
+    plot2.supxlabel("Componente")
+    plot2.suptitle("Patrones CSP")
+    # cspmulticlass.csplist[2].plot_patterns(info, show_names=True, size = 3.5, show=False)
     plt.show()
 
-    #Extraemos las potencias de las componentes poryectadas luego de aplicar CSP al set de testeo
-    leftFE = FeatureExtractor(method = "welch", sample_rate=100., axisToCompute=2)
-    rightFE = FeatureExtractor(method = "welch", sample_rate=100., axisToCompute=2)
+    import itertools
 
-    left_test_powerCSP = leftFE.fit_transform(eeg_test_transformed[labels_test == 1])
-    right_test_powerCSP = rightFE.fit_transform(eeg_test_transformed[labels_test == 2])
-    # foot_test_powerCSP = rightFE.fit_transform(eeg_test_transformed[labels_val == 3])
-    right_test_powerCSP.shape
+    if cspmulticlass.method == "ovo":
+        classlist = np.unique(labels)
+        class_combinations = list(itertools.combinations(classlist, 2))
+        y_labels = [f"Clase {str(c1)} vs Clase {str(c2)}" for c1, c2 in class_combinations]
+    
+    if cspmulticlass.method == "ova":
+        classlist = np.unique(labels)
+        y_labels = [f"Clase {str(c)}"  + "vs otras" for c in classlist]
 
-    #hacemos el eje frecuencial considerando la frecuencia de muestreo
+    # Crear una nueva figura y ejes para el gráfico combinado (3 filas, 3 columnas)
+    fig_combined, ax_combined = plt.subplots(3, 3, figsize=(12, 8))
 
-    f = np.linspace(0, sample_frec/2, left_test_powerCSP.shape[2])
+    # Copiar los contenidos de los ejes de los gráficos individuales en los ejes combinados
+    for i in range(3):
+        for j in range(3):
+            if i == 0:
+                # ax_combined[i, j].remove()
+                pass
+            else:
+                ax_combined[i, j] = fig_combined.add_subplot(3, 3, i * 3 + j + 1, sharex=ax_combined[0, 0], sharey=ax_combined[0, 0])
 
-    fig, ax = plt.subplots(1,2, figsize=(10,5))
-    fig.suptitle("Potencia set de validación con CSP - Promedio sobre trials")
-    ax[0].plot(f, left_test_powerCSP.mean(axis = 0)[0], label = "1er componente (izq)")
-    ax[0].plot(f, right_test_powerCSP.mean(axis = 0)[0], label = "1er componente (der)")
-    ax[0].legend()
-    ax[0].grid()
-    ax[1].plot(f, left_test_powerCSP.mean(axis = 0)[1], label = "2da componente (izq)")
-    ax[1].plot(f, right_test_powerCSP.mean(axis = 0)[1], label = "2da componente (der)")
-    ax[1].legend()
-    ax[1].grid()
-    plt.plot()
+    # Copiar los ejes de los gráficos individuales en los ejes combinados
+    ax_combined[0, 0] = plot.get_axes()[0].get_images()[0]
+    # ax_combined[0, 1] = ax1[1]
+    # ax_combined[0, 2] = ax1[2]
+    # ax_combined[1, 0] = ax2[0]
+    # ax_combined[1, 1] = ax2[1]
+    # ax_combined[1, 2] = ax2[2]
+    # ax_combined[2, 0] = ax3[0]
+    # ax_combined[2, 1] = ax3[1]
+    # ax_combined[2, 2] = ax3[2]
+
+    # Ajustar el espaciado entre los subgráficos
+    fig_combined.tight_layout()
+
+    # Mostrar el gráfico combinado
     plt.show()
 
-    np.log(left_test_powerCSP.mean(axis = 0))
+    
 
-    #aplicamos pipeline para entrenar sobre los datos de entrenamiento y testear sobre los de testeo
-    from sklearn.pipeline import Pipeline
-    from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-    #importamos un svm
-    from sklearn.svm import SVC
-    from RavelTransformer import RavelTransformer
-    #import standardScaler
-    from sklearn.preprocessing import StandardScaler
+    # Crear un gráfico original con un subplot
+    fig_original, ax_original = plt.subplots(figsize=(5, 4))
+    x = np.linspace(0, 10, 100)
+    y = np.sin(x)
+    ax_original.plot(x, y)
+    ax_original.set_title('Subplot Original')
 
-    #instanciamos el pipeline
-    pipeline = Pipeline([
-        ("filtro", Filter(lowcut= 8.0, highcut=16.0, notch_freq=50.0, notch_width=2.0, sample_rate=100.0)),
-        ("csp", CSPMulticlass(n_components=2, method = "ovo", n_classes = len(np.unique(labels)), reg=None, log=None, norm_trace=False)),
-        ("hilbert", FeatureExtractor(method = "welch", sample_rate=100., axisToCompute=2)),
-        ("ravel", RavelTransformer()),
-        # ("scaler", StandardScaler()),
-        ("svc", SVC)
-    ])
+    # Crear una nueva figura con subplots
+    fig, axs = plt.subplots(2, 2, figsize=(10, 8))
 
-    #entrenamos el pipeline
-    pipeline.fit(eeg_train, labels_train)
+    # Obtener la imagen del subplot del gráfico original
+    image1 = plot.get_axes()[0].get_images()[0]
+    image2 = plot2.get_axes()[0].get_images()[0]
+    # plot.get_axes()[1].get_images()[0].get_array()
 
-    #testamos el pipeline
-    pipeline.score(eeg_test, labels_test)
+    # Mostrar la imagen en el nuevo subplot
+    axs[0, 0].imshow(image1.get_array(), aspect='auto', extent=image1.get_extent(), origin='lower', cmap = "RdBu_r")
+    axs[0, 0].set_title('Copia del Subplot')
+    axs[0, 1].imshow(image2.get_array(), aspect='auto', extent=image2.get_extent(), origin='lower', cmap = "RdBu_r")
+    axs[0, 1].set_title('Copia del Subplot')
+
+    # Ajustar el espaciado entre los subplots
+    fig.tight_layout()
+
+    # Mostrar la nueva figura con subplots
+    plt.show()
+
+    plot.show()
+
+    plot2.get_axes()[2].get_images()[0]
+
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
