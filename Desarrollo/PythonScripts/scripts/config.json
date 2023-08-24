@@ -24,8 +24,8 @@
     "finishDuration": 3.0,
     "lenToClassify": 0.3,
     "lenForClassifier": 4.0,
-    "subjectName": "sujeto_10",
-    "sesionNumber": 1,
+    "subjectName": "sujeto_1",
+    "sesionNumber": 2,
     "boardParams": {
         "boardName": "cyton",
         "channels": [
