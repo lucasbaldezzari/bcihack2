@@ -73,6 +73,7 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
         self.cov_method_params = cov_method_params
         self.component_order = component_order
         self.transform_into = transform_into
+        self.class_combinations = None
 
         #lista de filtros CSP
         if method == "ovo":
@@ -137,6 +138,7 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
         - self"""
 
         assert X.shape[0] == y.shape[0], "X e y deben tener la misma cantidad de trials"
+        assert self.n_classes == len(np.unique(y)), "La cantidad de clases debe ser igual a la cantidad de labels únicas en y"
 
         ##ordeno los trials en base a los valores dentro de y
         #obtengo los índices de los trials ordenados
@@ -147,7 +149,10 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
 
         if self.method == "ovo":
             classlist = np.unique(y)
+            ## ordenamos classlist de menor a mayor
+            classlist = np.sort(classlist)
             class_combinations = list(itertools.combinations(classlist, 2))
+            self.class_combinations = [f"Clase {str(c1)} vs Clase {str(c2)}" for c1, c2 in class_combinations]
 
             for i, (c1, c2) in enumerate(class_combinations):
                 #índices de las muestras con clase c1 y clase c2
@@ -169,6 +174,8 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
 
         if self.method == "ova":
             classlist = np.unique(y)
+            classlist = np.sort(classlist)
+            self.class_combinations = [f"Clase {str(c)}"  + "vs otras" for c in classlist]
             for i, c in enumerate(classlist):
                 c_index = np.where(y == c) #índices de la clase de interés
                 others_index = np.where(y != c) #índices de las demás clases
@@ -220,14 +227,15 @@ if __name__ == "__main__":
     trials = trials[:,channelsSelected,:]
 
     ##filtramos los trials para las clases que nos interesan
-    trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 5) )]
-    labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 5))]
+    trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
+    labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
 
     fm = 250.
     filter = Filter(lowcut=8, highcut=18, notch_freq=50.0, notch_width=2, sample_rate=fm, axisToCompute=2, padlen=None, order=4)
 
     n_components = 3
-    cspmulticlass = CSPMulticlass(n_components=n_components, method = "ovo", n_classes = len(np.unique(labels)), reg = 0.01)
+    n_classes = len(np.unique(labels))
+    cspmulticlass = CSPMulticlass(n_components=n_components, method = "ovo", n_classes = n_classes, reg = 0.01)
 
     trials_filtered = filter.fit_transform(trials)
 
@@ -236,37 +244,65 @@ if __name__ == "__main__":
 
     cspmulticlass.fit(eeg_train, labels_train)
 
-    info = mne.create_info(channelsName, fm, "eeg")
-    montage = make_standard_montage('standard_1020')
-    info.set_montage(montage)
-
     import itertools
-
-    if cspmulticlass.method == "ovo":
-        classlist = np.unique(labels)
-        class_combinations = list(itertools.combinations(classlist, 2))
-        y_labels = [f"Clase {str(c1)} vs Clase {str(c2)}" for c1, c2 in class_combinations]
-    
-    if cspmulticlass.method == "ova":
-        classlist = np.unique(labels)
-        y_labels = [f"Clase {str(c)}"  + "vs otras" for c in classlist]
-
-    #https://github.com/mne-tools/mne-python/blob/main/mne/decoding/csp.py#L252
-    #https://github.com/mne-tools/mne-python/blob/main/mne/decoding/csp.py#L252
     from mne import EvokedArray
+    from mne import create_info
+    from mne.channels import make_standard_montage
+    from mne.defaults import _BORDER_DEFAULT, _EXTRAPOLATE_DEFAULT, _INTERPOLATION_DEFAULT
+    import copy as cp
 
-    cspmulticlass.csplist[0].patterns_.shape
+    def plot_patterns(channelsName, fm, ch_types = "eeg", montage = 'standard_1020', colorbar = True,
+                      scalings=1.0, nrows="auto", ncols = "auto", sensors = "kx",size = 1,
+                      title = "Patrones CSP", show = True):
+        
+        if nrows == "auto":
+            nrows = len(cspmulticlass.class_combinations)
+        if ncols == "auto":
+            ncols = cspmulticlass.n_components
 
-    csps = np.array([csp.patterns_ for csp in cspmulticlass.csplist])
-    #la forma del array es [n_clases, n_componentes, n_canales], modificamos para formar [n_clases x n_componentes, n_canales]
-    csps = csps.reshape(-1, csps.shape[2])
-    csps.shape
-    evoked = EvokedArray(csps.T, info, tmin=0)
+        info = create_info(channelsName, fm, "eeg")
+        montage = make_standard_montage(montage)
+        info.set_montage(montage)
 
-    cspmulticlass.csplist[0].plot_filters(info, show=True, units = "AU", cbar_fmt="-%0.1f")
+        patterns_array = np.array([csp.patterns_ for csp in cspmulticlass.csplist])
+        patterns_array = patterns_array.reshape(-1, patterns_array.shape[2])
 
-    filters = EvokedArray(cspmulticlass.csplist[0].filters_.T, info, tmin=0)
-    filters.plot_topomap(times=np.arange(n_components), show=True, colorbar=True)
+        n_combintaions = len(cspmulticlass.class_combinations)
+        offset = patterns_array.T.shape[0]
+        qty = np.arange(n_components)
+        components = np.array([qty + offset*k for k in range(n_combintaions)]).ravel()
+    
+        info2 = cp.deepcopy(info)
+        with info2._unlock():
+                info2["sfreq"] = 1.0
+        patterns = EvokedArray(patterns_array.T, info2, tmin=0)
+
+        topomap = patterns.plot_topomap(times = components, colorbar=colorbar, size = size, scalings=scalings, time_format="",
+                                        nrows = nrows, ncols = ncols, sensors=sensors,show=False)
+
+        # if nrows > 1:
+        #     j = 0#-1*n_components
+        #     for i in range(nrows):
+        #         fig.axes[j+i].set_ylabel(y_labels[i], size=12)
+        #         j += n_components
+        #         if j > nrows:
+        #             j -=1
+        #             print("entro")
+        #         print(j)
+                
+        #Seteamos el ylabel de cada axes con los nombres de y_labels
+        # for i in range(len(y_labels)):
+        #     fig.axes[i].set_ylabel(y_labels[i], size=12)
+
+
+        plt.suptitle(title, fontsize=16)
+        plt.tight_layout()
+        if show:
+            plt.show()
+    
+    plot_patterns(channelsName, 250., size = 1, nrows = 5, ncols=6)
+    plt.show()
+
     
 
     
