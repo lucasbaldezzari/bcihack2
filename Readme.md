@@ -125,7 +125,7 @@ Al momento se implementa una clase para intentar mejorar la extracción de carac
 
 **NOTA:** Las clases dentro del bloque _SignalProcessor_ se implementan como si fueran _[Transformers](https://scikit-learn.org/stable/data_transforms.html)_ de ScikitLearn (heredan de BaseEstimator, TransformerMixin). La idea es poder utilizar estos objetos en un _[Pipeline](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html)_, lo que nos da la ventaja de probar diferentes estrategias de manera rápida y sencilla.
 
-En el [classifierPipeline.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/classifierPipeline.py) se muestra una aplicación completa para el análisis de las señales de EEG de uno de los voluntarios del set de datos de [BCI Competition IV](https://www.bbci.de/competition/iv/).
+En el [classifierPipeline.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/classifierPipeline.py) se muestra una aplicación completa para el análisis de las señales de EEG registradas sobre uno de nuestros voluntarios.
 
 Se muestra un resumen debajo,
 
