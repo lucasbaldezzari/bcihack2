@@ -28,8 +28,6 @@ El siguiente repositorio será utilizado para almacenar bibliografía, set de da
 - [Dra. SALUM Graciela - graciela.salum@utec.edu.uy](https://www.linkedin.com/in/graciela-marisa-salum-5262bb47)
 - [Téc. SUAREZ Tomy - tomy.suarez@utec.edu.uy](https://www.linkedin.com/in/tomy-suarez-a06993162)
 - [Téc. ÁLVAREZ Emiliano - emiliano.alvarez@utec.edu.uy](https://www.linkedin.com/in/emilianoalvarezruiz)
-- [Estudiante Mecatrónica LOPEZ Lucas - lucas.lopez.d@estudiantes.utec.edu.uy](https://www.linkedin.com/in/lucas-lopez-14ba46225)
-- [Estudiante Ing. Biomédica. GALVÁN Maximiliano - maximiliano.galvan@utec.edu.uy](https://www.linkedin.com/in/maximiliano-g-b0628825a/)
 - [Téc. MAR Walter - walter.mar@utec.edu.uy](https://www.linkedin.com/in/walter-mar-6b2104195/?originalSubdomain=uy)
 
 ### Demo sistema
