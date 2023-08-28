@@ -133,7 +133,7 @@ Las siguientes figuras muestran ejemplos de patrones y filtros para el caso de e
 *Filtros*
 ![Patrones obtenidos por el CSPMulticlass](/Desarrollo/PythonScripts/figures/filters.png)
 
-<img src="/Desarrollo/PythonScripts/figures/filters.png" width="200" height="400" />
+<img src="/Desarrollo/PythonScripts/figures/filters.png" width="200" />
 
 
 ### Clasificación
