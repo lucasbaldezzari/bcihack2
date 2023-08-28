@@ -223,6 +223,8 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
                       save = False, filename = "patterns.png", dpi  = 300, contours = 6,
                       title = "Patrones CSP", title_size = 14, colorbar = True, show = True):
             
+            import matplotlib.pyplot as pyplot
+            
             #chequeamos self.is_fitted sino raise error
             assert self.is_fitted, "La clase CSPMulticlass no está entrenada. Debe llamar al método fit antes de graficar los patrones CSP"
             
@@ -292,23 +294,25 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
             topomap.axes[ncols].set_ylim(vlim[0],vlim[1])
 
             #agregamos título
-            plt.suptitle(title, fontsize=title_size)
+            pyplot.suptitle(title, fontsize=title_size)
 
             #guardamos figura si es necesario
             if save:
-                plt.savefig(filename, dpi=dpi)
+                pyplot.savefig(filename, dpi=dpi)
 
             #mostarmos figura si es necesario
             if show:
-                plt.show()
+                pyplot.show()
 
-            del plt
+            del pyplot
 
     def plot_filters(self, channelsName, fm, montage = 'standard_1020',scalings=1.0,
                         cbar_fmt = "%3.1f", cmap = "coolwarm",nrows="auto", ncols = "auto",
                         sensors = "kx",size = 1, cspnames = False, ynames = False,font_ylab = 10,
                         save = False, filename = "filters.png", dpi  = 300, contours = 6,
                         title = "Filtros CSP", title_size = 14, colorbar = True, show = True):
+            
+            import matplotlib.pyplot as pyplot
                 
             #chequeamos self.is_fitted sino raise error
             assert self.is_fitted, "La clase CSPMulticlass no está entrenada. Debe llamar al método fit antes de graficar los filtros CSP"
@@ -371,7 +375,7 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
                     if colorbar and j == ncols:
                         j+=1
                     for k in range(self.n_components):
-                        topomap.axes[j+k].set_title(f"{self.class_combinations[l]}:P{k+1}", fontsize=10)
+                        topomap.axes[j+k].set_title(f"{self.class_combinations[l]}:F{k+1}", fontsize=10)
                     j+=self.n_components
                     l+=1
 
@@ -379,22 +383,21 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
             topomap.axes[ncols].set_ylim(vlim[0],vlim[1])
 
             #agregamos título
-            plt.suptitle(title, fontsize=title_size)
+            pyplot.suptitle(title, fontsize=title_size)
 
             #guardamos figura si es necesario
             if save:
-                plt.savefig(filename, dpi=dpi)
+                pyplot.savefig(filename, dpi=dpi)
 
             #mostarmos figura si es necesario
             if show:
-                plt.show()
+                pyplot.show()
 
 if __name__ == "__main__":
     import numpy as np
     from SignalProcessor.Filter import Filter
     from SignalProcessor.CSPMulticlass import CSPMulticlass
-    from sklearn.model_selection import train_test_split, GridSearchCV
-    import mne
+    from sklearn.model_selection import train_test_split
     from mne.channels import make_standard_montage
     import matplotlib.pyplot as plt
     from mne.decoding import CSP
@@ -404,7 +407,7 @@ if __name__ == "__main__":
     labels = np.load("SignalProcessor/testData/labels_sujeto8_training.npy")
 
     channelsName = ["P3", "P4", "C3", "C4", "F3", "F4", "Pz", "Cz"]
-    channelsSelected = [0,1,2,3,6,7]
+    channelsSelected = [0,1,2,3,4,5,6,7]
     channelsName = [channelsName[i] for i in channelsSelected]
     trials = trials[:,channelsSelected,:]
 
@@ -431,8 +434,3 @@ if __name__ == "__main__":
     
     cspmulticlass.plot_patterns(channelsName, fm, size = 1, nrows=nrows, ncols=ncols, cspnames=True, save=True, contours = 10)
     cspmulticlass.plot_filters(channelsName, fm, size = 1, nrows=nrows, ncols=ncols, cspnames=True, save=True, contours = 10)
-
-    # info = create_info(channelsName, fm, "eeg")
-    # montage = make_standard_montage('standard_1020')
-    # info.set_montage(montage)
-    # cspmulticlass.csplist[3].plot_filters(info, scalings=1, cmap="coolwarm", contours = 10, vlim = (0.31 ,-0.31))
