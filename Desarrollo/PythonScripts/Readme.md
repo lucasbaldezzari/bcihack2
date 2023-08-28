@@ -46,7 +46,7 @@ En esta sección se encuentra el código fuente de los diferentes scripts en pyt
 
 La siguiente imagen muestra el diagrama de bloques V1.4 de la BCI.
 
-![Diagrama de bloques](/Desarrollo/PythonScripts/bloques.png)
+![Diagrama de bloques](/Desarrollo/PythonScripts/figures/bloques.png)
 
 A continuación, se resume lo contenido dentro de cada directorio.
 
@@ -112,7 +112,7 @@ Se utilizan las señales de EEG previamente filtradas (pasabanda y notch), trial
 
 A partir de las salidas de estos filtros se extraen sus características con *[FeatureExtractor.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/FeatureExtractor.py)* y se concatenan cada una de estas para formar el **feature vector** final.
 
-![Diagrama aplicación de CSP y Extracción de características - OvO](/Desarrollo/PythonScripts/cspovotrain.png)
+![Diagrama aplicación de CSP y Extracción de características - OvO](/Desarrollo/PythonScripts/figure/cspovotrain.png)
 
 El entrenamiento y aplicación de filtrado por CSP está a cargo de [CSPMulticlass.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSPMulticlass.py).
 
