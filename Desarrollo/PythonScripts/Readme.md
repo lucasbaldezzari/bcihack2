@@ -127,13 +127,10 @@ La cantidad de patrones o filtros a graficar depende de la cantidad de clases, d
 Las siguientes figuras muestran ejemplos de patrones y filtros para el caso de entrenar el *CSPMulticlass* para 5 clases y tres componentes por clase.
 
 *Patrones*
-![Patrones obtenidos por el CSPMulticlass](/Desarrollo/PythonScripts/figures/patterns.png)
-
+<img src="/Desarrollo/PythonScripts/figures/patterns.png" width="840" />
 
 *Filtros*
-![Patrones obtenidos por el CSPMulticlass](/Desarrollo/PythonScripts/figures/filters.png)
-
-<img src="/Desarrollo/PythonScripts/figures/filters.png" width="200" />
+<img src="/Desarrollo/PythonScripts/figures/filters.png" width="840" />
 
 
 ### Clasificación
