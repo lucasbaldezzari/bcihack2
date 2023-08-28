@@ -118,6 +118,23 @@ El entrenamiento y aplicación de filtrado por CSP está a cargo de [CSPMulticla
 
 La concatenación de las features en un único feature se hace con la clase [RavelTransformer](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/RavelTransformer.py).
 
+#### Graficando Patrones y Filtros
+
+La clase [CSPMulticlass](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSPMulticlass.py) posee métodos para graficar los mapas topográficos referentes a los filtros y patrones obtenidos a partir de entrenar la clase con _fit()_.
+
+La cantidad de patrones o filtros a graficar depende de la cantidad de clases, de la cantidad de componentes y de si los CSP se obtienen a partir de entrenar las clases _one vs one_ o _one vs all_.
+
+Las siguientes figuras muestran ejemplos de patrones y filtros para el caso de entrenar el *CSPMulticlass* para 5 clases y tres componentes por clase.
+
+*Patrones*
+![Patrones obtenidos por el CSPMulticlass](/Desarrollo/PythonScripts/figures/patterns.png)
+
+
+*Filtros*
+![Patrones obtenidos por el CSPMulticlass](/Desarrollo/PythonScripts/figures/filters.png)
+
+filters
+
 ### Clasificación
 Se entrenan y utilizan clasificadores de la librería Scipy.
 
