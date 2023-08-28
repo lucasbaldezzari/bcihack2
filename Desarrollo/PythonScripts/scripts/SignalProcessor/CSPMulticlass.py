@@ -31,17 +31,21 @@ bottom_filters = sorted_eigenvectors[:, -m:]
 import numpy as np
 import pickle
 from sklearn import base
-import itertools
 
 from mne.decoding import CSP
+
+import itertools
+from mne import EvokedArray
+from mne import create_info
+from mne.channels import make_standard_montage
+import copy
 
 class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
     """TODO: Documentación de clase"""
 
     def __init__(self, method = "ovo", n_classes = 5, n_components=2, reg=None, log=None, cov_est='concat',
-                 transform_into='csp_space', norm_trace=False,
-                 cov_method_params=None, rank=None,
-                 component_order='mutual_info') -> None:
+                 transform_into='csp_space', norm_trace=False, cov_method_params=None, rank=None,
+                 component_order='mutual_info', format_names = "C%svsC%s") -> None:
         """Constructor de clase
 
         Parámetros:
@@ -74,6 +78,9 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
         self.component_order = component_order
         self.transform_into = transform_into
         self.class_combinations = None
+
+        assert format_names.count("%") == 2, "format_names debe tener dos y sólo dos %s, ejemplo: 'C%svsC%s'"
+        self.format_names = format_names
 
         #lista de filtros CSP
         if method == "ovo":
@@ -152,7 +159,7 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
             ## ordenamos classlist de menor a mayor
             classlist = np.sort(classlist)
             class_combinations = list(itertools.combinations(classlist, 2))
-            self.class_combinations = [f"Clase {str(c1)} vs Clase {str(c2)}" for c1, c2 in class_combinations]
+            self.class_combinations = [f"{self.format_names % (c1,c2)}" for c1, c2 in class_combinations]
 
             for i, (c1, c2) in enumerate(class_combinations):
                 #índices de las muestras con clase c1 y clase c2
@@ -175,7 +182,7 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
         if self.method == "ova":
             classlist = np.unique(y)
             classlist = np.sort(classlist)
-            self.class_combinations = [f"Clase {str(c)}"  + "vs otras" for c in classlist]
+            self.class_combinations = [f"C{str(c)}"  + ".vsA" for c in classlist]
             for i, c in enumerate(classlist):
                 c_index = np.where(y == c) #índices de la clase de interés
                 others_index = np.where(y != c) #índices de las demás clases
@@ -192,6 +199,8 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
                 #fitteamos el filtro CSP
                 self.csplist[i].fit(trials, labels)
 
+        self.is_fitted = True
+
         return self #el método fit siempre debe retornar self
 
     def transform(self, X, y = None):
@@ -206,6 +215,94 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
         X_transformed = np.concatenate(X_transformed, axis = 1)
 
         return X_transformed
+    
+    def plot_patterns(self, channelsName, fm, montage = 'standard_1020',scalings=1.0,
+                      cbar_fmt = "%3.1f", cmap = "coolwarm",nrows="auto", ncols = "auto",
+                      sensors = "kx",size = 1, cspnames = False, ynames = False,font_ylab = 10,
+                      save = False, filename = "patterns.png", dpi  = 300,
+                      title = "Patrones CSP", title_size = 14, colorbar = True, show = True):
+            
+            #chequeamos self.is_fitted sino raise error
+            assert self.is_fitted, "La clase CSPMulticlass no está entrenada. Debe llamar al método fit antes de graficar los patrones CSP"
+            
+            import matplotlib.pyplot as plt
+            
+            # Chequeamos que la cantidad de columnas y filas sea válida
+            if nrows == "auto":
+                nrows = len(self.class_combinations)
+            if ncols == "auto":
+                ncols = self.n_components
+            else:
+                mensaje = "La cantidad de filas y columnas debe ser igual a la cantidad de componentes por la cantidad de combinaciones de clases"
+                assert nrows*ncols == self.n_components*len(self.class_combinations), mensaje
+
+            #creamos info para poder utilizar la función plot_topomap
+            info = create_info(channelsName, fm, "eeg")
+            montage = make_standard_montage(montage)
+            info.set_montage(montage)
+
+            #obtenemos los patrones CSP
+            patterns_array = np.array([csp.patterns_ for csp in self.csplist])
+            patterns_array = patterns_array.reshape(-1, patterns_array.shape[2])
+            
+            #obtenemos los límites del colorbar
+            vlim = (patterns_array.min(), patterns_array.max())
+
+            #obtenemos la cantidad de componentes a graficar
+            n_combintaions = len(self.class_combinations)
+            offset = patterns_array.T.shape[0]
+            qty = np.arange(self.n_components)
+            components = np.array([qty + offset*k for k in range(n_combintaions)]).ravel()
+
+            #creamos un objeto EvokedArray para poder utilizar la función plot_topomap
+            info2 = copy.deepcopy(info)
+            with info2._unlock():
+                    info2["sfreq"] = 1.0
+
+            #eliminamos objeto info
+            del info
+
+            patterns = EvokedArray(patterns_array.T, info2, tmin=0)
+
+            topomap = patterns.plot_topomap(times = components, colorbar=colorbar, size = size, scalings=scalings, time_format="",
+                                            nrows = nrows, ncols = ncols, sensors=sensors, cbar_fmt=cbar_fmt,cmap=cmap, show=False)
+            
+            #agregamos nombre de las clases
+            if ynames:
+                j = 0
+                for i in range(len(self.class_combinations)):
+                    if colorbar and j == ncols:
+                        j+=1
+                    topomap.axes[j].set_ylabel(self.class_combinations[i], size=font_ylab)
+                    j+=self.n_components
+
+            #agregamos nombre de los filtros
+            if cspnames:
+                j = 0
+                l = 0
+                for i in range(len(self.class_combinations)):
+                    if colorbar and j == ncols:
+                        j+=1
+                    for k in range(self.n_components):
+                        topomap.axes[j+k].set_title(f"{self.class_combinations[l]}:P{k+1}", fontsize=10)
+                    j+=self.n_components
+                    l+=1
+
+            #modifico los límites del ejey del colorbar
+            topomap.axes[ncols].set_ylim(vlim[0],vlim[1])
+
+            #agregamos título
+            plt.suptitle(title, fontsize=title_size)
+
+            #guardamos figura si es necesario
+            if save:
+                plt.savefig(filename, dpi=dpi)
+
+            #mostarmos figura si es necesario
+            if show:
+                plt.show()
+
+            del plt
 
 if __name__ == "__main__":
     import numpy as np
@@ -222,18 +319,18 @@ if __name__ == "__main__":
     labels = np.load("SignalProcessor/testData/labels_sujeto8_training.npy")
 
     channelsName = ["P3", "P4", "C3", "C4", "F3", "F4", "Pz", "Cz"]
-    channelsSelected = [0,1,2,3,6,7]
+    channelsSelected = [0,1,2,3,4,5,6,7]
     channelsName = [channelsName[i] for i in channelsSelected]
     trials = trials[:,channelsSelected,:]
 
     ##filtramos los trials para las clases que nos interesan
-    trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
-    labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
+    trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4))]
+    labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4))]
 
     fm = 250.
     filter = Filter(lowcut=8, highcut=18, notch_freq=50.0, notch_width=2, sample_rate=fm, axisToCompute=2, padlen=None, order=4)
 
-    n_components = 3
+    n_components = 2
     n_classes = len(np.unique(labels))
     cspmulticlass = CSPMulticlass(n_components=n_components, method = "ovo", n_classes = n_classes, reg = 0.01)
 
@@ -244,76 +341,9 @@ if __name__ == "__main__":
 
     cspmulticlass.fit(eeg_train, labels_train)
 
-    import itertools
-    from mne import EvokedArray
-    from mne import create_info
-    from mne.channels import make_standard_montage
-    from mne.defaults import _BORDER_DEFAULT, _EXTRAPOLATE_DEFAULT, _INTERPOLATION_DEFAULT
-    import copy as cp
 
-    def plot_patterns(channelsName, fm, ch_types = "eeg", montage = 'standard_1020', colorbar = True,
-                      scalings=1.0, nrows="auto", ncols = "auto", sensors = "kx",size = 1,
-                      title = "Patrones CSP", show = True):
-        
-        if nrows == "auto":
-            nrows = len(cspmulticlass.class_combinations)
-        if ncols == "auto":
-            ncols = cspmulticlass.n_components
-
-        info = create_info(channelsName, fm, "eeg")
-        montage = make_standard_montage(montage)
-        info.set_montage(montage)
-
-        patterns_array = np.array([csp.patterns_ for csp in cspmulticlass.csplist])
-        patterns_array = patterns_array.reshape(-1, patterns_array.shape[2])
-
-        n_combintaions = len(cspmulticlass.class_combinations)
-        offset = patterns_array.T.shape[0]
-        qty = np.arange(n_components)
-        components = np.array([qty + offset*k for k in range(n_combintaions)]).ravel()
+    nrows = len(cspmulticlass.class_combinations)//2
+    ncols = n_components*2
     
-        info2 = cp.deepcopy(info)
-        with info2._unlock():
-                info2["sfreq"] = 1.0
-        patterns = EvokedArray(patterns_array.T, info2, tmin=0)
-
-        topomap = patterns.plot_topomap(times = components, colorbar=colorbar, size = size, scalings=scalings, time_format="",
-                                        nrows = nrows, ncols = ncols, sensors=sensors,show=False)
-
-        # if nrows > 1:
-        #     j = 0#-1*n_components
-        #     for i in range(nrows):
-        #         fig.axes[j+i].set_ylabel(y_labels[i], size=12)
-        #         j += n_components
-        #         if j > nrows:
-        #             j -=1
-        #             print("entro")
-        #         print(j)
-                
-        #Seteamos el ylabel de cada axes con los nombres de y_labels
-        # for i in range(len(y_labels)):
-        #     fig.axes[i].set_ylabel(y_labels[i], size=12)
-
-
-        plt.suptitle(title, fontsize=16)
-        plt.tight_layout()
-        if show:
-            plt.show()
-    
-    plot_patterns(channelsName, 250., size = 1, nrows = 5, ncols=6)
-    plt.show()
-
-    
-
-    
-
-
-
-
-
-
-
-
-
-
+    cspmulticlass.plot_patterns(channelsName, 250., size = 1, nrows=nrows, ncols=ncols, cspnames=True, cmap="coolwarm", save=True)
 
