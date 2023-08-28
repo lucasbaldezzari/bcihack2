@@ -129,13 +129,15 @@ Las siguientes figuras muestran ejemplos de patrones y filtros para el caso de e
 
 *Patrones*
 
-<center><img src="/Desarrollo/PythonScripts/figures/patterns.png" width="680" alt = "Patrones CSP" /></center>
+
+<center><img src="/Desarrollo/PythonScripts/figures/patterns.png" width="680" alt = "Patrones CSP" class="centerImage"/></center>
 
 
 
 *Filtros*
 
-<center><img src="/Desarrollo/PythonScripts/figures/filters.png" width="680" alt = "Filtros CSP"/></center>
+
+<center><img src="/Desarrollo/PythonScripts/figures/filters.png" width="680" alt = "Filtros CSP" class="centerImage"/></center>
 
 
 ### Clasificación
