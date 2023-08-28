@@ -31,6 +31,7 @@ bottom_filters = sorted_eigenvectors[:, -m:]
 import numpy as np
 import pickle
 from sklearn import base
+import matplotlib.pyplot as plt
 
 from mne.decoding import CSP
 
@@ -219,13 +220,11 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
     def plot_patterns(self, channelsName, fm, montage = 'standard_1020',scalings=1.0,
                       cbar_fmt = "%3.1f", cmap = "coolwarm",nrows="auto", ncols = "auto",
                       sensors = "kx",size = 1, cspnames = False, ynames = False,font_ylab = 10,
-                      save = False, filename = "patterns.png", dpi  = 300,
+                      save = False, filename = "patterns.png", dpi  = 300, contours = 6,
                       title = "Patrones CSP", title_size = 14, colorbar = True, show = True):
             
             #chequeamos self.is_fitted sino raise error
             assert self.is_fitted, "La clase CSPMulticlass no está entrenada. Debe llamar al método fit antes de graficar los patrones CSP"
-            
-            import matplotlib.pyplot as plt
             
             # Chequeamos que la cantidad de columnas y filas sea válida
             if nrows == "auto":
@@ -265,7 +264,8 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
             patterns = EvokedArray(patterns_array.T, info2, tmin=0)
 
             topomap = patterns.plot_topomap(times = components, colorbar=colorbar, size = size, scalings=scalings, time_format="",
-                                            nrows = nrows, ncols = ncols, sensors=sensors, cbar_fmt=cbar_fmt,cmap=cmap, show=False)
+                                            nrows = nrows, ncols = ncols, sensors=sensors, vlim = vlim, contours = contours,
+                                            cbar_fmt=cbar_fmt, cmap=cmap, show=False)
             
             #agregamos nombre de las clases
             if ynames:
@@ -304,6 +304,91 @@ class CSPMulticlass(base.BaseEstimator, base.TransformerMixin):
 
             del plt
 
+    def plot_filters(self, channelsName, fm, montage = 'standard_1020',scalings=1.0,
+                        cbar_fmt = "%3.1f", cmap = "coolwarm",nrows="auto", ncols = "auto",
+                        sensors = "kx",size = 1, cspnames = False, ynames = False,font_ylab = 10,
+                        save = False, filename = "filters.png", dpi  = 300, contours = 6,
+                        title = "Filtros CSP", title_size = 14, colorbar = True, show = True):
+                
+            #chequeamos self.is_fitted sino raise error
+            assert self.is_fitted, "La clase CSPMulticlass no está entrenada. Debe llamar al método fit antes de graficar los filtros CSP"
+            
+            # Chequeamos que la cantidad de columnas y filas sea válida
+            if nrows == "auto":
+                nrows = len(self.class_combinations)
+            if ncols == "auto":
+                ncols = self.n_components
+            else:
+                mensaje = "La cantidad de filas y columnas debe ser igual a la cantidad de componentes por la cantidad de combinaciones de clases"
+                assert nrows*ncols == self.n_components*len(self.class_combinations), mensaje
+
+            #creamos info para poder utilizar la función plot_topomap
+            info = create_info(channelsName, fm, "eeg")
+            montage = make_standard_montage(montage)
+            info.set_montage(montage)
+
+            #obtenemos los patrones CSP
+            filters_array = np.array([csp.filters_ for csp in self.csplist])
+            filters_array = filters_array.reshape(-1, filters_array.shape[2])
+            
+            #obtenemos los límites del colorbar
+            vlim = (filters_array.min(), filters_array.max())
+
+            #obtenemos la cantidad de componentes a graficar
+            n_combintaions = len(self.class_combinations)
+            offset = filters_array.T.shape[0]
+            qty = np.arange(self.n_components)
+            components = np.array([qty + offset*k for k in range(n_combintaions)]).ravel()
+
+            #creamos un objeto EvokedArray para poder utilizar la función plot_topomap
+            info2 = copy.deepcopy(info)
+            with info2._unlock():
+                    info2["sfreq"] = 1.0
+
+            #eliminamos objeto info
+            del info
+
+            filters = EvokedArray(filters_array.T, info2, tmin=0)
+
+            topomap = filters.plot_topomap(times = components, colorbar=colorbar, size = size, scalings=scalings, time_format="",
+                                            nrows = nrows, ncols = ncols, sensors=sensors, vlim = vlim, contours = contours,
+                                            cbar_fmt=cbar_fmt, cmap=cmap, show=False)
+            
+            #agregamos nombre de las clases
+            if ynames:
+                j = 0
+                for i in range(len(self.class_combinations)):
+                    if colorbar and j == ncols:
+                        j+=1
+                    topomap.axes[j].set_ylabel(self.class_combinations[i], size=font_ylab)
+                    j+=self.n_components
+
+            #agregamos nombre de los filtros
+            if cspnames:
+                j = 0
+                l = 0
+                for i in range(len(self.class_combinations)):
+                    if colorbar and j == ncols:
+                        j+=1
+                    for k in range(self.n_components):
+                        topomap.axes[j+k].set_title(f"{self.class_combinations[l]}:P{k+1}", fontsize=10)
+                    j+=self.n_components
+                    l+=1
+
+            #modifico los límites del ejey del colorbar
+            topomap.axes[ncols].set_ylim(vlim[0],vlim[1])
+
+            #agregamos título
+            plt.suptitle(title, fontsize=title_size)
+
+            #guardamos figura si es necesario
+            if save:
+                plt.savefig(filename, dpi=dpi)
+
+            #mostarmos figura si es necesario
+            if show:
+                plt.show()
+
 if __name__ == "__main__":
     import numpy as np
     from SignalProcessor.Filter import Filter
@@ -319,18 +404,18 @@ if __name__ == "__main__":
     labels = np.load("SignalProcessor/testData/labels_sujeto8_training.npy")
 
     channelsName = ["P3", "P4", "C3", "C4", "F3", "F4", "Pz", "Cz"]
-    channelsSelected = [0,1,2,3,4,5,6,7]
+    channelsSelected = [0,1,2,3,6,7]
     channelsName = [channelsName[i] for i in channelsSelected]
     trials = trials[:,channelsSelected,:]
 
     ##filtramos los trials para las clases que nos interesan
-    trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4))]
-    labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4))]
+    trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
+    labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
 
     fm = 250.
     filter = Filter(lowcut=8, highcut=18, notch_freq=50.0, notch_width=2, sample_rate=fm, axisToCompute=2, padlen=None, order=4)
 
-    n_components = 2
+    n_components = 3
     n_classes = len(np.unique(labels))
     cspmulticlass = CSPMulticlass(n_components=n_components, method = "ovo", n_classes = n_classes, reg = 0.01)
 
@@ -341,9 +426,13 @@ if __name__ == "__main__":
 
     cspmulticlass.fit(eeg_train, labels_train)
 
-
     nrows = len(cspmulticlass.class_combinations)//2
     ncols = n_components*2
     
-    cspmulticlass.plot_patterns(channelsName, 250., size = 1, nrows=nrows, ncols=ncols, cspnames=True, cmap="coolwarm", save=True)
+    cspmulticlass.plot_patterns(channelsName, fm, size = 1, nrows=nrows, ncols=ncols, cspnames=True, save=True, contours = 10)
+    cspmulticlass.plot_filters(channelsName, fm, size = 1, nrows=nrows, ncols=ncols, cspnames=True, save=True, contours = 10)
 
+    # info = create_info(channelsName, fm, "eeg")
+    # montage = make_standard_montage('standard_1020')
+    # info.set_montage(montage)
+    # cspmulticlass.csplist[3].plot_filters(info, scalings=1, cmap="coolwarm", contours = 10, vlim = (0.31 ,-0.31))
