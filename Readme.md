@@ -46,7 +46,7 @@ En esta sección se encuentra el código fuente de los diferentes scripts en pyt
 
 La siguiente imagen muestra el diagrama de bloques V1.4 de la BCI.
 
-![Diagrama de bloques](/Desarrollo/PythonScripts/bloques.png)
+![Diagrama de bloques](/Desarrollo/PythonScripts/figures/bloques.png)
 
 A continuación, se resume lo contenido dentro de cada directorio.
 
@@ -112,11 +112,27 @@ Se utilizan las señales de EEG previamente filtradas (pasabanda y notch), trial
 
 A partir de las salidas de estos filtros se extraen sus características con *[FeatureExtractor.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/FeatureExtractor.py)* y se concatenan cada una de estas para formar el **feature vector** final.
 
-![Diagrama aplicación de CSP y Extracción de características - OvO](/Desarrollo/PythonScripts/cspovotrain.png)
+![Diagrama aplicación de CSP y Extracción de características - OvO](/Desarrollo/PythonScripts/figures/cspovotrain.png)
 
 El entrenamiento y aplicación de filtrado por CSP está a cargo de [CSPMulticlass.py](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSPMulticlass.py).
 
 La concatenación de las features en un único feature se hace con la clase [RavelTransformer](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/RavelTransformer.py).
+
+#### Graficando Patrones y Filtros
+
+La clase [CSPMulticlass](https://github.com/lucasbaldezzari/bcihack2/blob/main/Desarrollo/PythonScripts/scripts/SignalProcessor/CSPMulticlass.py) posee métodos para graficar los mapas topográficos referentes a los filtros y patrones obtenidos a partir de entrenar la clase con _fit()_.
+
+La cantidad de patrones o filtros a graficar depende de la cantidad de clases, de la cantidad de componentes y de si los CSP se obtienen a partir de entrenar las clases _one vs one_ o _one vs all_.
+
+Las siguientes figuras muestran ejemplos de patrones y filtros para el caso de entrenar el *CSPMulticlass* para 5 clases y tres componentes por clase.
+
+*Patrones*
+![Patrones obtenidos por el CSPMulticlass](/Desarrollo/PythonScripts/figures/patterns.png)
+
+
+*Filtros*
+![Patrones obtenidos por el CSPMulticlass](/Desarrollo/PythonScripts/figures/filters.png)
+
 
 ### Clasificación
 Se entrenan y utilizan clasificadores de la librería Scipy.

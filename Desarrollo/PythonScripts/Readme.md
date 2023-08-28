@@ -133,7 +133,6 @@ Las siguientes figuras muestran ejemplos de patrones y filtros para el caso de e
 *Filtros*
 ![Patrones obtenidos por el CSPMulticlass](/Desarrollo/PythonScripts/figures/filters.png)
 
-filters
 
 ### Clasificación
 Se entrenan y utilizan clasificadores de la librería Scipy.
