@@ -24,7 +24,7 @@
     "finishDuration": 3.0,
     "lenToClassify": 0.3,
     "lenForClassifier": 4.0,
-    "subjectName": "sujeto_1",
+    "subjectName": "sujeto_10",
     "sesionNumber": 2,
     "boardParams": {
         "boardName": "cyton",
@@ -38,7 +38,7 @@
             7,
             8
         ],
-        "serialPort": "COM3"
+        "serialPort": "COM4"
     },
     "filterParameters": {
         "lowcut": 8.0,

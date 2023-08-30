@@ -31,6 +31,11 @@ eventosFile = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt"
 rawEEG_1 = np.load(file)
 eventos_1 = pd.read_csv(eventosFile, sep = ",")
 
+file = "data\sujeto_1\eegdata\sesion2\sn2_ts0_ct0_r1.npy"
+eventosFile = "data\sujeto_1\eegdata\sesion2\sn2_ts0_ct0_r1_events.txt"
+rawEEG_2 = np.load(file)
+eventos_2 = pd.read_csv(eventosFile, sep = ",")
+
 # file = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct1_r2.npy"
 # eventosFile = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct1_r2_events.txt"
 # rawEEG_2 = np.load(file)
@@ -108,7 +113,7 @@ eventos_1 = pd.read_csv(eventosFile, sep = ",")
 
 #Creamos objetos para manejar los trials
 th_1 = TrialsHandler(rawEEG_1, eventos_1, tinit = 0, tmax = 3, reject=None, sample_rate=250., trialsToRemove = [29,30])
-# th_2 = TrialsHandler(rawEEG_2, eventos_2, tinit = 0, tmax = 3, reject=None, sample_rate=250., trialsToRemove = [1])
+th_2 = TrialsHandler(rawEEG_2, eventos_2, tinit = 0, tmax = 3, reject=None, sample_rate=250.)
 # th_3 = TrialsHandler(rawEEG_3, eventos_3, tinit = 0, tmax = 3, reject=None, sample_rate=250.)
 # th_4 = TrialsHandler(rawEEG_4, eventos_4, tinit = 0, tmax = 3, reject=None, sample_rate=250.)
 # th_5 = TrialsHandler(rawEEG_5, eventos_5, tinit = 0, tmax = 3, reject=None, sample_rate=250.)
@@ -124,7 +129,7 @@ th_1 = TrialsHandler(rawEEG_1, eventos_1, tinit = 0, tmax = 3, reject=None, samp
 # th_15 = TrialsHandler(rawEEG_15, eventos_15, tinit = 0, tmax = 3, reject=None, sample_rate=250.)
 # th_16 = TrialsHandler(rawEEG_16, eventos_16, tinit = 0, tmax = 3, reject=None, sample_rate=250.)
 
-dataConcatenada = Concatenate([th_1])#concatenamos datos
+dataConcatenada = Concatenate([th_1, th_2])#concatenamos datos
 
 # filtro = Filter(highcut = 16)
 # dataConcatenada.trials = filtro.transform(dataConcatenada.trials)
