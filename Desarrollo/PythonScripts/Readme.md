@@ -40,7 +40,7 @@ Demostración del sistema al día 23/5/2023.
 
 Puedes visitarnos en Discord en nuestro canal [Uruguay BCI](https://discord.gg/7e6ZdFgh).
 
-# [Scripts Python - Revisión 30/4/2023](https://github.com/lucasbaldezzari/bcihack2/tree/main/Desarrollo/PythonScripts)
+# [Scripts Python - Revisión 1/9/2023](https://github.com/lucasbaldezzari/bcihack2/tree/main/Desarrollo/PythonScripts)
 
 En esta sección se encuentra el código fuente de los diferentes scripts en python para implementar la ICC.
 
