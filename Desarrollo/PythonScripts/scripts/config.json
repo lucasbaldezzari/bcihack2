@@ -1,19 +1,15 @@
 {
-    "typeSesion": 0,
+    "typeSesion": 1,
     "cueType": 0,
     "ntrials": 15,
     "classes": [
         1,
         2,
-        3,
-        4,
-        5
+        3
     ],
     "clasesNames": [
         "Mano Izquierda",
         "Mano Derecha",
-        "Ambas Manos",
-        "Pies",
         "Rest"
     ],
     "startingTimes": [
@@ -22,7 +18,7 @@
     ],
     "cueDuration": 4.0,
     "finishDuration": 3.0,
-    "lenToClassify": 0.3,
+    "lenToClassify": 0.5,
     "lenForClassifier": 4.0,
     "subjectName": "PRUEBA",
     "sesionNumber": 2,
@@ -31,7 +27,10 @@
         "channels": [
             1,
             2,
-            3
+            3,
+            4,
+            7,
+            8
         ],
         "serialPort": "COM5"
     },
@@ -47,5 +46,5 @@
     "cspFile": "data/dummyTest/csps/dummycsp.pickle",
     "classifierFile": "data/dummyTest/classifiers/dummyclassifier.pickle",
     "customPipeline": false,
-    "pipelineFile": "data/dummyTest/pipelines/best_estimator_svm.pkl"
+    "pipelineFile": "data/bestStimators/best_lda_subject8.pkl"
 }

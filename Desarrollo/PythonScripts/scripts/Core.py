@@ -119,9 +119,7 @@ class Core(QMainWindow):
         self.serialPort = self.boardParams["serialPort"]
         self.boardName = self.boardParams["boardName"]
 
-        ##Me quedo con la primeras letras de las palabras de self.clasesNames
-        self.supervisionAPP = supervisionAPP([str(clase) for clase in self.classes], self.channels)
-        # self.supervisionAPP.setFilter(Filter(8,18,50,2,250., 1))
+        self.__supervisionAPPClass = supervisionAPP
 
         #parámetros del filtro
         self.filterParameters = configParameters["filterParameters"]
@@ -347,7 +345,7 @@ class Core(QMainWindow):
         print("Iniciando streaming de EEG...")
         logging.info("Iniciando streaming de EEG...")
 
-        self.supervisionAPP.label_trial_time.setText("Iniciando streaming. Estabilizando señal de EEG.")
+        # self.supervisionAPP.label_trial_time.setText("Iniciando streaming. Estabilizando señal de EEG.")
 
         channels_names = self.eeglogger.board.get_eeg_channels(board_id)
 
@@ -531,9 +529,12 @@ class Core(QMainWindow):
         """
         self.indicatorAPP.show() #mostramos la APP
         self.indicatorAPP.update_order("Configurando la sesión...")
-        self.supervisionAPP.show() #mostramos la APP
         self.configAPP.show() #mostramos la APP
         self.configAppTimer.start()
+
+        # if not self.configAPP.is_open:
+        #     self.supervisionAPP = self.__supervisionAPPClass([str(clase) for clase in self.classes], self.channels)
+        #     self.supervisionAPP.show() #mostramos la APP de supervisión
 
     def checkConfigApp(self):
         """Función para comprobar si la configuración de la sesión ha finalizado."""
@@ -552,7 +553,7 @@ class Core(QMainWindow):
         data = self.eeglogger.getData(self.__supervisionAPPTime/1000, removeDataFromBuffer = False)[self.channels]
 
         self.supervisionAPP.update_plots(self.filter.fit_transform(data))
-        # self.supervisionAPP.update_plots(data)
+        self.supervisionAPP.update_plots(data)
 
         if self.session_started:
             #actualizamos información de la sesión
@@ -592,9 +593,10 @@ class Core(QMainWindow):
         self.probas = self.pipeline.predict_proba(trialToPredict) #obtenemos las probabilidades de cada clase
 
         #actualizo barras de probabilidad en supervision app
-        self.supervisionAPP.update_propbars(self.probas[0])
+        # self.supervisionAPP.update_propbars(self.probas[0])
+        print(self.prediction, self.probas)
 
-        #nos quedamos con la probabilida de la clase actual
+        ## nos quedamos con la probabilida de la clase actual
         probaClaseActual = self.probas[0][self.classes.index(self.trialsSesion[self.__trialNumber])]
         self.indicatorAPP.actualizar_barra(probaClaseActual) #actualizamos la barra de probabilidad
         logging.info("Dato clasificado", self.prediction)
@@ -603,6 +605,10 @@ class Core(QMainWindow):
         """Método para iniciar la sesión"""
         print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         logging.info(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
+        logging.info(f"Iniciando APP de Supervisión")
+        self.supervisionAPP = self.__supervisionAPPClass([str(clase) for clase in self.classes], self.channels)
+        self.supervisionAPP.show() #mostramos la APP de supervisión
+
         if self.typeSesion == 0:
             self.indicatorAPP.update_order("Iniciando sesión de entrenamiento") #actualizamos app
         

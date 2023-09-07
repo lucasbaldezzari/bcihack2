@@ -54,11 +54,10 @@ labels = dataConcatenada.labels
 classesName, labelsNames = dataConcatenada.classesName
 
 ##filtramos los trials para las clases que nos interesan
-trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
-labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))]
+trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 3) | (labels == 3))]
+labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 3) | (labels == 3))]
 
 ### ********** Separamos los datos en train, validation y test **********
-
 eeg_train, eeg_test, labels_train, labels_test = train_test_split(trials, labels, test_size=0.2, stratify=labels, random_state=42)
 eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_train, labels_train, test_size=0.2, stratify=labels_train, random_state=42)
 eeg_train.shape
@@ -218,5 +217,7 @@ df.loc["LDA"] = [acc_lda, precision_lda, recall_lda, f1score_lda]
 df.loc["SVM"] = [acc_svm, precision_svm, recall_svm, f1score_svm]
 
 print(df)
-#LDA      33.0   0.333333  0.333333  0.333333
-#SVM      67.0   0.800000  0.666667  0.625000
+
+## Guardo el mejor clasificador LDA y el mejor SVM usando pickle
+pickle.dump(best_lda, open("best_lda_subject8.pkl", "wb"))
+pickle.dump(best_svc, open("best_svc_subject8.pkl", "wb"))
