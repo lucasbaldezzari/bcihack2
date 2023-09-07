@@ -81,8 +81,7 @@ class Core(QMainWindow):
                 -sample_rate (float): Frecuencia de muestreo de la señal.
                 -axisToCompute (int): Eje a lo largo del cual se calculará la transformada.
             -featureExtractorMethod (str): Método de extracción de características. Puede ser welch o hilbert.
-            -cspFile (str): Ruta al archivo pickle con los filtros CSP. IMPORTANTE: Se supone que este archivo ya fue generado con la sesión
-            de entrenamiento y será usado durante las sesiones de feedback y online.
+            -events_file (str): Ruta al archivo txt con los eventos registrados durante las sesiones
             -classifierFile (str): Ruta al archivo pickle con el clasificador. IMPORTANTE: Se supone que este archivo ya fue generado con la sesión
             de entrenamiento y será usado durante las sesiones de feedback y online.
         Un trial es la suma de startingTimes + cueDuration + finishDuration
@@ -133,8 +132,8 @@ class Core(QMainWindow):
 
         self.sample_rate = self.filterParameters["sample_rate"]
 
-        ## Archivo para cargar el CSP
-        self.cspFile = configParameters["cspFile"]
+        ## Archivo para cargar los eventos de la sesión
+        self.events_file = configParameters["events_file"]
 
         ## Archivo para cargar el clasificador
         self.classifierFile = configParameters["classifierFile"]
@@ -226,7 +225,7 @@ class Core(QMainWindow):
 
         self.sample_rate = self.filterParameters["sample_rate"]
         
-        self.cspFile = newParameters["cspFile"]
+        self.events_file = newParameters["events_file"]
         self.classifierFile = newParameters["classifierFile"]
 
         #archivo para cargar el pipeline
@@ -291,14 +290,6 @@ class Core(QMainWindow):
         eventsFile.write("trialNumber,classNumber,className,prediction,probabilities,startingTime,cueDuration,finishDuration,trialTime,trialTime(legible)\n")
         eventsFile.close()
         
-        #Si la carpeta classifiers no existe, se crea
-        if not os.path.exists(rootFolder + self.subjectName + "/classifiers"):
-            os.makedirs(rootFolder + self.subjectName + "/classifiers")
-
-        #Si la carpeta csps dentro de self.subjectName no existe, se crea
-        if not os.path.exists(rootFolder + self.subjectName + "/csps"):
-            os.makedirs(rootFolder + self.subjectName + "/csps")
-
         #Si la carpeta pipelines dentro de self.subjectName no existe, se crea
         if not os.path.exists(rootFolder + self.subjectName + "/pipelines"):
             os.makedirs(rootFolder + self.subjectName + "/pipelines")
@@ -593,8 +584,7 @@ class Core(QMainWindow):
         self.probas = self.pipeline.predict_proba(trialToPredict) #obtenemos las probabilidades de cada clase
 
         #actualizo barras de probabilidad en supervision app
-        # self.supervisionAPP.update_propbars(self.probas[0])
-        print(self.prediction, self.probas)
+        self.supervisionAPP.update_propbars(self.probas[0])
 
         ## nos quedamos con la probabilida de la clase actual
         probaClaseActual = self.probas[0][self.classes.index(self.trialsSesion[self.__trialNumber])]
@@ -699,7 +689,7 @@ if __name__ == "__main__":
         },
         "featureExtractorMethod": "welch",
         "rootFolder": "data",
-        "cspFile": "data/dummyTest/csps/dummycsp.pickle",
+        "events_file": "data/bestStimators/sn1_ts0_ct0_r1_events.txt",
         "classifierFile": "data/dummyTest/classifiers/dummyclassifier.pickle",
         "customPipeline": False,
         "pipelineFile": "data/dummyTest/pipelines/best_estimator_svm.pkl",

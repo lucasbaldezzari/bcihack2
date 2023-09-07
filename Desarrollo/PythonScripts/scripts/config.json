@@ -43,7 +43,7 @@
         "axisToCompute": 2
     },
     "featureExtractorMethod": "welch",
-    "cspFile": "data/dummyTest/csps/dummycsp.pickle",
+    "events_file": "data/bestStimators/sn1_ts0_ct0_r1_events.txt",
     "classifierFile": "data/dummyTest/classifiers/dummyclassifier.pickle",
     "customPipeline": false,
     "pipelineFile": "data/bestStimators/best_lda_subject8.pkl"

@@ -52,7 +52,7 @@ class ConfigAPP(QDialog):
 
             self.desplegable_extractor.setCurrentText(configParameters['featureExtractorMethod'])
 
-            self.line_csp.setText(f'{configParameters["cspFile"]}')
+            self.events_file.setText(f'{configParameters["events_file"]}')
             self.line_clasificador.setText(f'{configParameters["classifierFile"]}')
 
             if configParameters["customPipeline"] == True:
@@ -97,7 +97,7 @@ class ConfigAPP(QDialog):
 
             configParameters['featureExtractorMethod'] = self.desplegable_extractor.currentText()
 
-            configParameters["cspFile"] = self.line_csp.text()
+            configParameters["events_file"] = self.events_file.text()
             configParameters["classifierFile"] = self.line_clasificador.text()
 
             if self.desplegable_extractor.currentText() == 'Si':

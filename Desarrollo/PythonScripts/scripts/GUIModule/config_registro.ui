@@ -1209,7 +1209,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
      <rect>
       <x>10</x>
       <y>180</y>
-      <width>114</width>
+      <width>141</width>
       <height>21</height>
      </rect>
     </property>
@@ -1226,7 +1226,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
      <string notr="true">color: rgb(255, 255, 255);</string>
     </property>
     <property name="text">
-     <string>CSP ruta</string>
+     <string>Archivo de eventos</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_29">
@@ -1386,7 +1386,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
      <string/>
     </property>
    </widget>
-   <widget class="QLineEdit" name="line_csp">
+   <widget class="QLineEdit" name="events_file">
     <property name="geometry">
      <rect>
       <x>160</x>
