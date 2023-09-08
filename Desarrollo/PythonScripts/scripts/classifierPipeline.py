@@ -58,8 +58,8 @@ trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels
 labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 3) | (labels == 3))]
 
 ### ********** Separamos los datos en train, validation y test **********
-eeg_train, eeg_test, labels_train, labels_test = train_test_split(trials, labels, test_size=0.2, stratify=labels, random_state=42)
-eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_train, labels_train, test_size=0.2, stratify=labels_train, random_state=42)
+eeg_trainBig, eeg_test, labels_trainBig, labels_test = train_test_split(trials, labels, test_size=0.2, stratify=labels, random_state=42)
+eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_trainBig, labels_trainBig, test_size=0.2, stratify=labels_trainBig, random_state=42)
 eeg_train.shape
 ### ********** Instanciamos los diferentes objetos que usaremos en el pipeline**********
 
@@ -126,6 +126,8 @@ cm_lda = confusion_matrix(y_true, y_pred)
 cm_lda = np.round(cm_lda.astype('float') / cm_lda.sum(axis=1)[:, np.newaxis], decimals=2)
 print(cm_lda)
 
+## Reentrenamos el mejor estimador con todo el set de entrenamiento, 
+best_lda.fit(eeg_trainBig, labels_trainBig)
 ### ********** Usamos el mejor estimador para predecir los datos de testpara SCV **********
 y_true, y_pred = labels_test, best_lda.predict(eeg_test)
 
@@ -195,10 +197,14 @@ cm_svm = confusion_matrix(y_true, y_pred)
 cm_svm = np.round(cm_svm.astype('float') / cm_svm.sum(axis=1)[:, np.newaxis], decimals=2)
 print(cm_svm)
 
-### ********** Usamos el mejor estimador para predecir los datos de testpara SCV **********
+### ********** Usamos el mejor estimador para predecir los datos de test para SCV **********
 
 ### Nos quedamos con el mejor estimador SVM
 best_svc = grid_svc.best_estimator_
+
+### REentrenamos el mejor estimador con todo el set de entrenamiento,
+best_svc.fit(eeg_trainBig, labels_trainBig)
+
 y_true, y_pred = labels_test, best_svc.predict(eeg_test)
 
 ## obtenemos precision, recall y f1-score y los guardamos en variables

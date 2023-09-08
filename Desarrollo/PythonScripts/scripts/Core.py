@@ -187,7 +187,7 @@ class Core(QMainWindow):
         #timer para actualizar la supervisionAPP
         self.__supervisionAPPTime = 10 #ms
         self.supervisionAPPTimer = QTimer()
-        self.supervisionAPPTimer.setInterval(self.__supervisionAPPTime )
+        self.supervisionAPPTimer.setInterval(self.__supervisionAPPTime)
         self.supervisionAPPTimer.timeout.connect(self.updateSupervisionAPP)
 
         self.showGUIAPPs()
