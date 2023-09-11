@@ -14,7 +14,6 @@ from SignalProcessor.Filter import Filter
 from SignalProcessor.CSPMulticlass import CSPMulticlass
 from SignalProcessor.FeatureExtractor import FeatureExtractor
 from SignalProcessor.RavelTransformer import RavelTransformer
-from SignalProcessor.Window import Window
     
 ## Clasificadores LDA y SVM
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
@@ -70,7 +69,6 @@ filter = Filter(lowcut=8, highcut=18, notch_freq=50.0, notch_width=2, sample_rat
 cspmulticlass = CSPMulticlass(n_components=2, method = "ovo", n_classes = len(np.unique(labels)), reg = 0.01)
 featureExtractor = FeatureExtractor(method = "welch", sample_rate = fm, axisToCompute=2, band_values=[8,12])
 ravelTransformer = RavelTransformer()
-window = Window(windowName = "hann")
 
 #Instanciamos un LDA
 lda = LDA() #instanciamos el clasificador LDA
@@ -78,7 +76,6 @@ lda = LDA() #instanciamos el clasificador LDA
 ### ********** Creamos el pipeline para LDA **********
 
 pipeline_lda = Pipeline([
-    ('ventana', window),
     ('pasabanda', filter),
     ('cspmulticlase', cspmulticlass),
     ('featureExtractor', featureExtractor),
@@ -89,7 +86,6 @@ pipeline_lda = Pipeline([
 ### ********** Creamos la grilla de hiperparámetros **********
 
 param_grid_lda = {
-    'ventana__windowName': ["hann"],
     'pasabanda__lowcut': [8],
     'pasabanda__highcut': [12,18,28],
     'pasabanda__notch_freq': [50.0],
@@ -157,7 +153,6 @@ print(f"El accuracy del mejor clasificador LDA es de {acc_lda}")
 svc = SVC()
 
 pipeline_svc = Pipeline([
-    ('ventana', window),
     ('pasabanda', filter),
     ('cspmulticlase', cspmulticlass),
     ('featureExtractor', featureExtractor),
@@ -167,7 +162,6 @@ pipeline_svc = Pipeline([
 
 ### ********** Creamos la grilla de hiperparámetros **********
 param_grid_svc = {
-    'ventana__windowName': ["hann"],
     'pasabanda__lowcut': [8],
     'pasabanda__highcut': [12,18,28],
     'pasabanda__notch_freq': [50.0],
