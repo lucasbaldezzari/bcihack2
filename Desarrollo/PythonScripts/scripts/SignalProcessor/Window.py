@@ -46,6 +46,7 @@ if __name__ == "__main__":
     from SignalProcessor.CSPMulticlass import CSPMulticlass
     from SignalProcessor.FeatureExtractor import FeatureExtractor
     import pandas as pd
+    import numpy as np
     import matplotlib.pyplot as plt
     from sklearn.pipeline import Pipeline
 
@@ -59,7 +60,7 @@ if __name__ == "__main__":
     trialhandler = TrialsHandler(rawEEG, eventos, tinit = 0., tmax = 4, reject=None, sample_rate=250.)
 
     filtro = Filter(lowcut=8.0, highcut=28.0, notch_freq=50.0, notch_width=2.0, sample_rate=100.0)
-    window = Window(windowName = "hamming")
+    window = Window(windowName = "blackman")
 
     trials = trialhandler.trials
     trials.shape
@@ -106,10 +107,3 @@ if __name__ == "__main__":
     plt.plot(trials_con_ventana[trial-1,1,:])
     plt.xlabel("Muestras")
     plt.show()
-
-
-
-    
-
-
-
