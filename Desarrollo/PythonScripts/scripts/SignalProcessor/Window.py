@@ -9,7 +9,7 @@ class Window(BaseEstimator, TransformerMixin):
     documentación de numpy. La clase se puede usar como un objeto de sklearn, por lo que se puede usar en
     un pipeline de sklearn.
     
-    NOTA: Al 11/9/2023 se hacen pruebas del uso de ventanas en el pipeline y no se obtienen buenos resultados.
+    NOTA: Al 11/9/2023 se hacen pruebas del uso de ventanas en el pipeline y no se obtienen buenos resultados
     """
 
     def __init__(self, windowName = "Hamming", axisToCompute = 2):
