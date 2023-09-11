@@ -7,7 +7,10 @@ class Window(BaseEstimator, TransformerMixin):
     [canales, muestras]. La idea es aplicar una ventana a toda la señal y retornarla con el mismo shape.
     Se utilizan las ventanas de numpy, por lo que se puede usar cualquier ventana que se encuentre en la
     documentación de numpy. La clase se puede usar como un objeto de sklearn, por lo que se puede usar en
-    un pipeline de sklearn."""
+    un pipeline de sklearn.
+    
+    NOTA: Al 11/9/2023 se hacen pruebas del uso de ventanas en el pipeline y no se obtienen buenos resultados.
+    """
 
     def __init__(self, windowName = "Hamming", axisToCompute = 2):
         """
@@ -62,7 +65,7 @@ if __name__ == "__main__":
     trials = trialhandler.trials
     trials.shape
     labels = trialhandler.labels
-    
+
     filtro = Filter(lowcut=8.0, highcut=28.0, notch_freq=50.0, notch_width=2.0, sample_rate=100.0)
     window = Window(windowName = "hann")
     cspmulticlass = CSPMulticlass(n_components=2, method = "ovo", n_classes = len(np.unique(labels)), reg = 0.01)
