@@ -59,13 +59,12 @@ if __name__ == "__main__":
 
     trialhandler = TrialsHandler(rawEEG, eventos, tinit = 0., tmax = 4, reject=None, sample_rate=250.)
 
-    filtro = Filter(lowcut=8.0, highcut=28.0, notch_freq=50.0, notch_width=2.0, sample_rate=100.0)
-    window = Window(windowName = "blackman")
-
     trials = trialhandler.trials
     trials.shape
     labels = trialhandler.labels
-
+    
+    filtro = Filter(lowcut=8.0, highcut=28.0, notch_freq=50.0, notch_width=2.0, sample_rate=100.0)
+    window = Window(windowName = "hann")
     cspmulticlass = CSPMulticlass(n_components=2, method = "ovo", n_classes = len(np.unique(labels)), reg = 0.01)
     featureExtractor = FeatureExtractor(method = "welch", sample_rate = fm, band_values=[8,18])
 
@@ -90,8 +89,8 @@ if __name__ == "__main__":
     plt.show()
 
     pipeline_con_ventana = Pipeline([
-        ('pasabanda', filtro),
         ('window', window),
+        ('pasabanda', filtro),
         ('cspmulticlase', cspmulticlass),
         # ('featureExtractor', featureExtractor),
     ])
