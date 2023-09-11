@@ -4,7 +4,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 class Filter(BaseEstimator, TransformerMixin):
     """Clase para filtrar señales provenientes de la placa openBCI. Las señales llegan en un numpy array de la forma
-    [canales, muestras]. La idea es aplicar un filtro pasa banda y un filtro notch a la señal a todo el array.
+    [trials, canales, muestras]. La idea es aplicar un filtro pasa banda y un filtro notch a la señal a todo el array.
     La clase se puede usar como un objeto de sklearn, por lo que se puede usar en un pipeline de sklearn."""
 
     def __init__(self, lowcut = 8.0, highcut = 30.0, notch_freq = 50.0, notch_width = 2.0, sample_rate = 250.0,

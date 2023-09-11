@@ -21,6 +21,10 @@ References
     https://mne.tools/stable/auto_examples/decoding/decoding_csp_eeg.html#sphx-glr-auto-examples-decoding-decoding-csp-eeg-py
 
     ----------
+
+    #IMPORTANTE: DEBEMOS PRESTAR ESPECIAL ANTENCIÓN AL ORDEN DE LAS CLASES YA QUE EL CSP NOS DEVOLVERÁ UN SET DE FILTROS ESPACIALES
+    #CADA FILTRO ESPACIAL SE CORRESPONDE A UNA DE LAS CLASES EN EL ORDEN CON QUE SE ENTRENA EL CSP
+
 """
 
 import numpy as np
@@ -108,16 +112,6 @@ if __name__ == "__main__":
     #Contactemos en un sólo array
     eegmatrix = np.concatenate((left,right), axis=0) #importante el orden con el que concatenamos
     print(eegmatrix.shape) #[ n_trials (o n_epochs), n_channels, n_samples]
-
-    # import matplotlib.pyplot as plt
-    # dt = 1/sample_frec
-    # t = np.arange(0, eegmatrix.shape[2]/sample_frec, dt)
-    # plt.plot(t,eegmatrix[150,c3,:])
-    # plt.xlabel("Tiempo [s]")
-    # plt.show()
-
-    #IMPORTANTE: DEBEMOS PRESTAR ESPECIAL ANTENCIÓN AL ORDEN DE LAS CLASES YA QUE EL CSP NOS DEVOLVERÁ UN SET DE FILTROS ESPACIALES
-    #CADA FILTRO ESPACIAL SE CORRESPONDE A UNA DE LAS CLASES EN EL ORDEN CON QUE SE ENTRENA EL CSP
 
     #En este ejemplo tenemos los trials ordenados, es decir, tenemos 100 trials para la clase left y 100 para la clase right.
     #Por lo tanto, las etiquetas que crearemos estarán ordenadas.
