@@ -5,7 +5,7 @@
     "classes": [
         1,
         2,
-        5
+        3
     ],
     "clasesNames": [
         "Mano Izquierda",
@@ -29,7 +29,7 @@
             2,
             3,
             4,
-            7,
+            5,
             8
         ],
         "serialPort": "COM5"

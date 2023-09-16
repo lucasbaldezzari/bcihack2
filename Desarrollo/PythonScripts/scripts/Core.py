@@ -133,13 +133,13 @@ class Core(QMainWindow):
         self.sample_rate = self.filterParameters["sample_rate"]
 
         ## Archivo de eventos de una sesión de entrenamiento
-        self.self.training_events_file = configParameters["events_file"]
+        self.training_events_file = configParameters["events_file"]
 
         ## Archivo para cargar el clasificador
         self.classifierFile = configParameters["classifierFile"]
 
         #archivo para cargar el pipeline
-        self.__customPipeline = configParameters["customPipeline"]
+        # self.__customPipeline = configParameters["customPipeline"]
         self.pipelineFile = configParameters["pipelineFile"]
 
         self.__trialPhase = 0 #0: Inicio, 1: Cue, 2: Finalización
@@ -225,7 +225,7 @@ class Core(QMainWindow):
 
         self.sample_rate = self.filterParameters["sample_rate"]
         
-        self.self.training_events_file = newParameters["events_file"]
+        self.training_events_file = newParameters["events_file"]
         self.classifierFile = newParameters["classifierFile"]
 
         #archivo para cargar el pipeline
@@ -358,7 +358,7 @@ class Core(QMainWindow):
         axisToCompute = self.filterParameters['axisToCompute']
 
         self.filter = Filter(lowcut=lowcut, highcut=highcut, notch_freq=notch_freq, notch_width=notch_width,
-                             sample_rate=sample_rate, axisToCompute = 1,
+                             sample_rate=sample_rate, axisToCompute = axisToCompute,
                              padlen = int(self.__supervisionAPPTime * sample_rate/1000)-1)
 
     def setPipeline(self, **pipelineBlocks):
@@ -370,7 +370,7 @@ class Core(QMainWindow):
         """
         
         #Si pipelineBlocks esta vacío, se carga el pipeline desde el archivo self.pipelineFileName
-        if not pipelineBlocks:
+        if not pipelineBlocks: #cargamos pipeline desde archivo. ESTO ES LO RECOMENDABLE
             self.pipeline = pickle.load(open(self.pipelineFile, "rb")) #cargamos el pipeline
 
         #Si pipelineBlocks no esta vacío, se setea el pipeline con los parámetros dados en pipelineObject
@@ -541,7 +541,7 @@ class Core(QMainWindow):
         #obtenemos los datos de EEG
         data = self.eeglogger.getData(self.__supervisionAPPTime/1000, removeDataFromBuffer = False)[self.channels]
 
-        self.supervisionAPP.update_plots(data)
+        # self.supervisionAPP.update_plots(data)
 
         if self.session_started:
             #actualizamos información de la sesión
@@ -593,6 +593,7 @@ class Core(QMainWindow):
         print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         logging.info(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
         logging.info(f"Iniciando APP de Supervisión")
+
         self.supervisionAPP = self.__supervisionAPPClass([str(clase) for clase in self.classes], self.channels)
         self.supervisionAPP.show() #mostramos la APP de supervisión
 
@@ -604,39 +605,86 @@ class Core(QMainWindow):
 
         self.iniSesionTimer.start()
 
-    def sanityCheck(self):
+    def sanityChecks(self):
         """Método chequear diferentes parámetros antes de iniciar la sesión para no crashear
         durante la sesión o de Entrenamiento, de Calibración u Online cuando estas están en marcha."""
 
-        ##imprimimos un mensaje de sanitycheck usando logging.info
+        print("Iniciando Sanity Check...")
         logging.info("Iniciando Sanity Check...")
 
-        ## cargamos archivo de eventos de la sesión de entrenamiento en un df
-        training_events = pd.read_csv(self.self.training_events_file, sep = ",")
-
-        ##obtenemos los números de clases a partir de la columna classNumber
-        clases = training_events["classNumber"].unique()
-        #obtenemos la duración de cada trial a partir de la columna cueDuration
-        train_samples = training_events["cueDuration"].unique()*self.sample_rate
+        training_events = pd.read_csv(self.training_events_file, sep = ",")
+        # trained_classesNames = training_events["className"].unique()
+        trained_classesValues = np.sort(training_events["classNumber"].unique())
+        train_samples = int(training_events["cueDuration"].unique()*self.sample_rate)
 
         n_channels = len(self.channels)
-        classify_samples = int(self.sample_rate * self.lenToClassify)
-
-        ## generamos un numpy array con valores enteros igual a 1. El shape es de la forma [1, n_channels, classify_samples]
-        ## Este array representa un trial de EEG
-        trial = np.ones((1, n_channels, classify_samples))
+        classify_samples = int(self.sample_rate * self.lenForClassifier)
 
         ## Chequeos
-        ## Assertion si el train_samples es diferente a classify_samples
-        assert train_samples != classify_samples, "La duración del trial debe ser igual al utilizado para entrenar el clasificador"
+        ## Chequeamos que self.classes y self.clasesNames tengan la misma cantidad de elementos
+        if len(self.classes) != len(self.clasesNames):
+            self.closeApp()
+            logging.error("La cantidad de clases y la cantidad de nombres de clases deben ser iguales")
+            raise Exception("La cantidad de clases y la cantidad de nombres de clases deben ser iguales")
+        
+        ## chequeamos que no se repitan nombres en self.clasesNames
+        if len(self.clasesNames) != len(set(self.clasesNames)):
+            self.closeApp()
+            logging.error("Hay nombres de clases repetidos")
+            raise Exception("Hay nombres de clases repetidos")
+        
+        ## chequeamos que nos e repitan valores en self.classes
+        if len(self.classes) != len(set(self.classes)):
+            self.closeApp()
+            logging.error("Hay valores de clases repetidos")
+            raise Exception("Hay valores de clases repetidos")
+        
+        ## Chequeamos que la duración del trial sea igual al utilizado para entrenar el clasificador
+        if train_samples != classify_samples:
+            self.closeApp()
+            logging.error("La duración del trial a clasificar debe ser igual al utilizado para entrenar el clasificador")
+            raise Exception("La duración del trial a clasificar debe ser igual al utilizado para entrenar el clasificador")
 
-        ##Intentamos clasificar con el pipeline de la clase
-        # self.pipeline.predict(trial)
+        ## Chequeamos que los trained_classesValues estén presentes dentro de self.classes
+        if not np.any(np.isin(trained_classesValues, self.classes)):
+            ## me quedo con los valores que no están en self.classes
+            values_not_in_classes = trained_classesValues[~np.isin(trained_classesValues, self.classes)]
+            self.closeApp()
+            logging.error("Hay una o más clases a utilizar que no se usaron durante en la sesión de entrenamiento", values_not_in_classes)
+            raise Exception("Hay una o más clases a utilizar que no se usaron durante en la sesión de entrenamiento", values_not_in_classes)
+ 
+        ## generamos un numpy array con valores enteros igual a 1. El shape es de la forma [1, n_channels, classify_samples]
+        ## Este array representa un trial de EEG
+        trial = np.ones((1, n_channels, classify_samples), dtype=np.int8)
+
         try:
             self.pipeline.predict(trial)
-        except:
-            logging.error("Error al intentar clasificar con el pipeline de la clase")
-            raise Exception("Error al intentar clasificar con el pipeline de la clase")
+        except ValueError as e:
+            self.closeApp()
+            print(e)
+            mensaje = "Compruebe que la cantidad de canales a usar se correspondan con la cantidad de canales usada durante el entrenamiento del clasificador"
+            logging.error(mensaje)
+            raise Exception(mensaje)
+        
+        ##chequeamos si self.pipeline posee el método predict_proba
+        if not hasattr(self.pipeline, "predict_proba"):
+            self.closeApp()
+            logging.error("El pipeline no posee el método predict_proba")
+            raise Exception("El pipeline no posee el método predict_proba")
+        else: #si lo posee, chequeamos que la cantidad de probabilidades retornada sea igual a la cantidad de clases
+            probas = self.pipeline.predict_proba(trial)
+            if len(probas[0]) != len(self.classes):
+                self.closeApp()
+                mensaje = "La cantidad de probabilidades retornada por el pipeline es diferente a la cantidad de clases que se intenta clasificar.\nLa cantidad y el tipo de clases a clasificar debe corresponderse \con la usada durante el entrenamiento del clasificador"
+                logging.error(mensaje)
+                raise Exception(mensaje)
+            
+        ##Intentamos clasificar con el pipeline de la clase
+        ## usamos try para ver si hay un error del tipo ValueError: shapes (1,6) and (8,1000) not aligned: 6 (dim 1) != 8 (dim 0)
+        ## Este error se produce cuando el pipeline no está configurado para recibir un trial de EEG con la forma [1, n_channels, classify_samples]
+
+        logging.info("Sanity Check finalizado. Todo OK")
+        print("Sanity Check finalizado. Todo OK")
 
 
     def startSesion(self):
@@ -658,25 +706,24 @@ class Core(QMainWindow):
         if self.typeSesion == 0:
             print("Inicio de sesión de entrenamiento")
             logging.info("Inicio de sesión de entrenamiento")
-            
             self.trainingEEGThreadTimer.start() #iniciamos timer para controlar hilo entrenamiento
             self.session_started = True
             
         elif self.typeSesion == 1:
             print("Inicio de sesión de Feedback")
             logging.info("Inicio de sesión de Feedback")
-
-            if not self.__customPipeline:
-                self.setPipeline() #cargamos pipeline desde archivo. ESTO ES LO RECOMENDABLE
-            else: #si se ha seleccionado un pipeline personalizado, lo cargamos
-                # self.setFilter() #seteamos filtro
-                self.setPipeline(filter = self.filter) #seteamos pipeline
-
-            self.feedbackThreadTimer.start() #iniciamos timer para controlar hilo entrenamiento
+            self.setPipeline() #seteamos el pipeline
+            self.sanityChecks() ## sanity check
+            self.feedbackThreadTimer.start() #iniciamos timer para controlar hilo calibración
             self.session_started = True
 
         elif self.typeSesion == 2:
-            ##TODO
+            # print("Inicio de sesión Online")
+            # logging.info("Inicio de sesión Online")
+            # self.setPipeline() #seteamos el pipeline
+            # self.sanityChecks() ## sanity check
+            # self.feedbackThreadTimer.start() #iniciamos timer para controlar hilo calibración
+            # self.session_started = True
             pass
 
     def closeApp(self):
@@ -700,15 +747,3 @@ if __name__ == "__main__":
     core = Core(parameters, ConfigAPP("config.json", InfoAPP), IndicatorAPP(), SupervisionAPP)
 
     sys.exit(app.exec_())
-
-    import pandas as pd
-    import numpy as np
-
-    events = pd.read_csv("data\sujeto_8\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt", sep = ",")
-    
-    ##obtenemos los números de clases a partir de la columna classNumber
-    clases = events["classNumber"].unique()
-
-    #obtenemos la duración de cada trial a partir de la columna cueDuration
-    duracionTrials = events["cueDuration"].unique()
-
