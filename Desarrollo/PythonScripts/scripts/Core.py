@@ -541,7 +541,7 @@ class Core(QMainWindow):
         #obtenemos los datos de EEG
         data = self.eeglogger.getData(self.__supervisionAPPTime/1000, removeDataFromBuffer = False)[self.channels]
 
-        # self.supervisionAPP.update_plots(data)
+        self.supervisionAPP.update_plots(data)
 
         if self.session_started:
             #actualizamos información de la sesión
