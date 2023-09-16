@@ -631,7 +631,7 @@ class Core(QMainWindow):
         assert train_samples != classify_samples, "La duración del trial debe ser igual al utilizado para entrenar el clasificador"
 
         ##Intentamos clasificar con el pipeline de la clase
-        self.pipeline.predict(trial)
+        # self.pipeline.predict(trial)
         try:
             self.pipeline.predict(trial)
         except:
