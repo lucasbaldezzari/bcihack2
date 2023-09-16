@@ -28,13 +28,13 @@ import pickle
 
 
 ### ********** Cargamos los datos **********
-eventosFile = "data\sujeto_8\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt"
-file = "data\sujeto_8\eegdata\sesion1\sn1_ts0_ct0_r1.npy"
+eventosFile = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt"
+file = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct0_r1.npy"
 rawEEG_1 = np.load(file)
 eventos_1 = pd.read_csv(eventosFile, sep = ",")
 
-eventosFile = "data\sujeto_8\eegdata\sesion2\sn2_ts0_ct0_r1_events.txt"
-file = "data\sujeto_8\eegdata\sesion2\sn2_ts0_ct0_r1.npy"
+eventosFile = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct1_r2_events.txt"
+file = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct1_r2.npy"
 rawEEG_2 = np.load(file)
 eventos_2 = pd.read_csv(eventosFile, sep = ",")
 
@@ -54,12 +54,12 @@ labels = dataConcatenada.labels
 classesName, labelsNames = dataConcatenada.classesName
 
 ##filtramos los trials para las clases que nos interesan
-trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 5) | (labels == 2) | (labels == 2))]
-labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 5) | (labels == 2) | (labels == 2))]
+trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 2) | (labels == 2) | (labels == 2))]
+labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 2) | (labels == 2) | (labels == 2))]
 
 ### ********** Separamos los datos en train, validation y test **********
-eeg_trainBig, eeg_test, labels_trainBig, labels_test = train_test_split(trials, labels, test_size=0.2, stratify=labels, random_state=42)
-eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_trainBig, labels_trainBig, test_size=0.2, stratify=labels_trainBig, random_state=42)
+eeg_train, eeg_test, labels_train, labels_test = train_test_split(trials, labels, test_size=0.1, stratify=labels, random_state=42)
+# eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_trainBig, labels_trainBig, test_size=0.2, stratify=labels_trainBig, random_state=42)
 eeg_train.shape
 ### ********** Instanciamos los diferentes objetos que usaremos en el pipeline**********
 
@@ -86,10 +86,10 @@ pipeline_lda = Pipeline([
 ### ********** Creamos la grilla de hiperparámetros **********
 
 param_grid_lda = {
-    'pasabanda__lowcut': [8],
-    'pasabanda__highcut': [12,18,28],
+    'pasabanda__lowcut': [5,8],
+    'pasabanda__highcut': [12,16,28],
     'pasabanda__notch_freq': [50.0],
-    'cspmulticlase__n_components': [1,2,3],
+    'cspmulticlase__n_components': [2,3],
     'cspmulticlase__method': ["ovo"],
     'cspmulticlase__n_classes': [len(np.unique(labels))],
     'cspmulticlase__reg': [0.01],
@@ -114,7 +114,7 @@ grid_lda.fit(eeg_train, labels_train)
 ### ******************************************
 
 print("Reporte de clasificación para el mejor clasificador (sobre conjunto de evaluación):", end="\n\n")
-y_true, y_pred = labels_val, grid_lda.predict(eeg_val)
+y_true, y_pred = labels_test, grid_lda.predict(eeg_test)
 print(classification_report(y_true, y_pred), end="\n\n")
 
 ### Nos quedamos con el mejor estimador
@@ -124,7 +124,7 @@ grid_lda_df = pd.DataFrame(grid_lda.cv_results_)
 grid_lda_df.sort_values(by=["mean_test_score"], inplace=True, ascending=False)
 print(grid_lda_df.columns)
 #guardamos los resultados en un csv
-grid_lda_df.to_csv("grid_lda_df.csv")
+# grid_lda_df.to_csv("grid_lda_df.csv")
 
 ## Creamos una matriz de confusión
 cm_lda = confusion_matrix(y_true, y_pred)
@@ -133,7 +133,7 @@ cm_lda = np.round(cm_lda.astype('float') / cm_lda.sum(axis=1)[:, np.newaxis], de
 print(cm_lda)
 
 ## Reentrenamos el mejor estimador con todo el set de entrenamiento, 
-best_lda.fit(eeg_trainBig, labels_trainBig)
+best_lda.fit(eeg_train, labels_train)
 ### ********** Usamos el mejor estimador para predecir los datos de testpara SCV **********
 y_true, y_pred = labels_test, best_lda.predict(eeg_test)
 
@@ -183,6 +183,7 @@ param_grid_svc = {
     'svc__probability': [False],
     'svc__tol': [0.001],
     'svc__cache_size': [200],
+    'svc__probability': [True],
     'svc__class_weight': [None],
 }
 
@@ -194,7 +195,7 @@ grid_svc.fit(eeg_train, labels_train)
 ### ******************************************
 
 print("Reporte de clasificación para el mejor clasificador (sobre conjunto de evaluación):", end="\n\n")
-y_true, y_pred = labels_val, grid_svc.predict(eeg_val)
+y_true, y_pred = labels_test, grid_svc.predict(eeg_test)
 print(classification_report(y_true, y_pred), end="\n\n")
 
 ## Creamos una matriz de confusión
@@ -209,7 +210,7 @@ print(cm_svm)
 best_svc = grid_svc.best_estimator_
 
 ### REentrenamos el mejor estimador con todo el set de entrenamiento,
-best_svc.fit(eeg_trainBig, labels_trainBig)
+best_svc.fit(eeg_train, labels_train)
 
 y_true, y_pred = labels_test, best_svc.predict(eeg_test)
 

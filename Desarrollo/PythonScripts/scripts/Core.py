@@ -12,6 +12,7 @@ import random
 import logging
 
 import numpy as np
+import pandas as pd
 import pickle
 
 import sys
@@ -81,7 +82,7 @@ class Core(QMainWindow):
                 -sample_rate (float): Frecuencia de muestreo de la señal.
                 -axisToCompute (int): Eje a lo largo del cual se calculará la transformada.
             -featureExtractorMethod (str): Método de extracción de características. Puede ser welch o hilbert.
-            -events_file (str): Ruta al archivo txt con los eventos registrados durante las sesiones
+            -training_events_file (str): Ruta al archivo txt con los eventos registrados durante las sesiones
             -classifierFile (str): Ruta al archivo pickle con el clasificador. IMPORTANTE: Se supone que este archivo ya fue generado con la sesión
             de entrenamiento y será usado durante las sesiones de feedback y online.
         Un trial es la suma de startingTimes + cueDuration + finishDuration
@@ -95,6 +96,7 @@ class Core(QMainWindow):
 
         self.configAPP = configAPP
         self.indicatorAPP = indicatorAPP
+        self.__supervisionAPPClass = supervisionAPP
 
         #Parámetros generales para la sesións
         self.configParameters = configParameters
@@ -118,8 +120,6 @@ class Core(QMainWindow):
         self.serialPort = self.boardParams["serialPort"]
         self.boardName = self.boardParams["boardName"]
 
-        self.__supervisionAPPClass = supervisionAPP
-
         #parámetros del filtro
         self.filterParameters = configParameters["filterParameters"]
         #Chequeamos el tipo de placa para corregir el sample rate
@@ -132,8 +132,8 @@ class Core(QMainWindow):
 
         self.sample_rate = self.filterParameters["sample_rate"]
 
-        ## Archivo para cargar los eventos de la sesión
-        self.events_file = configParameters["events_file"]
+        ## Archivo de eventos de una sesión de entrenamiento
+        self.self.training_events_file = configParameters["events_file"]
 
         ## Archivo para cargar el clasificador
         self.classifierFile = configParameters["classifierFile"]
@@ -225,7 +225,7 @@ class Core(QMainWindow):
 
         self.sample_rate = self.filterParameters["sample_rate"]
         
-        self.events_file = newParameters["events_file"]
+        self.self.training_events_file = newParameters["events_file"]
         self.classifierFile = newParameters["classifierFile"]
 
         #archivo para cargar el pipeline
@@ -335,8 +335,6 @@ class Core(QMainWindow):
         time.sleep(1) #esperamos 1 segundo para que se conecte la placa
         print("Iniciando streaming de EEG...")
         logging.info("Iniciando streaming de EEG...")
-
-        # self.supervisionAPP.label_trial_time.setText("Iniciando streaming. Estabilizando señal de EEG.")
 
         channels_names = self.eeglogger.board.get_eeg_channels(board_id)
 
@@ -543,7 +541,6 @@ class Core(QMainWindow):
         #obtenemos los datos de EEG
         data = self.eeglogger.getData(self.__supervisionAPPTime/1000, removeDataFromBuffer = False)[self.channels]
 
-        self.supervisionAPP.update_plots(self.filter.fit_transform(data))
         self.supervisionAPP.update_plots(data)
 
         if self.session_started:
@@ -607,6 +604,41 @@ class Core(QMainWindow):
 
         self.iniSesionTimer.start()
 
+    def sanityCheck(self):
+        """Método chequear diferentes parámetros antes de iniciar la sesión para no crashear
+        durante la sesión o de Entrenamiento, de Calibración u Online cuando estas están en marcha."""
+
+        ##imprimimos un mensaje de sanitycheck usando logging.info
+        logging.info("Iniciando Sanity Check...")
+
+        ## cargamos archivo de eventos de la sesión de entrenamiento en un df
+        training_events = pd.read_csv(self.self.training_events_file, sep = ",")
+
+        ##obtenemos los números de clases a partir de la columna classNumber
+        clases = training_events["classNumber"].unique()
+        #obtenemos la duración de cada trial a partir de la columna cueDuration
+        train_samples = training_events["cueDuration"].unique()*self.sample_rate
+
+        n_channels = len(self.channels)
+        classify_samples = int(self.sample_rate * self.lenToClassify)
+
+        ## generamos un numpy array con valores enteros igual a 1. El shape es de la forma [1, n_channels, classify_samples]
+        ## Este array representa un trial de EEG
+        trial = np.ones((1, n_channels, classify_samples))
+
+        ## Chequeos
+        ## Assertion si el train_samples es diferente a classify_samples
+        assert train_samples != classify_samples, "La duración del trial debe ser igual al utilizado para entrenar el clasificador"
+
+        ##Intentamos clasificar con el pipeline de la clase
+        self.pipeline.predict(trial)
+        try:
+            self.pipeline.predict(trial)
+        except:
+            logging.error("Error al intentar clasificar con el pipeline de la clase")
+            raise Exception("Error al intentar clasificar con el pipeline de la clase")
+
+
     def startSesion(self):
         """Método para iniciar timers del Core, además
         se configuran las carpetas de almacenamiento y se guarda el archivo de configuración de la sesión.
@@ -616,8 +648,8 @@ class Core(QMainWindow):
         self.setFolders(rootFolder = self.rootFolder) #configuramos las carpetas de almacenamiento
         self.saveConfigParameters(self.eegStoredFolder+self.eegFileName[:-4]+"_config.json") #guardamos los parámetros de configuración
         
-        #Creamos un filtro pasabanda que usaremos para mostrar la señal de EEG en la supervisionAPP
-        self.setFilter()
+        # #Creamos un filtro pasabanda que usaremos para mostrar la señal de EEG en la supervisionAPP
+        # self.setFilter()
         
         self.setEEGLogger() #seteamos EEGLogger
         self.makeAndMixTrials() #generamos y mezclamos los trials de la sesión
@@ -637,7 +669,7 @@ class Core(QMainWindow):
             if not self.__customPipeline:
                 self.setPipeline() #cargamos pipeline desde archivo. ESTO ES LO RECOMENDABLE
             else: #si se ha seleccionado un pipeline personalizado, lo cargamos
-                self.setFilter() #seteamos filtro
+                # self.setFilter() #seteamos filtro
                 self.setPipeline(filter = self.filter) #seteamos pipeline
 
             self.feedbackThreadTimer.start() #iniciamos timer para controlar hilo entrenamiento
@@ -646,7 +678,6 @@ class Core(QMainWindow):
         elif self.typeSesion == 2:
             ##TODO
             pass
-        
 
     def closeApp(self):
         print("Cerrando aplicación...")
@@ -660,44 +691,24 @@ if __name__ == "__main__":
     if debbuging:
         logging.basicConfig(level=logging.DEBUG)
 
-    #Creamos un diccionario con los parámetros de configuración iniciales
-    parameters = {
-        "typeSesion": 1, #0: Entrenamiento, 1: Feedback, 2: Online
-        "cueType": 0, #0: Se ejecutan movimientos, 1: Se imaginan los movimientos
-        "classes": [1, 2, 3, 4, 5], #Clases a clasificar
-        "clasesNames": ["Mano Izquierda", "Mano Derecha", "Ambas Manos", "Pies", "Rest"], #MI: Mano izquierda, MD: Mano derecha, AM: Ambas manos, AP: Ambos pies, R: Reposo
-        "ntrials": 1, #Número de trials por clase
-        "startingTimes": [2, 2.5], #Tiempos para iniciar un trial de manera aleatoria entre los extremos, en segundos
-        "cueDuration": 4, #En segundos
-        "finishDuration": 3, #En segundos
-        "lenToClassify": 1.0, #Trozo de señal a clasificar, en segundos
-        "lenForClassifier": 4.0,
-        "subjectName": "subject_test", #nombre del sujeto
-        "sesionNumber": 1, #número de sesión
-        "boardParams": { 
-            "boardName": "synthetic", #Board de registro
-            "channels": [0, 1, 2], #[0, 1, 2, 3, 4, 5, 6, 7], #Canales de registro
-            "serialPort": "COM5" #puerto serial
-        },
-        "filterParameters": {
-            "lowcut": 8., #Frecuencia de corte baja
-            "highcut": 28., #Frecuencia de corte alta
-            "notch_freq": 50., #Frecuencia corte del notch
-            "notch_width": 1, #Ancho de del notch
-            "sample_rate": 250., #Frecuencia de muestreo
-            "axisToCompute": 2,
-        },
-        "featureExtractorMethod": "welch",
-        "rootFolder": "data",
-        "events_file": "data/bestStimators/sn1_ts0_ct0_r1_events.txt",
-        "classifierFile": "data/dummyTest/classifiers/dummyclassifier.pickle",
-        "customPipeline": False,
-        "pipelineFile": "data/dummyTest/pipelines/best_estimator_svm.pkl",
-    }
-
     app = QApplication(sys.argv)
+
+    ##cargamos los parametros desde el archivo config.json
+    with open("config.json", "r") as f:
+        parameters = json.load(f)
 
     core = Core(parameters, ConfigAPP("config.json", InfoAPP), IndicatorAPP(), SupervisionAPP)
 
     sys.exit(app.exec_())
+
+    import pandas as pd
+    import numpy as np
+
+    events = pd.read_csv("data\sujeto_8\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt", sep = ",")
+    
+    ##obtenemos los números de clases a partir de la columna classNumber
+    clases = events["classNumber"].unique()
+
+    #obtenemos la duración de cada trial a partir de la columna cueDuration
+    duracionTrials = events["cueDuration"].unique()
 
