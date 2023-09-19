@@ -28,13 +28,13 @@ import pickle
 
 
 ### ********** Cargamos los datos **********
-eventosFile = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt"
-file = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct0_r1.npy"
+eventosFile = "data\sujeto_6\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt"
+file = "data\sujeto_6\eegdata\sesion1\sn1_ts0_ct0_r1.npy"
 rawEEG_1 = np.load(file)
 eventos_1 = pd.read_csv(eventosFile, sep = ",")
 
-eventosFile = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct1_r2_events.txt"
-file = "data\sujeto_1\eegdata\sesion1\sn1_ts0_ct1_r2.npy"
+eventosFile = "data\sujeto_6\eegdata\sesion2\sn2_ts0_ct0_r1_events.txt"
+file = "data\sujeto_6\eegdata\sesion2\sn2_ts0_ct0_r1.npy"
 rawEEG_2 = np.load(file)
 eventos_2 = pd.read_csv(eventosFile, sep = ",")
 
@@ -47,7 +47,7 @@ dataConcatenada = Concatenate([th_1,th_2])#concatenamos datos
 channelsSelected = [0,1,2,3,6,7]
 
 trials = dataConcatenada.trials
-trials.shape
+
 #me quedo con channelsSelected
 trials = trials[:,channelsSelected,:]
 labels = dataConcatenada.labels
@@ -60,7 +60,6 @@ labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 2) | (labels
 ### ********** Separamos los datos en train, validation y test **********
 eeg_train, eeg_test, labels_train, labels_test = train_test_split(trials, labels, test_size=0.1, stratify=labels, random_state=42)
 # eeg_train, eeg_val, labels_train, labels_val = train_test_split(eeg_trainBig, labels_trainBig, test_size=0.2, stratify=labels_trainBig, random_state=42)
-eeg_train.shape
 ### ********** Instanciamos los diferentes objetos que usaremos en el pipeline**********
 
 fm = 250. #frecuencia de muestreo
@@ -87,7 +86,7 @@ pipeline_lda = Pipeline([
 
 param_grid_lda = {
     'pasabanda__lowcut': [5,8],
-    'pasabanda__highcut': [12,16,28],
+    'pasabanda__highcut': [12,18],
     'pasabanda__notch_freq': [50.0],
     'cspmulticlase__n_components': [2,3],
     'cspmulticlase__method': ["ovo"],
@@ -163,10 +162,10 @@ pipeline_svc = Pipeline([
 ### ********** Creamos la grilla de hiperparámetros **********
 param_grid_svc = {
     'pasabanda__lowcut': [8],
-    'pasabanda__highcut': [12,18,28],
+    'pasabanda__highcut': [12,18],
     'pasabanda__notch_freq': [50.0],
-    'cspmulticlase__n_components': [1,2,3],
-    'cspmulticlase__method': ["ovo","ova"],
+    'cspmulticlase__n_components': [2,3],
+    'cspmulticlase__method': ["ovo"],
     'cspmulticlase__n_classes': [len(np.unique(labels))],
     'cspmulticlase__reg': [0.01],
     'cspmulticlase__log': [None],
@@ -183,7 +182,6 @@ param_grid_svc = {
     'svc__probability': [False],
     'svc__tol': [0.001],
     'svc__cache_size': [200],
-    'svc__probability': [True],
     'svc__class_weight': [None],
 }
 
