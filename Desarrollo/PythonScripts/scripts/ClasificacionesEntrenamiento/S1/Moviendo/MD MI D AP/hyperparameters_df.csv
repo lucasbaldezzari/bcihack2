@@ -1,0 +1,2 @@
+,LDA,SVM
+Best Parameters,"{'lda__tol': 0.01, 'lda__store_covariance': False, 'lda__solver': 'svd', 'lda__n_components': None, 'featureExtractor__sample_rate': 250.0, 'featureExtractor__method': 'hilbert', 'featureExtractor__band_values': [8, 12]}","{'svm__kernel': 'linear', 'svm__gamma': 'scale', 'svm__C': 1, 'featureExtractor__sample_rate': 250.0, 'featureExtractor__method': 'hilbert', 'featureExtractor__band_values': [8, 12]}"

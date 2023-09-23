@@ -6,8 +6,10 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 import numpy as np
 from sklearn.model_selection import train_test_split, GridSearchCV
 from keras.regularizers import l2
+from keras.optimizers import Adam
 
 class CRNN_EEGNet:
+    
     def __init__(self, input_shape, num_classes, F1=8, D=2, dropout_rate=0.4, l2_lambda=0.001):
         self.input_shape = input_shape
         self.num_classes = num_classes
@@ -41,11 +43,13 @@ class CRNN_EEGNet:
 
         return model
 
-    def compile(self, optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy']):
+    def compile(self, optimizer='adam', learning_rate=0.01, loss='categorical_crossentropy', metrics=['accuracy']):
         """
         Método para compilar el modelo.
         ...
         """
+        if optimizer == 'adam':
+          optimizer_instance = Adam(learning_rate=learning_rate)
         self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
     def fit(self, x_train, y_train, batch_size=32, epochs=10, validation_data=None,
@@ -75,7 +79,6 @@ class CRNN_EEGNet:
             los pesos del modelo al mejor estado encontrado. Además, se guardará el mejor modelo durante el
             entrenamiento en el archivo especificado en 'model_checkpoint_path'.
         """
-
       # Verificar que se proporciona validation_data
         if validation_data is None:
             raise ValueError("validation_data must be provided when monitoring val_loss")
