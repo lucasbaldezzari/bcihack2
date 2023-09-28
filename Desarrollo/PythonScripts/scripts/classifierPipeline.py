@@ -25,16 +25,27 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score, classification_report, precision_recall_fscore_support
 import pickle
-
+import os
 
 ### ********** Cargamos los datos **********
-eventosFile = "data\sujeto_6\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt"
-file = "data\sujeto_6\eegdata\sesion1\sn1_ts0_ct0_r1.npy"
+sujeto = "sujeto_11" #4 no, 5 no
+tipoTarea = "imaginado" #imaginado
+ct = 0 if tipoTarea == "ejecutado" else 1 #0 ejecutado, 1 imaginado
+comb = 4
+r = 1
+
+nrows = 4#"auto" ## auto para comb 1 y 2, 4 x 3 para comb 3 y 4x5 para comb4
+ncols = 5#"auto"
+
+baseFolder = f"data\{sujeto}"
+eventosFile = f"{baseFolder}\eegdata\sesion1\sn1_ts0_ct{ct}_r{r}_events.txt"
+file = f"{baseFolder}\eegdata\sesion1\sn1_ts0_ct{ct}_r{r}.npy"
 rawEEG_1 = np.load(file)
 eventos_1 = pd.read_csv(eventosFile, sep = ",")
 
-eventosFile = "data\sujeto_6\eegdata\sesion2\sn2_ts0_ct0_r1_events.txt"
-file = "data\sujeto_6\eegdata\sesion2\sn2_ts0_ct0_r1.npy"
+# r = 2
+eventosFile = f"{baseFolder}\eegdata\sesion2\sn2_ts0_ct{ct}_r{r}_events.txt"
+file = f"{baseFolder}\eegdata\sesion2\sn2_ts0_ct{ct}_r{r}.npy"
 rawEEG_2 = np.load(file)
 eventos_2 = pd.read_csv(eventosFile, sep = ",")
 
@@ -53,9 +64,16 @@ trials = trials[:,channelsSelected,:]
 labels = dataConcatenada.labels
 classesName, labelsNames = dataConcatenada.classesName
 
-##filtramos los trials para las clases que nos interesan
-trials = trials[np.where((labels == 1) | (labels == 2) | (labels == 2) | (labels == 2) | (labels == 2))]
-labels = labels[np.where((labels == 1) | (labels == 2) | (labels == 2) | (labels == 2) | (labels == 2))]
+comb1 = np.where((labels == 1) | (labels == 2))
+comb2 = np.where((labels == 1) | (labels == 2) | (labels == 5))
+comb3 = np.where((labels == 1) | (labels == 2) | (labels == 4) | (labels == 5))
+comb4 = np.where((labels == 1) | (labels == 2) | (labels == 3) | (labels == 4) | (labels == 5))
+
+combs = [comb1, comb2, comb3, comb4]
+
+#filtramos los trials para las clases que nos interesan
+trials = trials[combs [comb-1]]
+labels = labels[combs [comb-1]]
 
 ### ********** Separamos los datos en train, validation y test **********
 eeg_train, eeg_test, labels_train, labels_test = train_test_split(trials, labels, test_size=0.1, stratify=labels, random_state=42)
@@ -88,7 +106,7 @@ param_grid_lda = {
     'pasabanda__lowcut': [5,8],
     'pasabanda__highcut': [12,18],
     'pasabanda__notch_freq': [50.0],
-    'cspmulticlase__n_components': [2,3],
+    'cspmulticlase__n_components': [2],
     'cspmulticlase__method': ["ovo"],
     'cspmulticlase__n_classes': [len(np.unique(labels))],
     'cspmulticlase__reg': [0.01],
@@ -97,8 +115,8 @@ param_grid_lda = {
     'featureExtractor__method': ["welch"],
     'featureExtractor__sample_rate': [fm],
     'featureExtractor__band_values': [[8,18]],
-    'lda__solver': ['svd'],
-    'lda__shrinkage': [None],
+    'lda__solver': ['svd','lsqr','eigen'],
+    'lda__shrinkage': [None, "auto"],
     'lda__priors': [None],
     'lda__n_components': [None],
     'lda__store_covariance': [False],
@@ -164,19 +182,19 @@ param_grid_svc = {
     'pasabanda__lowcut': [8],
     'pasabanda__highcut': [12,18],
     'pasabanda__notch_freq': [50.0],
-    'cspmulticlase__n_components': [2,3],
+    'cspmulticlase__n_components': [2],
     'cspmulticlase__method': ["ovo"],
     'cspmulticlase__n_classes': [len(np.unique(labels))],
     'cspmulticlase__reg': [0.01],
     'cspmulticlase__log': [None],
     'cspmulticlase__norm_trace': [False],
-    'featureExtractor__method': ["welch", "hilbert"],
+    'featureExtractor__method': ["welch"],
     'featureExtractor__sample_rate': [fm],
     'featureExtractor__band_values': [[8,18]],
-    'svc__C': [1.0],
+    'svc__C': [0.1, 1.0, 10],
     'svc__kernel': ['linear','poly','rbf'],
     'svc__degree': [3],
-    'svc__gamma': ['scale'],
+    'svc__gamma': ['scale',0.1,1,10],
     'svc__coef0': [0.0],
     'svc__shrinking': [True],
     'svc__probability': [False],
@@ -229,6 +247,61 @@ df.loc["SVM"] = [acc_svm, precision_svm, recall_svm, f1score_svm]
 
 print(df)
 
-## Guardo el mejor clasificador LDA y el mejor SVM usando pickle
-# pickle.dump(best_lda, open("best_lda_subject8.pkl", "wb"))
-# pickle.dump(best_svc, open("best_svc_subject8.pkl", "wb"))
+### ********** GUARDAMOS DATOS **********
+
+dfFolder = "dataframes" #carpeta donde guardaremos los dataframes
+## chequeamos si la carpeta f"{baseFolder}\{dfFolder}" existe, si no existe la creamos
+if not os.path.exists(f"{baseFolder}\{dfFolder}"):
+    os.makedirs(f"{baseFolder}\{dfFolder}")
+## Guardamos los dataframes en archivos txt
+df.to_csv(f"{baseFolder}\{dfFolder}\\df_{tipoTarea}_comb{comb}.txt", sep="\t")
+
+pipsFolder = "pipelines" #carpeta donde guardaremos los pipelines
+## chequeamos si la carpeta f"{baseFolder}\{pipsFolder}" existe, si no existe la creamos
+if not os.path.exists(f"{baseFolder}\{pipsFolder}"):
+    os.makedirs(f"{baseFolder}\{pipsFolder}")
+## Guardamos los pipelines en archivos pickle
+pickle.dump(best_lda, open(f"{baseFolder}\{pipsFolder}\\best_lda_{tipoTarea}_comb{comb}.pkl", "wb"))
+pickle.dump(best_svc, open(f"{baseFolder}\{pipsFolder}\\best_svc_{tipoTarea}_comb{comb}.pkl", "wb"))
+
+## me quedo con el cspmulticlass del best_lda y best_svc 
+cspmulticlass_lda = best_lda.named_steps['cspmulticlase']
+cspmulticlass_svc = best_svc.named_steps['cspmulticlase']
+
+cspsFolder = "csps" #carpeta donde guardaremos los csps
+## chequeamos si la carpeta f"{baseFolder}\{cspsFolder}" existe, si no existe la creamos
+if not os.path.exists(f"{baseFolder}\{cspsFolder}"):
+    os.makedirs(f"{baseFolder}\{cspsFolder}")
+
+# nrows = len(cspmulticlass_svc.class_combinations)//2
+# nrows = nrows if nrows > 0 else 1
+# ncols = cspmulticlass_svc.n_components*2
+# ncols = ncols if len(cspmulticlass_svc.class_combinations) > 1 else 2
+
+channelsName = ["P3", "P4", "C3", "C4", "F3", "F4", "Pz", "Cz"]
+channelsName = [channelsName[i] for i in channelsSelected]
+
+# nrows = "auto"
+# ncols = "auto"
+
+##generamos arhivo file para guardar los csp
+filename = f"{baseFolder}\{cspsFolder}\\patrones_comb{comb}_svc_{tipoTarea}.png"
+cspmulticlass_svc.plot_patterns(channelsName, fm, size = 1, sensors=False, nrows = nrows, ncols = ncols,
+                                cspnames=True, contours = 0, dpi = 600, cmap = "Spectral_r",
+                                save = True, filename = filename, show = False)
+
+filename = f"{baseFolder}\{cspsFolder}\\filtros_comb{comb}_svc_{tipoTarea}.png"
+cspmulticlass_svc.plot_filters(channelsName, fm, size = 1, sensors=False, nrows = nrows, ncols = ncols,
+                                cspnames=True, contours = 0, dpi = 600, cmap = "Spectral_r",
+                                save = True, filename = filename, show = False)
+
+##generamos arhivo file para guardar los csp
+filename = f"{baseFolder}\{cspsFolder}\\patrones_comb{comb}_lda_{tipoTarea}.png"
+cspmulticlass_svc.plot_patterns(channelsName, fm, size = 1, sensors=False, nrows = nrows, ncols = ncols,
+                                cspnames=True, contours = 0, dpi = 600, cmap = "Spectral_r",
+                                save = True, filename = filename, show = False)
+
+filename = f"{baseFolder}\{cspsFolder}\\filtros_comb{comb}_lda_{tipoTarea}.png"
+cspmulticlass_svc.plot_filters(channelsName, fm, size = 1, sensors=False, nrows = nrows, ncols = ncols,
+                                cspnames=True, contours = 0, dpi = 600, cmap = "Spectral_r",
+                                save = True, filename = filename, show = False)
