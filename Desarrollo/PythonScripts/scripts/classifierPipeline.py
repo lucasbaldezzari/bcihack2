@@ -28,24 +28,23 @@ import pickle
 import os
 
 ### ********** Cargamos los datos **********
-sujeto = "sujeto_11" #4 no, 5 no
+sujeto = "sujeto_4" #4 no, 5 no
 tipoTarea = "imaginado" #imaginado
 ct = 0 if tipoTarea == "ejecutado" else 1 #0 ejecutado, 1 imaginado
 comb = 4
 r = 1
 
-nrows = 4#"auto" ## auto para comb 1 y 2, 4 x 3 para comb 3 y 4x5 para comb4
-ncols = 5#"auto"
+nrows = 4#"auto" ## auto para comb 1 y 2, 3 filas x 4 columnas para comb 3.... y 5 filas x f columnas para comb4
+ncols = 3#"auto"
 
 baseFolder = f"data\{sujeto}"
-eventosFile = f"{baseFolder}\eegdata\sesion1\sn1_ts0_ct{ct}_r{r}_events.txt"
-file = f"{baseFolder}\eegdata\sesion1\sn1_ts0_ct{ct}_r{r}.npy"
+eventosFile = "data\sujeto_4\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt"#f"{baseFolder}\eegdata\sesion1\sn1_ts0_ct{ct}_r{r}_events.txt"
+file = "data\sujeto_4\eegdata\sesion1\sn1_ts0_ct0_r1.npy"#f"{baseFolder}\eegdata\sesion1\sn1_ts0_ct{ct}_r{r}.npy"
 rawEEG_1 = np.load(file)
 eventos_1 = pd.read_csv(eventosFile, sep = ",")
 
-# r = 2
-eventosFile = f"{baseFolder}\eegdata\sesion2\sn2_ts0_ct{ct}_r{r}_events.txt"
-file = f"{baseFolder}\eegdata\sesion2\sn2_ts0_ct{ct}_r{r}.npy"
+eventosFile = "data\sujeto_4\eegdata\sesion2\sn1_ts0_ct0_r2_events.txt"#f"{baseFolder}\eegdata\sesion2\sn2_ts0_ct{ct}_r{r}_events.txt"
+file = "data\sujeto_4\eegdata\sesion2\sn1_ts0_ct0_r2.npy"#f"{baseFolder}\eegdata\sesion2\sn2_ts0_ct{ct}_r{r}.npy"
 rawEEG_2 = np.load(file)
 eventos_2 = pd.read_csv(eventosFile, sep = ",")
 
@@ -273,10 +272,10 @@ cspsFolder = "csps" #carpeta donde guardaremos los csps
 if not os.path.exists(f"{baseFolder}\{cspsFolder}"):
     os.makedirs(f"{baseFolder}\{cspsFolder}")
 
-# nrows = len(cspmulticlass_svc.class_combinations)//2
-# nrows = nrows if nrows > 0 else 1
-# ncols = cspmulticlass_svc.n_components*2
-# ncols = ncols if len(cspmulticlass_svc.class_combinations) > 1 else 2
+nrows = len(cspmulticlass_svc.class_combinations)//2
+nrows = nrows if nrows > 0 else 1
+ncols = cspmulticlass_svc.n_components*2
+ncols = ncols if len(cspmulticlass_svc.class_combinations) > 1 else 2
 
 channelsName = ["P3", "P4", "C3", "C4", "F3", "F4", "Pz", "Cz"]
 channelsName = [channelsName[i] for i in channelsSelected]
@@ -305,3 +304,11 @@ filename = f"{baseFolder}\{cspsFolder}\\filtros_comb{comb}_lda_{tipoTarea}.png"
 cspmulticlass_svc.plot_filters(channelsName, fm, size = 1, sensors=False, nrows = nrows, ncols = ncols,
                                 cspnames=True, contours = 0, dpi = 600, cmap = "Spectral_r",
                                 save = True, filename = filename, show = False)
+
+## getting de UAR for each class
+from sklearn.metrics import recall_score
+
+y_true, y_pred = labels_test, best_lda.predict(eeg_test)
+uar_svc = recall_score(y_true, y_pred, average=None)
+uar_svc = np.round(uar_svc, decimals=2)*100
+print(f"El UAR del mejor clasificador SVC es de {uar_svc}")
