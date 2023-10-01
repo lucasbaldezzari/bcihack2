@@ -28,23 +28,23 @@ import pickle
 import os
 
 ### ********** Cargamos los datos **********
-sujeto = "sujeto_4" #4 no, 5 no
-tipoTarea = "imaginado" #imaginado
+sujeto = "sujeto_1" #4 no, 5 no
+tipoTarea = "ejecutado" #imaginado
 ct = 0 if tipoTarea == "ejecutado" else 1 #0 ejecutado, 1 imaginado
-comb = 4
+comb = 1
 r = 1
 
 nrows = 4#"auto" ## auto para comb 1 y 2, 3 filas x 4 columnas para comb 3.... y 5 filas x f columnas para comb4
 ncols = 3#"auto"
 
 baseFolder = f"data\{sujeto}"
-eventosFile = "data\sujeto_4\eegdata\sesion1\sn1_ts0_ct0_r1_events.txt"#f"{baseFolder}\eegdata\sesion1\sn1_ts0_ct{ct}_r{r}_events.txt"
-file = "data\sujeto_4\eegdata\sesion1\sn1_ts0_ct0_r1.npy"#f"{baseFolder}\eegdata\sesion1\sn1_ts0_ct{ct}_r{r}.npy"
+eventosFile = f"{baseFolder}\eegdata\sesion1\sn1_ts0_ct{ct}_r{r}_events.txt"
+file = f"{baseFolder}\eegdata\sesion1\sn1_ts0_ct{ct}_r{r}.npy"
 rawEEG_1 = np.load(file)
 eventos_1 = pd.read_csv(eventosFile, sep = ",")
 
-eventosFile = "data\sujeto_4\eegdata\sesion2\sn1_ts0_ct0_r2_events.txt"#f"{baseFolder}\eegdata\sesion2\sn2_ts0_ct{ct}_r{r}_events.txt"
-file = "data\sujeto_4\eegdata\sesion2\sn1_ts0_ct0_r2.npy"#f"{baseFolder}\eegdata\sesion2\sn2_ts0_ct{ct}_r{r}.npy"
+eventosFile = f"{baseFolder}\eegdata\sesion2\sn2_ts0_ct{ct}_r{r}_events.txt"
+file = f"{baseFolder}\eegdata\sesion2\sn2_ts0_ct{ct}_r{r}.npy"
 rawEEG_2 = np.load(file)
 eventos_2 = pd.read_csv(eventosFile, sep = ",")
 
@@ -312,3 +312,16 @@ y_true, y_pred = labels_test, best_lda.predict(eeg_test)
 uar_svc = recall_score(y_true, y_pred, average=None)
 uar_svc = np.round(uar_svc, decimals=2)*100
 print(f"El UAR del mejor clasificador SVC es de {uar_svc}")
+
+## cargo el pipeline desde data\sujeto_1\pipelines\best_lda_ejecutado_comb1.pkl con pickle
+best_lda = pickle.load(open(f"{baseFolder}\{pipsFolder}\\best_lda_{tipoTarea}_comb{comb}.pkl", "rb"))
+
+labels_test
+md_csp = best_lda[:2].transform(eeg_test[0,:,:].reshape(1,6,1000))
+mi_csp = best_lda[:2].transform(eeg_test[2,:,:].reshape(1,6,1000))
+
+
+import matplotlib.pyplot as plt
+plt.plot(md_csp[0,0,:])
+plt.plot(mi_csp[0,0,:])
+plt.show()
