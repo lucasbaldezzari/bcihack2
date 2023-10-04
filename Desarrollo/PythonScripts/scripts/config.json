@@ -1,5 +1,5 @@
 {
-    "typeSesion": 1,
+    "typeSesion": 0,
     "cueType": 0,
     "ntrials": 5,
     "classes": [
@@ -43,8 +43,8 @@
         "axisToCompute": 2
     },
     "featureExtractorMethod": "welch",
-    "events_file": "data/bestStimators/sn1_ts0_ct0_r1_events.txt",
-    "classifierFile": "data/dummyTest/classifiers/dummyclassifier.pickle",
+    "events_file": "data\\sujeto_1\\eegdata\\sesion1\\sn1_ts0_ct0_r1_events.txt",
+    "classifierFile": "data\\sujeto_1\\pipelines\\\\best_lda_ejecutado_comb1.pkl",
     "customPipeline": false,
-    "pipelineFile": "data/bestStimators/best_lda_subject8.pkl"
+    "pipelineFile": "data\\sujeto_1\\pipelines\\\\best_lda_ejecutado_comb1.pkl"
 }
