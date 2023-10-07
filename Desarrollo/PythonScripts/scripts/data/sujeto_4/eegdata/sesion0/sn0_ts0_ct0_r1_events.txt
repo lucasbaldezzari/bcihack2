@@ -1,0 +1,6 @@
+trialNumber,classNumber,className,prediction,probabilities,startingTime,cueDuration,finishDuration,trialTime,trialTime(legible)
+1,3,Ambas Manos,-1,-1,3.0,4.0,3.0,1691605320.7659044,09/08/2023 15:22:00
+2,4,Pies,-1,-1,3.0,4.0,3.0,1691605330.7739565,09/08/2023 15:22:10
+3,1,Mano Izquierda,-1,-1,3.0,4.0,3.0,1691605340.7822015,09/08/2023 15:22:20
+4,5,Rest,-1,-1,3.0,4.0,3.0,1691605350.7829564,09/08/2023 15:22:30
+5,2,Mano Derecha,-1,-1,3.0,4.0,3.0,1691605360.7810805,09/08/2023 15:22:40
