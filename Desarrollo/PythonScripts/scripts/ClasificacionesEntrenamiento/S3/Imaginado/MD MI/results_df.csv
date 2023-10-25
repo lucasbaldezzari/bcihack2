@@ -1,0 +1,2 @@
+,Accuracy,Precision,Recall,F1-Score,AUC
+CRNN,22.0,0.225,0.225,0.22222222222222224,0.15
