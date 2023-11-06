@@ -38,7 +38,13 @@ class ArduinoCommunication:
             
         """
         self.baudrate = baudrate
-        self.dev = serial.Serial(port, baudrate = baudrate, timeout = timeout, write_timeout = write_timeout ) # Abrimos puerto serie con baudrate de 19200
+        ## intentamos conectar con el puerto serie con Try/Except
+        try:
+            self.dev = serial.Serial(port, baudrate = baudrate, timeout = timeout,
+                                     write_timeout = write_timeout) # Abrimos puerto serie con baudrate de 19200
+            print("Conexión establecida con Arduino en el puerto", port)
+        except:
+            raise Exception("No se pudo establecer conexión con Arduino en el puerto", port)
 
         #chequeamos que la lista de comandos no esté vacía con assert
         assert commands != [], "La lista de comandos no puede estar vacía"
@@ -68,8 +74,12 @@ class ArduinoCommunication:
         incomingData = []
         for byte in message:
             incomingData.append(self.query(byte))
-            
-        return format(int(incomingData[0]), '04b')
+
+        ##chequeamos que incomingData[0] no sea '' (vacio). De ser así se asigna '' a incomingData sino se hace format(int(incomingData[0]), '04b')
+        if incomingData[0] == '':
+            return ''
+        else:
+            return format(int(incomingData[0]), '04b')
         
     def iniSesion(self):
         """Se inicia sesión."""

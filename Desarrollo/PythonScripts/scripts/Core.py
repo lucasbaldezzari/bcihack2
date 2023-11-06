@@ -148,9 +148,6 @@ class Core(QMainWindow):
 
         self.session_started = False #Flag para indicar si se inició la sesión
 
-        ## inicializamos la clase ArduinoCommunication
-        self.arduino = ArduinoCommunication(port = self.serialPort)
-
         #Configuramos timers del Core
         """
         Funcionamiento QTimer
@@ -741,6 +738,19 @@ class Core(QMainWindow):
             print("Inicio de sesión Online")
             ##Cerramos indicatorAPP ya que no se usa en modo Online
             self.indicatorAPP.close()
+
+            ##usamos try/except para chequear si tenemos comunicación con arduino
+            try:
+                ## inicializamos la clase ArduinoCommunication
+                self.arduino = ArduinoCommunication(port = self.serialPort)
+            except Exception as e:
+                print(e)
+                logging.error(e)
+                print("No se pudo establecer comunicación con arduino")
+                self.closeApp()
+                raise Exception("No se pudo establecer comunicación con arduino")
+            
+            time.sleep(1) #esperamos 1 segundo
 
             ##chequeamos que tenemos comunicación con arduino. Sólo nos comunicamos con arduino en la sesión online
             self.arduino.iniSesion()
