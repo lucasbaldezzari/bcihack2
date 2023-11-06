@@ -16,7 +16,7 @@ class ArduinoCommunication:
         Constructor del objeto ArduinoCommunication
     """
 
-    def __init__(self, port, baudrate = 19200, commands = [b'1',b'2',b'3',b'4',b'5']):
+    def __init__(self, port, baudrate = 19200, commands = [b'1',b'2',b'3',b'4',b'5'], timeout = 1, write_timeout = 1):
         """
         Constructor del objeto ArduinoCommunication
 
@@ -30,13 +30,15 @@ class ArduinoCommunication:
             Velocidad de comunicación serie
         sleep: int
             Tiempo en segundos de espera para establecer comunicación serie
+        timeout: int
+            Tiempo en segundos de espera para recibir respuesta desde Arduino
         Retorna
         -------
         Nada
             
         """
         self.baudrate = baudrate
-        self.dev = serial.Serial(port, baudrate = baudrate) # Abrimos puerto serie con baudrate de 19200
+        self.dev = serial.Serial(port, baudrate = baudrate, timeout = timeout, write_timeout = write_timeout ) # Abrimos puerto serie con baudrate de 19200
 
         #chequeamos que la lista de comandos no esté vacía con assert
         assert commands != [], "La lista de comandos no puede estar vacía"

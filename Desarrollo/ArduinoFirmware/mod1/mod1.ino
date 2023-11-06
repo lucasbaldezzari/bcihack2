@@ -104,12 +104,12 @@ El comando a realizar en base al número se especifica en el Módulo 2.
   switch(bufferIndex)
   {
     case 0:
-      if (incDataFromPC[bufferIndex] == 1) digitalWrite(LEDTesteo,0);
+      if (incDataFromPC[bufferIndex] == 1) digitalWrite(LEDTesteo,1);
       else digitalWrite(LEDTesteo,0);
       break;
     case 1:
-      if (incDataFromPC[bufferIndex] == 3) digitalWrite(LEDTesteo,1);
-      else digitalWrite(LEDTesteo,0);
+      if (incDataFromPC[bufferIndex] == 1) digitalWrite(LEDComando,1);
+      else digitalWrite(LEDComando,0);
       
       break;    
   }

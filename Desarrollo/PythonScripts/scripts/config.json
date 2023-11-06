@@ -1,6 +1,6 @@
 {
-    "typeSesion": 0,
-    "cueType": 0,
+    "typeSesion": 2,
+    "cueType": 1,
     "ntrials": 5,
     "classes": [
         1,
@@ -32,7 +32,7 @@
             5,
             8
         ],
-        "serialPort": "COM5"
+        "serialPort": "COM7"
     },
     "filterParameters": {
         "lowcut": 8.0,

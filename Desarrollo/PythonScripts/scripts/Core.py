@@ -1,12 +1,12 @@
 from EEGLogger.EEGLogger import EEGLogger, setupBoard
 
 from SignalProcessor.Filter import Filter
-from SignalProcessor.RavelTransformer import RavelTransformer
-from SignalProcessor.FeatureExtractor import FeatureExtractor
+# from SignalProcessor.RavelTransformer import RavelTransformer
+# from SignalProcessor.FeatureExtractor import FeatureExtractor
+from ArduinoCommunication.ArduinoCommunication import ArduinoCommunication
 
 import json
 import os
-from concurrent.futures import ThreadPoolExecutor
 import time
 import random
 import logging
@@ -139,7 +139,6 @@ class Core(QMainWindow):
         self.classifierFile = configParameters["classifierFile"]
 
         #archivo para cargar el pipeline
-        # self.__customPipeline = configParameters["customPipeline"]
         self.pipelineFile = configParameters["pipelineFile"]
 
         self.__trialPhase = 0 #0: Inicio, 1: Cue, 2: Finalización
@@ -148,6 +147,9 @@ class Core(QMainWindow):
         self.rootFolder = "data/"
 
         self.session_started = False #Flag para indicar si se inició la sesión
+
+        ## inicializamos la clase ArduinoCommunication
+        self.arduino = ArduinoCommunication(port = self.serialPort)
 
         #Configuramos timers del Core
         """
@@ -173,6 +175,10 @@ class Core(QMainWindow):
         self.feedbackThreadTimer = QTimer() #Timer para control de tiempo de las fases de trials
         self.feedbackThreadTimer.setInterval(int(self.startingTimes[1]*1000)) #1 milisegundo sólo para el inicio de sesión.
         self.feedbackThreadTimer.timeout.connect(self.feedbackThread)
+
+        self.onlineThreadTimer = QTimer() #Timer para control de tiempo de las fases de trials
+        self.onlineThreadTimer.setInterval(int(self.startingTimes[1]*1000)) #1 milisegundo sólo para el inicio de sesión.
+        self.onlineThreadTimer.timeout.connect(self.onlineThread)
 
         #timer para controlar el tiempo para clasificar el EEG
         self.classifyEEGTimer = QTimer()
@@ -436,10 +442,8 @@ class Core(QMainWindow):
             ##La suma de estos números debe ser 1
             ##Esto se hace para que la barra se mueva de manera aleatoria
             ##Si se quiere que la barra se mueva de manera lineal, se puede usar un array de 5 elementos
-
             probas = np.random.rand(5)
             probas = probas/np.sum(probas)
-
             self.supervisionAPP.update_propbars(probas)
 
         elif self.__trialPhase == 2:
@@ -511,7 +515,31 @@ class Core(QMainWindow):
             self.saveEvents() #guardamos los eventos de la sesión
             self.__trialPhase = 0 #volvemos a la fase inicial del trial
             self.__trialNumber += 1 #incrementamos el número de trial
-            self.trainingEEGThreadTimer.setInterval(1)
+            self.feedbackThreadTimer.setInterval(1)
+
+    def onlineThread(self):
+        """Función para hilo de lectura de EEG durante fase de entrenamiento.
+        Sólo se almacena trozos de EEG correspondientes a la suma de startTrainingTime y cueDuration.
+        """
+
+        # logging.info("Iniciamos fase cue del trial")
+        # self.indicatorAPP.showCruz(False)
+        # claseActual = self.trialsSesion[self.__trialNumber]
+        # classNameActual = self.clasesNames[self.classes.index(claseActual)]
+        # self.indicatorAPP.update_order(f"{classNameActual}", fontsize = 46,
+        #                                 background = "rgb(38,38,38)", font_color = "white")
+        # self.indicatorAPP.showBar(True)
+        # self.indicatorAPP.actualizar_barra(0) #iniciamos la barra en 0%
+        # self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
+
+        # # Tomo los datos de EEG de la duración del cue y los guardo en self._dataToClasify 
+        # # Los datos dentro de self._dataToClasify se van actualizando en cada entrada a la función classifyEEG
+        # # self._dataToClasify = self.eeglogger.getData(self.cueDuration, removeDataFromBuffer=False)[self.channels]
+        # self._dataToClasify = self.eeglogger.getData(self.lenForClassifier, removeDataFromBuffer=False)[self.channels]
+        # self.classifyEEGTimer.start() #inicio el timer para clasificar el EEG
+
+        self.onlineThreadTimer.setInterval(int((self.cueDuration + self.lenToClassify*0.05) * 1000))
+        #La suma de self.cueDuration + self.lenToClassify*0.05 es para darle un pequeño margen de tiempo
 
     def showGUIAPPs(self):
         """Función para configurar la sesión de entrenamiento usando self.confiAPP.
@@ -520,10 +548,6 @@ class Core(QMainWindow):
         self.indicatorAPP.update_order("Configurando la sesión...")
         self.configAPP.show() #mostramos la APP
         self.configAppTimer.start()
-
-        # if not self.configAPP.is_open:
-        #     self.supervisionAPP = self.__supervisionAPPClass([str(clase) for clase in self.classes], self.channels)
-        #     self.supervisionAPP.show() #mostramos la APP de supervisión
 
     def checkConfigApp(self):
         """Función para comprobar si la configuración de la sesión ha finalizado."""
@@ -586,7 +610,6 @@ class Core(QMainWindow):
         ## nos quedamos con la probabilida de la clase actual
         probaClaseActual = self.probas[0][self.classes.index(self.trialsSesion[self.__trialNumber])]
         self.indicatorAPP.actualizar_barra(probaClaseActual) #actualizamos la barra de probabilidad
-        logging.info("Dato clasificado", self.prediction)
         
     def start(self):
         """Método para iniciar la sesión"""
@@ -686,18 +709,15 @@ class Core(QMainWindow):
         logging.info("Sanity Check finalizado. Todo OK")
         print("Sanity Check finalizado. Todo OK")
 
-
     def startSesion(self):
         """Método para iniciar timers del Core, además
         se configuran las carpetas de almacenamiento y se guarda el archivo de configuración de la sesión.
         Se setea el setEEGLogger para comunicación con la placa.
         """
         self.iniSesionTimer.stop() #detenemos timer de inicio de sesión
+
         self.setFolders(rootFolder = self.rootFolder) #configuramos las carpetas de almacenamiento
         self.saveConfigParameters(self.eegStoredFolder+self.eegFileName[:-4]+"_config.json") #guardamos los parámetros de configuración
-        
-        # #Creamos un filtro pasabanda que usaremos para mostrar la señal de EEG en la supervisionAPP
-        # self.setFilter()
         
         self.setEEGLogger() #seteamos EEGLogger
         self.makeAndMixTrials() #generamos y mezclamos los trials de la sesión
@@ -718,11 +738,16 @@ class Core(QMainWindow):
             self.session_started = True
 
         elif self.typeSesion == 2:
-            # print("Inicio de sesión Online")
-            # logging.info("Inicio de sesión Online")
-            # self.setPipeline() #seteamos el pipeline
+            print("Inicio de sesión Online")
+            ##Cerramos indicatorAPP ya que no se usa en modo Online
+            self.indicatorAPP.close()
+
+            ##chequeamos que tenemos comunicación con arduino. Sólo nos comunicamos con arduino en la sesión online
+            self.arduino.iniSesion()
+            
+            # self.setPipeline() #seteamos el pipeline5
             # self.sanityChecks() ## sanity check
-            # self.feedbackThreadTimer.start() #iniciamos timer para controlar hilo calibración
+            self.onlineThreadTimer.start() #iniciamos timer para controlar hilo calibración
             # self.session_started = True
             pass
 
