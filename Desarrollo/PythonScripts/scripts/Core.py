@@ -695,14 +695,10 @@ class Core(QMainWindow):
             probas = self.pipeline.predict_proba(trial)
             if len(probas[0]) != len(self.classes):
                 self.closeApp()
-                mensaje = "La cantidad de probabilidades retornada por el pipeline es diferente a la cantidad de clases que se intenta clasificar.\nLa cantidad y el tipo de clases a clasificar debe corresponderse \con la usada durante el entrenamiento del clasificador"
+                mensaje = "La cantidad de probabilidades retornada por el pipeline es diferente a la cantidad de clases que se intenta clasificar. \nLa cantidad y el tipo de clases a clasificar debe corresponderse con la usada durante el entrenamiento del clasificador"
                 logging.error(mensaje)
                 raise Exception(mensaje)
             
-        ##Intentamos clasificar con el pipeline de la clase
-        ## usamos try para ver si hay un error del tipo ValueError: shapes (1,6) and (8,1000) not aligned: 6 (dim 1) != 8 (dim 0)
-        ## Este error se produce cuando el pipeline no está configurado para recibir un trial de EEG con la forma [1, n_channels, classify_samples]
-
         logging.info("Sanity Check finalizado. Todo OK")
         print("Sanity Check finalizado. Todo OK")
 

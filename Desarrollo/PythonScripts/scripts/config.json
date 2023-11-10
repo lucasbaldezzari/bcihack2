@@ -1,6 +1,6 @@
 {
-    "typeSesion": 0,
-    "cueType": 1,
+    "typeSesion": 1,
+    "cueType": 0,
     "ntrials": 5,
     "classes": [
         1,
@@ -43,8 +43,8 @@
         "axisToCompute": 2
     },
     "featureExtractorMethod": "welch",
-    "events_file": "data\\sujeto_1\\eegdata\\sesion1\\sn1_ts0_ct0_r1_events.txt",
-    "classifierFile": "data\\sujeto_1\\pipelines\\\\best_lda_ejecutado_comb1.pkl",
+    "events_file": "data\\sujeto_11\\eegdata\\sesion0\\sn0_ts0_ct0_r1_events.txt",
+    "classifierFile": "data\\sujeto_11\\pipelines\\best_lda_ejecutado_comb2.pkl",
     "customPipeline": false,
-    "pipelineFile": "data\\sujeto_1\\pipelines\\\\best_lda_ejecutado_comb1.pkl"
+    "pipelineFile": "data\\sujeto_11\\pipelines\\best_lda_ejecutado_comb2.pkl"
 }
