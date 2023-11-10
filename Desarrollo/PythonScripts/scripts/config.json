@@ -49,6 +49,6 @@
     "classifierFile": "data\\sujeto_11\\pipelines\\best_lda_ejecutado_comb2.pkl",
     "customPipeline": false,
     "pipelineFile": "data\\sujeto_11\\pipelines\\best_lda_ejecutado_comb2.pkl",
-    "arduinoFlag": "NO",
+    "arduinoFlag": "SI",
     "arduinoPort": "COM7"
 }

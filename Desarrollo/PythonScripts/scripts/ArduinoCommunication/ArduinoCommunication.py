@@ -102,6 +102,15 @@ class ArduinoCommunication:
         self._estadoRobot = self.sendMessage(self.systemControl)
         self.close() #cerramos comunicación serie
 
+    def checkConnection(self):
+        """función para chequear si estamos conectados al puerto serial con arduino"""
+        ##intentamos leer con self.dev.read() usando try/except
+        try:
+            self.dev.read()
+            return True
+        except:
+            return False
+
     def getRobotStatus(self):
         """Obtenemos el estado del robot"""
         return self._estadoRobot
