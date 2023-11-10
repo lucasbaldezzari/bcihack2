@@ -516,7 +516,9 @@ class Core(QMainWindow):
 
     def onlineThread(self):
         """Función para hilo de lectura de EEG durante fase de entrenamiento.
-        Sólo se almacena trozos de EEG correspondientes a la suma de startTrainingTime y cueDuration.
+        Para esta versión se propone que durante la sesión online se entre al onlineThread()
+        en el tiempo seteado en self.lenToClassify, es decir, en el tiempo que se desea obtener un valor
+        de clasificación.
         """
 
         # logging.info("Iniciamos fase cue del trial")
@@ -716,13 +718,13 @@ class Core(QMainWindow):
         self.makeAndMixTrials() #generamos y mezclamos los trials de la sesión
         self.checkTrialsTimer.start()
 
-        if self.typeSesion == 0:
+        if self.typeSesion == 0: #sesión de Entrenamiento
             print("Inicio de sesión de entrenamiento")
             logging.info("Inicio de sesión de entrenamiento")
             self.trainingEEGThreadTimer.start() #iniciamos timer para controlar hilo entrenamiento
             self.session_started = True
             
-        elif self.typeSesion == 1:
+        elif self.typeSesion == 1: #sesión de Calibración
             print("Inicio de sesión de Feedback")
             logging.info("Inicio de sesión de Feedback")
             self.setPipeline() #seteamos el pipeline
@@ -730,31 +732,31 @@ class Core(QMainWindow):
             self.feedbackThreadTimer.start() #iniciamos timer para controlar hilo calibración
             self.session_started = True
 
-        elif self.typeSesion == 2:
+        elif self.typeSesion == 2: #sesión Online
             print("Inicio de sesión Online")
             ##Cerramos indicatorAPP ya que no se usa en modo Online
             self.indicatorAPP.close()
 
-            ##usamos try/except para chequear si tenemos comunicación con arduino
-            try:
-                ## inicializamos la clase ArduinoCommunication
-                self.arduino = ArduinoCommunication(port = self.serialPort)
-            except Exception as e:
-                print(e)
-                logging.error(e)
-                print("No se pudo establecer comunicación con arduino")
-                self.closeApp()
-                raise Exception("No se pudo establecer comunicación con arduino")
+            # ##usamos try/except para chequear si tenemos comunicación con arduino
+            # try:
+            #     ## inicializamos la clase ArduinoCommunication
+            #     self.arduino = ArduinoCommunication(port = self.serialPort)
+            # except Exception as e:
+            #     print(e)
+            #     logging.error(e)
+            #     print("No se pudo establecer comunicación con arduino")
+            #     self.closeApp()
+            #     raise Exception("No se pudo establecer comunicación con arduino")
             
-            time.sleep(1) #esperamos 1 segundo
+            # time.sleep(1) #esperamos 1 segundo
 
-            ##chequeamos que tenemos comunicación con arduino. Sólo nos comunicamos con arduino en la sesión online
-            self.arduino.iniSesion()
+            # ##chequeamos que tenemos comunicación con arduino. Sólo nos comunicamos con arduino en la sesión online
+            # self.arduino.iniSesion()
             
-            # self.setPipeline() #seteamos el pipeline5
-            # self.sanityChecks() ## sanity check
+            self.setPipeline() #seteamos el pipeline5
+            self.sanityChecks() ## sanity check
             self.onlineThreadTimer.start() #iniciamos timer para controlar hilo calibración
-            # self.session_started = True
+            self.session_started = True
             pass
 
     def closeApp(self):
