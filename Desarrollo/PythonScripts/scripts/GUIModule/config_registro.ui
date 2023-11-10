@@ -1025,8 +1025,8 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
    <widget class="QLabel" name="label_31">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>330</y>
+      <x>370</x>
+      <y>370</y>
       <width>106</width>
       <height>25</height>
      </rect>
@@ -1050,8 +1050,8 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
    <widget class="QComboBox" name="desplegable_pipeline">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>330</y>
+      <x>490</x>
+      <y>370</y>
       <width>50</width>
       <height>23</height>
      </rect>
@@ -1070,12 +1070,12 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     </property>
     <item>
      <property name="text">
-      <string>Si</string>
+      <string>SI</string>
      </property>
     </item>
     <item>
      <property name="text">
-      <string>No</string>
+      <string>NO</string>
      </property>
     </item>
    </widget>
@@ -1083,8 +1083,8 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>370</y>
-      <width>111</width>
+      <y>280</y>
+      <width>121</width>
       <height>25</height>
      </rect>
     </property>
@@ -1107,9 +1107,9 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
    <widget class="QLineEdit" name="line_pipeline">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>370</y>
-      <width>411</width>
+      <x>160</x>
+      <y>280</y>
+      <width>391</width>
       <height>25</height>
      </rect>
     </property>
@@ -1158,7 +1158,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>70</y>
+      <y>60</y>
       <width>135</width>
       <height>33</height>
      </rect>
@@ -1183,7 +1183,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>270</x>
-      <y>130</y>
+      <y>110</y>
       <width>171</width>
       <height>20</height>
      </rect>
@@ -1208,7 +1208,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>180</y>
+      <y>200</y>
       <width>141</width>
       <height>21</height>
      </rect>
@@ -1233,7 +1233,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>230</y>
+      <y>240</y>
       <width>114</width>
       <height>20</height>
      </rect>
@@ -1258,7 +1258,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>280</y>
+      <y>370</y>
       <width>234</width>
       <height>20</height>
      </rect>
@@ -1283,7 +1283,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>260</x>
-      <y>280</y>
+      <y>370</y>
       <width>81</width>
       <height>23</height>
      </rect>
@@ -1340,7 +1340,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>80</y>
+      <y>70</y>
       <width>391</width>
       <height>25</height>
      </rect>
@@ -1365,7 +1365,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>460</x>
-      <y>130</y>
+      <y>110</y>
       <width>91</width>
       <height>25</height>
      </rect>
@@ -1390,7 +1390,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>180</y>
+      <y>200</y>
       <width>391</width>
       <height>25</height>
      </rect>
@@ -1415,7 +1415,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>230</y>
+      <y>240</y>
       <width>391</width>
       <height>25</height>
      </rect>
@@ -1440,7 +1440,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>160</x>
-      <y>130</y>
+      <y>110</y>
       <width>81</width>
       <height>25</height>
      </rect>
@@ -1465,7 +1465,7 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>130</y>
+      <y>110</y>
       <width>141</width>
       <height>20</height>
      </rect>
@@ -1484,6 +1484,213 @@ font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
     </property>
     <property name="text">
      <string>Tiempo clasificador</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_34">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>150</y>
+      <width>141</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>MS Shell Dlg 2</family>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string>Umbral clasificación</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="umbralClassifier">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>150</y>
+      <width>81</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>MS Shell Dlg 2</family>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_35">
+    <property name="geometry">
+     <rect>
+      <x>270</x>
+      <y>150</y>
+      <width>191</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>MS Shell Dlg 2</family>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string>Número de clasificaciones</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="numberOfClassifications">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>150</y>
+      <width>91</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>MS Shell Dlg 2</family>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_36">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>320</y>
+      <width>121</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>MS Shell Dlg 2</family>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string>¿Arduino?</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="arduinoFlag">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>320</y>
+      <width>50</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>MS Shell Dlg 2</family>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <item>
+     <property name="text">
+      <string>NO</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>SI</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="label_37">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>320</y>
+      <width>121</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>MS Shell Dlg 2</family>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string>Puerto Arduino</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="arduinoPort">
+    <property name="geometry">
+     <rect>
+      <x>420</x>
+      <y>320</y>
+      <width>131</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>MS Shell Dlg 2</family>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <italic>false</italic>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color: rgb(255, 255, 255);</string>
+    </property>
+    <property name="text">
+     <string>COM7</string>
     </property>
    </widget>
   </widget>

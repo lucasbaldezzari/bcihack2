@@ -148,6 +148,9 @@ class Core(QMainWindow):
 
         self.session_started = False #Flag para indicar si se inició la sesión
 
+        self.prediction = -1 #iniciamos el valor de predicción
+        self.probas = [0 for i in range(len(self.classes))]
+
         #Configuramos timers del Core
         """
         Funcionamiento QTimer
@@ -238,6 +241,8 @@ class Core(QMainWindow):
         self.__startingTime = self.startingTimes[1]
 
         self.classifyEEGTimer.setInterval(int(self.lenToClassify*1000)) #Tiempo en milisegundos
+
+        self.probas = [0 for i in range(len(self.classes))]
 
         #actualizamos el diccionario
         self.configParameters = newParameters
@@ -537,7 +542,8 @@ class Core(QMainWindow):
         # self._dataToClasify = self.eeglogger.getData(self.lenForClassifier, removeDataFromBuffer=False)[self.channels]
         # self.classifyEEGTimer.start() #inicio el timer para clasificar el EEG
 
-        self.onlineThreadTimer.setInterval(int((self.cueDuration + self.lenToClassify*0.05) * 1000))
+        self.onlineThreadTimer.setInterval(int(self.lenToClassify * 1000))
+        print("Dentro de onlineThread")
         #La suma de self.cueDuration + self.lenToClassify*0.05 es para darle un pequeño margen de tiempo
 
     def showGUIAPPs(self):

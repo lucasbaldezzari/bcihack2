@@ -33,7 +33,9 @@ class ConfigAPP(QDialog):
             self.line_tiempo_accion.setText(f'{configParameters["cueDuration"]}')
             self.line_tiempo_descanso.setText(f'{configParameters["finishDuration"]}')
             self.line_tiempoClasif.setText(f'{configParameters["lenToClassify"]}')
-            self.line_ventanaClasif.setText(f'{configParameters["lenForClassifier"]}') #nuevo parámetro
+            self.line_ventanaClasif.setText(f'{configParameters["lenForClassifier"]}')
+            self.umbralClassifier.setText(f'{configParameters["umbralClassifier"]}')
+            self.numberOfClassifications.setText(f'{configParameters["numberOfClassifications"]}')
             self.line_sujeto.setText(f'{configParameters["subjectName"]}')
             self.line_sesion.setText(f'{configParameters["sesionNumber"]}')
 
@@ -56,11 +58,14 @@ class ConfigAPP(QDialog):
             self.line_clasificador.setText(f'{configParameters["classifierFile"]}')
 
             if configParameters["customPipeline"] == True:
-                self.desplegable_pipeline.setCurrentText('Si')
+                self.desplegable_pipeline.setCurrentText('SI')
             else:
-                self.desplegable_pipeline.setCurrentText('No')
+                self.desplegable_pipeline.setCurrentText('NO')
 
             self.line_pipeline.setText(f'{configParameters["pipelineFile"]}')
+
+            self.arduinoFlag.setCurrentText(f'{configParameters["arduinoFlag"]}')
+            self.arduinoPort.setText(f'{configParameters["arduinoPort"]}')
 
         return configParameters
 
@@ -77,6 +82,8 @@ class ConfigAPP(QDialog):
             configParameters["finishDuration"] = float(self.line_tiempo_descanso.text())
             configParameters["lenToClassify"] = float(self.line_tiempoClasif.text())
             configParameters["lenForClassifier"] = float(self.line_ventanaClasif.text())
+            configParameters["umbralClassifier"] = float(self.umbralClassifier.text())
+            configParameters["numberOfClassifications"] = float(self.numberOfClassifications.text())
             configParameters["subjectName"] = self.line_sujeto.text()
             configParameters["sesionNumber"] = int(self.line_sesion.text())
 
@@ -100,12 +107,15 @@ class ConfigAPP(QDialog):
             configParameters["events_file"] = self.events_file.text()
             configParameters["classifierFile"] = self.line_clasificador.text()
 
-            if self.desplegable_extractor.currentText() == 'Si':
+            if self.desplegable_extractor.currentText() == 'SI':
                 configParameters["customPipeline"] = True
             else:
                 configParameters["customPipeline"] = False
 
             configParameters["pipelineFile"] = self.line_pipeline.text()
+
+            configParameters["arduinoFlag"] = self.arduinoFlag.currentText()
+            configParameters["arduinoPort"] = self.arduinoPort.text()
 
             json.dump(configParameters, fp, indent = 4)
 
@@ -115,11 +125,8 @@ class ConfigAPP(QDialog):
         return self.configParameters
 
     def Inicio(self):
-
         self.Guardar()
-
         self.hide()
-
         self.is_open = False
     
     def Informacion(self):

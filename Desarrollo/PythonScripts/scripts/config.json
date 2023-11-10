@@ -20,6 +20,8 @@
     "finishDuration": 3.0,
     "lenToClassify": 0.5,
     "lenForClassifier": 4.0,
+    "umbralClassifier": 0.7,
+    "numberOfClassifications": 4.0,
     "subjectName": "PRUEBA",
     "sesionNumber": 2,
     "boardParams": {
@@ -32,7 +34,7 @@
             5,
             8
         ],
-        "serialPort": "COM7"
+        "serialPort": "COM5"
     },
     "filterParameters": {
         "lowcut": 8.0,
@@ -46,5 +48,7 @@
     "events_file": "data\\sujeto_11\\eegdata\\sesion0\\sn0_ts0_ct0_r1_events.txt",
     "classifierFile": "data\\sujeto_11\\pipelines\\best_lda_ejecutado_comb2.pkl",
     "customPipeline": false,
-    "pipelineFile": "data\\sujeto_11\\pipelines\\best_lda_ejecutado_comb2.pkl"
+    "pipelineFile": "data\\sujeto_11\\pipelines\\best_lda_ejecutado_comb2.pkl",
+    "arduinoFlag": "NO",
+    "arduinoPort": "COM7"
 }
