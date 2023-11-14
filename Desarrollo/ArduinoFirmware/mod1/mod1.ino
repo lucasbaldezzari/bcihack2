@@ -131,6 +131,6 @@ void sendCommand()
 {
     estado = !estado;
     // digitalWrite(LEDTesteo,estado);
-    byte mensaje = (incDataFromPC[0])|(incDataFromPC[1]<<1)|(incDataFromPC[2]<<2);//Armamos el byte
+    byte mensaje = (incDataFromPC[0])|(incDataFromPC[1]<<1));//Armamos el byte
     BTMaestro.write(mensaje); //enviamos byte por bluetooth
 }

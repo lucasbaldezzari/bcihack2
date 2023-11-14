@@ -175,20 +175,21 @@ class Core(QMainWindow):
 
         #timer para controlar las fases de cada trial
         self.trainingEEGThreadTimer = QTimer() #Timer para control de tiempo de las fases de trials
-        self.trainingEEGThreadTimer.setInterval(int(self.startingTimes[1]*1000)) #1 milisegundo sólo para el inicio de sesión.
+        self.trainingEEGThreadTimer.setInterval(int(self.startingTimes[1]*1000))
         self.trainingEEGThreadTimer.timeout.connect(self.trainingEEGThread)
 
         self.feedbackThreadTimer = QTimer() #Timer para control de tiempo de las fases de trials
-        self.feedbackThreadTimer.setInterval(int(self.startingTimes[1]*1000)) #1 milisegundo sólo para el inicio de sesión.
+        self.feedbackThreadTimer.setInterval(int(self.startingTimes[1]*1000))
         self.feedbackThreadTimer.timeout.connect(self.feedbackThread)
 
         self.onlineThreadTimer = QTimer() #Timer para control de tiempo de las fases de trials
-        self.onlineThreadTimer.setInterval(int(self.startingTimes[1]*1000)) #1 milisegundo sólo para el inicio de sesión.
+        self.onlineThreadTimer.setInterval(int(1000))
         self.onlineThreadTimer.timeout.connect(self.onlineThread)
 
         #timer para controlar el tiempo para clasificar el EEG
         self.classifyEEGTimer = QTimer()
         self.classifyEEGTimer.setInterval(int(self.lenToClassify*1000)) #Tiempo en milisegundos
+        self.classifyEEGTimerStarted = False
         self.classifyEEGTimer.timeout.connect(self.classifyEEG)
 
         #timer para controlar la app de configuración
@@ -504,14 +505,16 @@ class Core(QMainWindow):
 
             # Tomo los datos de EEG de la duración del cue y los guardo en self._dataToClasify 
             # Los datos dentro de self._dataToClasify se van actualizando en cada entrada a la función classifyEEG
-            # self._dataToClasify = self.eeglogger.getData(self.cueDuration, removeDataFromBuffer=False)[self.channels]
             self._dataToClasify = self.eeglogger.getData(self.lenForClassifier, removeDataFromBuffer=False)[self.channels]
-            self.classifyEEGTimer.start() #inicio el timer para clasificar el EEG
+            if not self.classifyEEGTimerStarted:
+                self.classifyEEGTimer.start() #inicio el timer para clasificar el EEG
+                self.classifyEEGTimerStarted = True
             self.feedbackThreadTimer.setInterval(int((self.cueDuration + self.lenToClassify*0.05) * 1000))
             #La suma de self.cueDuration + self.lenToClassify*0.05 es para darle un pequeño margen de tiempo
 
         elif self.__trialPhase == 2:
             self.classifyEEGTimer.stop() #detenemos el timer de clasificación
+            self.classifyEEGTimerStarted = False
             self.indicatorAPP.showBar(False)
             logging.info("Iniciamos fase de finalización del trial")
             self.indicatorAPP.update_order("Fin de tarea...")
@@ -535,23 +538,13 @@ class Core(QMainWindow):
         de clasificación.
         """
 
-        # logging.info("Iniciamos fase cue del trial")
-        # self.indicatorAPP.showCruz(False)
-        # claseActual = self.trialsSesion[self.__trialNumber]
-        # classNameActual = self.clasesNames[self.classes.index(claseActual)]
-        # self.indicatorAPP.update_order(f"{classNameActual}", fontsize = 46,
-        #                                 background = "rgb(38,38,38)", font_color = "white")
-        # self.indicatorAPP.showBar(True)
-        # self.indicatorAPP.actualizar_barra(0) #iniciamos la barra en 0%
-        # self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
+        if self.session_started and not self.classifyEEGTimerStarted:
+            self.classifyEEGTimer.start() #inicio el timer para clasificar el EEG
+            self.classifyEEGTimerStarted = True
 
-        # # Tomo los datos de EEG de la duración del cue y los guardo en self._dataToClasify 
-        # # Los datos dentro de self._dataToClasify se van actualizando en cada entrada a la función classifyEEG
-        # # self._dataToClasify = self.eeglogger.getData(self.cueDuration, removeDataFromBuffer=False)[self.channels]
-        # self._dataToClasify = self.eeglogger.getData(self.lenForClassifier, removeDataFromBuffer=False)[self.channels]
-        # self.classifyEEGTimer.start() #inicio el timer para clasificar el EEG
+        ##me quedo con el índice del valor más alto de self.probas que es un numpy array
+        print(print(self.probas.shape))
 
-        self.onlineThreadTimer.setInterval(int(self.lenToClassify * 1000))
         if self.arduino.checkConnection(): #chequeamos si el arduino está conectado
             ##enviamos un comando (a implementar)
             pass
@@ -618,10 +611,8 @@ class Core(QMainWindow):
         trialToPredict = self._dataToClasify.reshape(1,channels,samples)
         self.prediction = self.pipeline.predict(trialToPredict) #aplicamos data al pipeline
         self.probas = self.pipeline.predict_proba(trialToPredict) #obtenemos las probabilidades de cada clase
-
         #actualizo barras de probabilidad en supervision app
         self.supervisionAPP.update_propbars(self.probas[0])
-
         ## nos quedamos con la probabilida de la clase actual
         probaClaseActual = self.probas[0][self.classes.index(self.trialsSesion[self.__trialNumber])]
         self.indicatorAPP.actualizar_barra(probaClaseActual) #actualizamos la barra de probabilidad
@@ -718,8 +709,7 @@ class Core(QMainWindow):
                 raise Exception(mensaje)
         
         if self.arduinoFlag:
-            # Intentamos conectaros a Arduino
-            try:
+            try:# Intentamos conectaros a Arduino
                 ## inicializamos la clase ArduinoCommunication
                 self.arduino = ArduinoCommunication(port = self.arduinoPort)
                 time.sleep(0.5) #esperamos 0.5seg
@@ -729,8 +719,6 @@ class Core(QMainWindow):
                 print(e)
                 logging.error(e)
                 print("No se pudo establecer comunicación con arduino")
-                # self.closeApp()
-                # raise Exception("No se pudo establecer comunicación con arduino")
             
         logging.info("Sanity Check finalizado. Todo OK")
         print("Sanity Check finalizado. Todo OK")
