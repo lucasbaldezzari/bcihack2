@@ -1,7 +1,7 @@
 {
-    "typeSesion": 2,
-    "cueType": 0,
-    "ntrials": 5,
+    "typeSesion": 1,
+    "cueType": 1,
+    "ntrials": 15,
     "classes": [
         1,
         2,
@@ -20,12 +20,12 @@
     "finishDuration": 3.0,
     "lenToClassify": 0.5,
     "lenForClassifier": 4.0,
-    "umbralClassifier": 0.7,
+    "umbralClassifier": 0.5,
     "numberOfClassifications": 4.0,
-    "subjectName": "PRUEBA",
-    "sesionNumber": 2,
+    "subjectName": "sujeto_11",
+    "sesionNumber": 3,
     "boardParams": {
-        "boardName": "synthetic",
+        "boardName": "cyton",
         "channels": [
             1,
             2,
@@ -34,7 +34,7 @@
             5,
             8
         ],
-        "serialPort": "COM5"
+        "serialPort": "COM3"
     },
     "filterParameters": {
         "lowcut": 8.0,
@@ -49,6 +49,6 @@
     "classifierFile": "data\\sujeto_11\\pipelines\\best_lda_ejecutado_comb2.pkl",
     "customPipeline": false,
     "pipelineFile": "data\\sujeto_11\\pipelines\\best_lda_ejecutado_comb2.pkl",
-    "arduinoFlag": "SI",
+    "arduinoFlag": "NO",
     "arduinoPort": "COM7"
 }

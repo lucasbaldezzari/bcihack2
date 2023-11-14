@@ -1,0 +1,54 @@
+{
+    "typeSesion": 1,
+    "cueType": 0,
+    "ntrials": 1,
+    "classes": [
+        1,
+        2,
+        3
+    ],
+    "clasesNames": [
+        "Mano Izquierda",
+        "Mano Derecha",
+        "Rest"
+    ],
+    "startingTimes": [
+        3.0,
+        3.0
+    ],
+    "cueDuration": 4.0,
+    "finishDuration": 3.0,
+    "lenToClassify": 0.5,
+    "lenForClassifier": 4.0,
+    "umbralClassifier": 0.7,
+    "numberOfClassifications": 4.0,
+    "subjectName": "sujeto_11",
+    "sesionNumber": 0,
+    "boardParams": {
+        "boardName": "cyton",
+        "channels": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            8
+        ],
+        "serialPort": "COM3"
+    },
+    "filterParameters": {
+        "lowcut": 8.0,
+        "highcut": 12.0,
+        "notch_freq": 50.0,
+        "notch_width": 1.0,
+        "sample_rate": 250.0,
+        "axisToCompute": 2
+    },
+    "featureExtractorMethod": "welch",
+    "events_file": "data\\sujeto_11\\eegdata\\sesion0\\sn0_ts0_ct0_r1_events.txt",
+    "classifierFile": "data\\sujeto_11\\pipelines\\best_lda_ejecutado_comb2.pkl",
+    "customPipeline": false,
+    "pipelineFile": "data\\sujeto_11\\pipelines\\best_lda_ejecutado_comb2.pkl",
+    "arduinoFlag": "NO",
+    "arduinoPort": "COM7"
+}

@@ -1,0 +1,4 @@
+trialNumber,classNumber,className,prediction,probabilities,startingTime,cueDuration,finishDuration,trialTime,trialTime(legible)
+1,1,Mano Izquierda,5,[0. 0. 1.],3.0,4.0,3.0,1699965063.9273295,14/11/2023 09:31:03
+2,3,Rest,5,[0. 0. 1.],3.0,4.0,3.0,1699965074.071473,14/11/2023 09:31:14
+3,2,Mano Derecha,5,[0. 0. 1.],3.0,4.0,3.0,1699965084.1656883,14/11/2023 09:31:24

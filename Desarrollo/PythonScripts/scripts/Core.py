@@ -1,4 +1,4 @@
-from EEGLogger.EEGLogger import EEGLogger, setupBoard
+from EEGLogger.eegLogger import EEGLogger, setupBoard
 
 from SignalProcessor.Filter import Filter
 # from SignalProcessor.RavelTransformer import RavelTransformer
