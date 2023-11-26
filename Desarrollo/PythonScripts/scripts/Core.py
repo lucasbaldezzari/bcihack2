@@ -1,4 +1,4 @@
-from EEGLogger.eegLogger import EEGLogger, setupBoard
+from EEGLogger.EEGLogger import EEGLogger, setupBoard
 
 from SignalProcessor.Filter import Filter
 # from SignalProcessor.RavelTransformer import RavelTransformer
@@ -112,7 +112,11 @@ class Core(QMainWindow):
         self.cueDuration = configParameters["cueDuration"]
         self.finishDuration = configParameters["finishDuration"]
         self.lenToClassify = configParameters["lenToClassify"]
+        self.onlineCommandSendingTime = configParameters["onlineCommandSendingTime"]
+        self.numberOfRounds = configParameters["numberOfRounds"] #rondas para estimar la probabilidad de cada clase
+        self.numberOfRounds_Accum = 0
         self.lenForClassifier = configParameters["lenForClassifier"]
+        self.umbralClassifier = configParameters["umbralClassifier"] #umbral de probabilidad para enviar un comando
         self.subjectName = configParameters["subjectName"]
         self.sesionNumber = configParameters["sesionNumber"]
 
@@ -146,6 +150,7 @@ class Core(QMainWindow):
         self.arduinoFlag = 1 if configParameters["arduinoFlag"] == "SI" else 0
         self.arduinoPort = configParameters["arduinoPort"]
         self.arduino = None #Al iniciar no hay arduino conectado
+        self.comando = b'0'
 
         self.__trialPhase = 0 #0: Inicio, 1: Cue, 2: Finalización
         self.__trialNumber = 0 #Número de trial actual
@@ -183,7 +188,7 @@ class Core(QMainWindow):
         self.feedbackThreadTimer.timeout.connect(self.feedbackThread)
 
         self.onlineThreadTimer = QTimer() #Timer para control de tiempo de las fases de trials
-        self.onlineThreadTimer.setInterval(int(1000))
+        self.onlineThreadTimer.setInterval(int(self.onlineCommandSendingTime*1000))
         self.onlineThreadTimer.timeout.connect(self.onlineThread)
 
         #timer para controlar el tiempo para clasificar el EEG
@@ -217,7 +222,10 @@ class Core(QMainWindow):
         self.cueDuration = newParameters["cueDuration"]
         self.finishDuration = newParameters["finishDuration"]
         self.lenToClassify = newParameters["lenToClassify"]
+        self.onlineCommandSendingTime = newParameters["onlineCommandSendingTime"]
+        self.numberOfRounds = newParameters["numberOfRounds"]
         self.lenForClassifier = newParameters["lenForClassifier"]
+        self.umbralClassifier = newParameters["umbralClassifier"]
         self.subjectName = newParameters["subjectName"]
         self.sesionNumber = newParameters["sesionNumber"]
         self.boardParams = newParameters["boardParams"]
@@ -248,6 +256,7 @@ class Core(QMainWindow):
         self.__startingTime = self.startingTimes[1]
 
         self.classifyEEGTimer.setInterval(int(self.lenToClassify*1000)) #Tiempo en milisegundos
+        self.onlineThreadTimer.setInterval(int(self.onlineCommandSendingTime*1000))
 
         self.probas = [0 for i in range(len(self.classes))]
 
@@ -481,7 +490,7 @@ class Core(QMainWindow):
         """
 
         if self.__trialPhase == 0:
-            print(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
+            print(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}") 
             logging.info(f"Trial {self.__trialNumber + 1} de {len(self.trialsSesion)}")
             self.indicatorAPP.showCruz(True) #mostramos la cruz
             self.indicatorAPP.update_order("Fijar la mirada en la cruz...")
@@ -494,6 +503,7 @@ class Core(QMainWindow):
 
         elif self.__trialPhase == 1:
             logging.info("Iniciamos fase cue del trial")
+            self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
             self.indicatorAPP.showCruz(False)
             claseActual = self.trialsSesion[self.__trialNumber]
             classNameActual = self.clasesNames[self.classes.index(claseActual)]
@@ -501,8 +511,7 @@ class Core(QMainWindow):
                                               background = "rgb(38,38,38)", font_color = "white")
             self.indicatorAPP.showBar(True)
             self.indicatorAPP.actualizar_barra(0) #iniciamos la barra en 0%
-            self.__trialPhase = 2 # la siguiente fase es la de finalización del trial
-
+            
             # Tomo los datos de EEG de la duración del cue y los guardo en self._dataToClasify 
             # Los datos dentro de self._dataToClasify se van actualizando en cada entrada a la función classifyEEG
             self._dataToClasify = self.eeglogger.getData(self.lenForClassifier, removeDataFromBuffer=False)[self.channels]
@@ -537,18 +546,18 @@ class Core(QMainWindow):
         en el tiempo seteado en self.lenToClassify, es decir, en el tiempo que se desea obtener un valor
         de clasificación.
         """
+        
+        self._dataToClasify = self.eeglogger.getData(self.lenForClassifier, removeDataFromBuffer=False)[self.channels]
 
         if self.session_started and not self.classifyEEGTimerStarted:
             self.classifyEEGTimer.start() #inicio el timer para clasificar el EEG
             self.classifyEEGTimerStarted = True
 
-        ##me quedo con el índice del valor más alto de self.probas que es un numpy array
-        print(print(self.probas.shape))
+        if self.arduinoFlag and self.arduino.checkConnection():
+            self.arduino.sendMessage([b'1',self.comando])
 
-        if self.arduino.checkConnection(): #chequeamos si el arduino está conectado
-            ##enviamos un comando (a implementar)
-            pass
-
+        self.checkLastTrial()
+            
     def showGUIAPPs(self):
         """Función para configurar la sesión de entrenamiento usando self.confiAPP.
         """
@@ -601,22 +610,37 @@ class Core(QMainWindow):
         """
         newData = self.eeglogger.getData(self.lenToClassify, removeDataFromBuffer = False)[self.channels]
         samplesToRemove = int(self.lenToClassify*self.sample_rate) #muestras a eliminar del buffer interno de datos
-
         self._dataToClasify = np.roll(self._dataToClasify, -samplesToRemove, axis=1)
         self._dataToClasify[:, -samplesToRemove:] = newData
-
         channels, samples = self._dataToClasify.shape
-
         #camibamos la forma de los datos para que sea compatible con el modelo
         trialToPredict = self._dataToClasify.reshape(1,channels,samples)
         self.prediction = self.pipeline.predict(trialToPredict) #aplicamos data al pipeline
         self.probas = self.pipeline.predict_proba(trialToPredict) #obtenemos las probabilidades de cada clase
         #actualizo barras de probabilidad en supervision app
         self.supervisionAPP.update_propbars(self.probas[0])
-        ## nos quedamos con la probabilida de la clase actual
-        probaClaseActual = self.probas[0][self.classes.index(self.trialsSesion[self.__trialNumber])]
-        self.indicatorAPP.actualizar_barra(probaClaseActual) #actualizamos la barra de probabilidad
-        
+
+        if self.typeSesion == 1:
+            ## nos quedamos con la probabilida de la clase actual
+            probaClaseActual = self.probas[0][self.classes.index(self.trialsSesion[self.__trialNumber])]
+            self.indicatorAPP.actualizar_barra(probaClaseActual) #actualizamos la barra de probabilidad
+
+        elif self.typeSesion == 2:
+            ##nos quedamos con el máximo valor dentro de self.probas
+            max_prob = max(self.probas[0])
+            ##obtenemos el índice del valor máximo
+            index_max_prob = np.where(self.probas[0] == max_prob)[0][0]
+            ##me quedo con el valor de la clase correspondiente al índice
+            ClaseActual = self.classes[index_max_prob]
+            self.comando = str(ClaseActual).encode() if max_prob >= self.umbralClassifier else b'0'
+
+            ##aumentamos en 1 el acumulador de rondas
+            self.numberOfRounds_Accum += 1
+            if self.numberOfRounds_Accum == self.numberOfRounds:
+                self.__trialNumber += 1
+                print(f"Trial {self.__trialNumber} de {len(self.trialsSesion)}")
+                self.numberOfRounds_Accum = 0
+
     def start(self):
         """Método para iniciar la sesión"""
         print(f"Preparando sesión {self.sesionNumber} del sujeto {self.subjectName}")
@@ -719,6 +743,7 @@ class Core(QMainWindow):
                 print(e)
                 logging.error(e)
                 print("No se pudo establecer comunicación con arduino")
+                self.arduinoFlag = 0
             
         logging.info("Sanity Check finalizado. Todo OK")
         print("Sanity Check finalizado. Todo OK")
@@ -730,8 +755,10 @@ class Core(QMainWindow):
         """
         self.iniSesionTimer.stop() #detenemos timer de inicio de sesión
 
-        self.setFolders(rootFolder = self.rootFolder) #configuramos las carpetas de almacenamiento
-        self.saveConfigParameters(self.eegStoredFolder+self.eegFileName[:-4]+"_config.json") #guardamos los parámetros de configuración
+        ##si el tipo de sesión no es la 2, generamos setFolders
+        if self.typeSesion != 2:
+            self.setFolders(rootFolder = self.rootFolder) #configuramos las carpetas de almacenamiento
+            self.saveConfigParameters(self.eegStoredFolder+self.eegFileName[:-4]+"_config.json") #guardamos los parámetros de configuración
         
         self.setEEGLogger() #seteamos EEGLogger
         self.makeAndMixTrials() #generamos y mezclamos los trials de la sesión

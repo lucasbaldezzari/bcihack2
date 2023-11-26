@@ -16,7 +16,7 @@ class ArduinoCommunication:
         Constructor del objeto ArduinoCommunication
     """
 
-    def __init__(self, port, baudrate = 19200, commands = [b'1',b'2',b'3',b'4',b'5'], timeout = 1, write_timeout = 1):
+    def __init__(self, port, baudrate = 19200, commands = [b'1',b'2',b'3',b'4',b'5'], timeout = 0, write_timeout = 0):
         """
         Constructor del objeto ArduinoCommunication
 

@@ -33,9 +33,10 @@ class ConfigAPP(QDialog):
             self.line_tiempo_accion.setText(f'{configParameters["cueDuration"]}')
             self.line_tiempo_descanso.setText(f'{configParameters["finishDuration"]}')
             self.line_tiempoClasif.setText(f'{configParameters["lenToClassify"]}')
+            self.onlineCommandSendingTime.setText(f'{configParameters["onlineCommandSendingTime"]}')
             self.line_ventanaClasif.setText(f'{configParameters["lenForClassifier"]}')
             self.umbralClassifier.setText(f'{configParameters["umbralClassifier"]}')
-            self.numberOfClassifications.setText(f'{configParameters["numberOfClassifications"]}')
+            self.numberOfRounds.setText(f'{configParameters["numberOfRounds"]}')
             self.line_sujeto.setText(f'{configParameters["subjectName"]}')
             self.line_sesion.setText(f'{configParameters["sesionNumber"]}')
 
@@ -81,9 +82,10 @@ class ConfigAPP(QDialog):
             configParameters["cueDuration"]= float(self.line_tiempo_accion.text())
             configParameters["finishDuration"] = float(self.line_tiempo_descanso.text())
             configParameters["lenToClassify"] = float(self.line_tiempoClasif.text())
+            configParameters["onlineCommandSendingTime"] = float(self.onlineCommandSendingTime.text())
             configParameters["lenForClassifier"] = float(self.line_ventanaClasif.text())
             configParameters["umbralClassifier"] = float(self.umbralClassifier.text())
-            configParameters["numberOfClassifications"] = float(self.numberOfClassifications.text())
+            configParameters["numberOfRounds"] = float(self.numberOfRounds.text())
             configParameters["subjectName"] = self.line_sujeto.text()
             configParameters["sesionNumber"] = int(self.line_sesion.text())
 
