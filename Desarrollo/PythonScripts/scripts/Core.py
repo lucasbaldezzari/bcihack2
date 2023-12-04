@@ -363,7 +363,7 @@ class Core(QMainWindow):
         print("Iniciando streaming de EEG...")
         logging.info("Iniciando streaming de EEG...")
 
-        channels_names = self.eeglogger.board.get_eeg_channels(board_id)
+        # channels_names = self.eeglogger.board.get_eeg_channels(board_id)
 
         if startStreaming:
             self.eeglogger.startStreaming()#iniciamos streaming de EEG
@@ -410,10 +410,26 @@ class Core(QMainWindow):
         Se genera un numpy array de valores correspondiente a cada clase y se mezclan.
         
         Retorna:
-            -trialsSesion (list): numpyarray con los trials de la sesión."""
+            -trialsSesion (list): numpyarray con los trials de la sesión.
+            
+        VERSIONES FUTURAS:
+        Implementar un generador de trials para que no sea necesario generar todos los trials de una vez.  
+
+        Ejemplo:
+
+        # def makeAndMixTrials(self):
+                trials = np.array([[i] * self.ntrials for i in self.classes]).ravel()
+        #       np.random.shuffle(trials)
+        #       for trial in trials:
+        #           yield trial
+
+        # newClass = getNewClass(ntrials, classes) 
+        """
 
         self.trialsSesion = np.array([[i] * self.ntrials for i in self.classes]).ravel()
         random.shuffle(self.trialsSesion)
+
+
 
     def checkLastTrial(self):
         """Función para chequear si se alcanzó el último trial de la sesión.
@@ -624,6 +640,17 @@ class Core(QMainWindow):
             ## nos quedamos con la probabilida de la clase actual
             probaClaseActual = self.probas[0][self.classes.index(self.trialsSesion[self.__trialNumber])]
             self.indicatorAPP.actualizar_barra(probaClaseActual) #actualizamos la barra de probabilidad
+            max_prob = max(self.probas[0])
+
+            if max_prob >= self.umbralClassifier:
+                index_max_prob = np.where(self.probas[0] == max_prob)[0][0]
+                ClaseActual = self.classes[index_max_prob]
+                self.comando = str(ClaseActual).encode() if max_prob >= self.umbralClassifier else b'0'
+                # if self.arduinoFlag and self.arduino.checkConnection():
+                if ClaseActual == 1: #mano izquierda
+                    self.arduino.sendMessage([b'5'])
+                if ClaseActual == 2: #mano derecha
+                    self.arduino.sendMessage([b'6'])
 
         elif self.typeSesion == 2:
             ##nos quedamos con el máximo valor dentro de self.probas
@@ -639,6 +666,7 @@ class Core(QMainWindow):
             if self.numberOfRounds_Accum == self.numberOfRounds:
                 self.__trialNumber += 1
                 print(f"Trial {self.__trialNumber} de {len(self.trialsSesion)}")
+                print(self.probas)
                 self.numberOfRounds_Accum = 0
 
     def start(self):
@@ -710,14 +738,16 @@ class Core(QMainWindow):
         ## Este array representa un trial de EEG
         trial = np.ones((1, n_channels, classify_samples), dtype=np.int8)
 
-        try:
-            self.pipeline.predict(trial)
-        except ValueError as e:
-            self.closeApp()
-            print(e)
-            mensaje = "Compruebe que la cantidad de canales a usar se correspondan con la cantidad de canales usada durante el entrenamiento del clasificador"
-            logging.error(mensaje)
-            raise Exception(mensaje)
+        # try:
+        #     print("******************")
+        #     print(trial.shape)
+        #     self.pipeline.predict(trial)
+        # except ValueError as e:
+        #     self.closeApp()
+        #     print(e)
+        #     mensaje = "Compruebe que la cantidad de canales a usar se correspondan con la cantidad de canales usada durante el entrenamiento del clasificador"
+        #     logging.error(mensaje)
+        #     raise Exception(mensaje)
         
         ##chequeamos si self.pipeline posee el método predict_proba
         if not hasattr(self.pipeline, "predict_proba"):

@@ -13,8 +13,8 @@
 char uno = 1;
 byte backMensaje = 0b00000000; 
 
-const char inBuffDataFromPC = 2; //máximo valor del buffer de entrada
-unsigned char incDataFromPC[2]; //variable para almacenar datos provenientes de la PC
+const char inBuffDataFromPC = 1; //máximo valor del buffer de entrada
+unsigned char incDataFromPC[1]; //variable para almacenar datos provenientes de la PC
 char bufferIndex = 0;
 bool sendDataFlag = 0;
 bool newMessage = false;
@@ -104,7 +104,7 @@ El comando a realizar en base al número se especifica en el Módulo 2.
   switch(bufferIndex)
   {
     case 0:
-      if (incDataFromPC[bufferIndex] == 1) digitalWrite(LEDTesteo,1);
+      if (incDataFromPC[bufferIndex] == 6) digitalWrite(LEDTesteo,1);
       else digitalWrite(LEDTesteo,0);
       break;
     case 1:
@@ -118,7 +118,7 @@ El comando a realizar en base al número se especifica en el Módulo 2.
 
   if (bufferIndex >= inBuffDataFromPC) //hemos recibido todos los bytes desde la PC
   {
-    // sendCommand(); //Si se alcanza el tamaño del buffer, se envían los datos a M2 por Bluetooth
+    sendCommand(); //Si se alcanza el tamaño del buffer, se envían los datos a M2 por Bluetooth
     bufferIndex = 0;
   }
 };
@@ -129,8 +129,8 @@ Función: sendCommand()
 */
 void sendCommand()
 {
-    estado = !estado;
-    // digitalWrite(LEDTesteo,estado);
-    byte mensaje = (incDataFromPC[0])|(incDataFromPC[1]<<1));//Armamos el byte
-    BTMaestro.write(mensaje); //enviamos byte por bluetooth
+    // // estado = !estado;
+    // // digitalWrite(LEDTesteo,estado);
+    // byte mensaje = incDataFromPC[1];//Armamos el byte
+    // BTMaestro.write(mensaje); //enviamos byte por bluetooth
 }

@@ -1,7 +1,7 @@
 {
     "typeSesion": 1,
     "cueType": 1,
-    "ntrials": 10,
+    "ntrials": 5,
     "classes": [
         1,
         2
@@ -16,15 +16,15 @@
     ],
     "cueDuration": 4.0,
     "finishDuration": 3.0,
-    "lenToClassify": 1.0,
+    "lenToClassify": 0.5,
     "onlineCommandSendingTime": 1.0,
-    "lenForClassifier": 4.0,
-    "umbralClassifier": 0.8,
+    "lenForClassifier": 3.5,
+    "umbralClassifier": 0.7,
     "numberOfRounds": 4.0,
-    "subjectName": "prueba",
-    "sesionNumber": 6,
+    "subjectName": "sujeto_11",
+    "sesionNumber": 5,
     "boardParams": {
-        "boardName": "cyton",
+        "boardName": "synthetic",
         "channels": [
             1,
             2,
@@ -45,9 +45,9 @@
     },
     "featureExtractorMethod": "welch",
     "events_file": "data\\sujeto_11\\eegdata\\sesion1\\sn1_ts0_ct1_r1_events.txt",
-    "classifierFile": "data\\sujeto_11\\pipelines\\best_lda_imaginado_comb1.pkl",
+    "classifierFile": "data\\sujeto_11\\pipelines\\best_lda_imaginado_comb1_avgpow.pkl",
     "customPipeline": false,
-    "pipelineFile": "data\\sujeto_11\\pipelines\\best_lda_imaginado_comb1.pkl",
+    "pipelineFile": "data\\sujeto_11\\pipelines\\best_lda_imaginado_comb1_avgpow.pkl",
     "arduinoFlag": "SI",
-    "arduinoPort": "COM8"
+    "arduinoPort": "COM7"
 }

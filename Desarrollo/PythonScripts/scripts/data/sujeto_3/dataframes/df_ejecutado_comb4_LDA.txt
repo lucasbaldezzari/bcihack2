@@ -1,0 +1,5 @@
+	Accuracy	Precision	Recall	F1-Score
+comb1	60.0	0.62	0.6	0.58
+comb2	27.0	0.26	0.27	0.22
+comb3	25.0	0.25	0.25	0.25
+comb4	21.0	0.21	0.22	0.21

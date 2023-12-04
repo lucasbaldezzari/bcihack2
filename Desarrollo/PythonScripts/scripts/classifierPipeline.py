@@ -28,8 +28,8 @@ import pickle
 import os
 
 ### ********** Cargamos los datos **********
-sujeto = "sujeto_1" #4 no, 5 no
-tipoTarea = "ejecutado" #imaginado
+sujeto = "sujeto_11" #4 no, 5 no
+tipoTarea = "imaginado" #imaginado
 ct = 0 if tipoTarea == "ejecutado" else 1 #0 ejecutado, 1 imaginado
 comb = 1
 r = 1
@@ -82,7 +82,8 @@ eeg_train, eeg_test, labels_train, labels_test = train_test_split(trials, labels
 fm = 250. #frecuencia de muestreo
 filter = Filter(lowcut=8, highcut=18, notch_freq=50.0, notch_width=2, sample_rate=fm, axisToCompute=2, padlen=None, order=4)
 #Creamos un CSPMulticlass - Método ovo (one vs one)
-cspmulticlass = CSPMulticlass(n_components=2, method = "ovo", n_classes = len(np.unique(labels)), reg = 0.01)
+cspmulticlass = CSPMulticlass(n_components=2, method = "ova", n_classes = len(np.unique(labels)), reg = 0.01,
+                               transform_into = "average_power")
 featureExtractor = FeatureExtractor(method = "welch", sample_rate = fm, axisToCompute=2, band_values=[8,12])
 ravelTransformer = RavelTransformer()
 
@@ -94,32 +95,34 @@ lda = LDA() #instanciamos el clasificador LDA
 pipeline_lda = Pipeline([
     ('pasabanda', filter),
     ('cspmulticlase', cspmulticlass),
-    ('featureExtractor', featureExtractor),
-    ('ravelTransformer', ravelTransformer),
+    # ('featureExtractor', featureExtractor),
+    # ('ravelTransformer', ravelTransformer),
     ('lda', lda)
 ])
+
 
 ### ********** Creamos la grilla de hiperparámetros **********
 
 param_grid_lda = {
-    'pasabanda__lowcut': [5,8],
-    'pasabanda__highcut': [12,18],
+    'pasabanda__lowcut': [8],
+    'pasabanda__highcut': [18],
     'pasabanda__notch_freq': [50.0],
-    'cspmulticlase__n_components': [2],
-    'cspmulticlase__method': ["ovo"],
+    'cspmulticlase__n_components': [6],
+    'cspmulticlase__method': ["ova"],
     'cspmulticlase__n_classes': [len(np.unique(labels))],
     'cspmulticlase__reg': [0.01],
     'cspmulticlase__log': [None],
+    'cspmulticlase__transform_into':["average_power"],
     'cspmulticlase__norm_trace': [False],
-    'featureExtractor__method': ["welch"],
-    'featureExtractor__sample_rate': [fm],
-    'featureExtractor__band_values': [[8,18]],
+    # 'featureExtractor__method': ["welch"],
+    # 'featureExtractor__sample_rate': [fm],
+    # 'featureExtractor__band_values': [[8,18]],
     'lda__solver': ['svd','lsqr','eigen'],
-    'lda__shrinkage': [None, "auto"],
+    'lda__shrinkage': ["auto"],
     'lda__priors': [None],
     'lda__n_components': [None],
     'lda__store_covariance': [False],
-    'lda__tol': [0.0001, 0.001],
+    'lda__tol': [0.1, 0.01, 0.5],
 }
 
 #Creamos el GridSearch para el LDA
@@ -315,13 +318,3 @@ print(f"El UAR del mejor clasificador SVC es de {uar_svc}")
 
 ## cargo el pipeline desde data\sujeto_1\pipelines\best_lda_ejecutado_comb1.pkl con pickle
 best_lda = pickle.load(open(f"{baseFolder}\{pipsFolder}\\best_lda_{tipoTarea}_comb{comb}.pkl", "rb"))
-
-labels_test
-md_csp = best_lda[:2].transform(eeg_test[0,:,:].reshape(1,6,1000))
-mi_csp = best_lda[:2].transform(eeg_test[2,:,:].reshape(1,6,1000))
-
-
-import matplotlib.pyplot as plt
-plt.plot(md_csp[0,0,:])
-plt.plot(mi_csp[0,0,:])
-plt.show()
