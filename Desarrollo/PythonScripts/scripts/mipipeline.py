@@ -90,7 +90,7 @@ for s in sujetos:
         trials_filtered = filter.fit_transform(trials)
         se = np.std(trials_filtered, axis=2)
 
-        ##calculo el percentil 90 de la varianza de cada canal para cada trial
+        ##calculo el percentil 95 de la varianza de cada canal para cada trial
         q=np.percentile(se, q=95)
         bad_trials = []
         for i in range(len(se)):
@@ -128,7 +128,7 @@ for s in sujetos:
                         sample_rate=fm, axisToCompute=2, padlen=None, order=4)
         #Creamos un CSPMulticlass - Método ovo (one vs one)
         cspmulticlass = CSPMulticlass(n_components=6, method = "ova", n_classes = len(np.unique(labels)),
-                                    reg = 0.01, transform_into = "average_power")#transform_into='csp_space'
+                                    reg = 0.01, transform_into = "csp_space")#transform_into='csp_space'
         featureExtractor = FeatureExtractor(method = "welch", sample_rate = fm, axisToCompute=2, band_values=[8,12])
         ravelTransformer = RavelTransformer()
 
@@ -140,8 +140,8 @@ for s in sujetos:
         pipeline_lda = Pipeline([
             ('pasabanda', filter),
             ('cspmulticlase', cspmulticlass),
-            # ('featureExtractor', featureExtractor),
-            # ('ravelTransformer', ravelTransformer),
+            ('featureExtractor', featureExtractor),
+            ('ravelTransformer', ravelTransformer),
             ('lda', lda)
         ])
 
@@ -157,15 +157,16 @@ for s in sujetos:
             'pasabanda__lowcut': [8],
             'pasabanda__highcut': [12],
             'pasabanda__notch_freq': [50.0],
-            'cspmulticlase__n_components': [6],
+            'cspmulticlase__n_components': [2],
             'cspmulticlase__method': ["ova"],
             'cspmulticlase__n_classes': [len(np.unique(labels))],
             'cspmulticlase__reg': [0.01],
             'cspmulticlase__log': [None],
             'cspmulticlase__norm_trace': [False],
-            # 'featureExtractor__method': ["welch"],
-            # 'featureExtractor__sample_rate': [fm],
-            # 'featureExtractor__band_values': [[8,18]],
+            'cspmulticlase__transform_into':['csp_space'],
+            'featureExtractor__method': ["welch"],
+            'featureExtractor__sample_rate': [fm],
+            'featureExtractor__band_values': [[8,18]],
             'lda__solver': ['eigen'],
             'lda__shrinkage': ["auto"],
             'lda__priors': [None],
