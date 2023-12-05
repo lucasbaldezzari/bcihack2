@@ -34,7 +34,7 @@ sujetos = [11] #[1,2,3,6,8,10,11]
 for s in sujetos:
     list_df_lda = []
     list_df_svm = []
-    for combination in range(1,2):
+    for combination in range(1,5):
         ### ********** Cargamos los datos **********
         sujeto = f"sujeto_{s}" #4 no, 5 no
         tipoTarea = "imaginado" #imaginado
