@@ -1,0 +1,2 @@
+trialNumber,classNumber,className,prediction,probabilities,startingTime,cueDuration,finishDuration,trialTime,trialTime(legible)
+1,2,Mano Derecha,-1,-1,3.0,4.0,3.0,1709846521.1896396,07/03/2024 18:22:01

@@ -642,15 +642,15 @@ class Core(QMainWindow):
             self.indicatorAPP.actualizar_barra(probaClaseActual) #actualizamos la barra de probabilidad
             max_prob = max(self.probas[0])
 
-            if max_prob >= self.umbralClassifier:
-                index_max_prob = np.where(self.probas[0] == max_prob)[0][0]
-                ClaseActual = self.classes[index_max_prob]
-                self.comando = str(ClaseActual).encode() if max_prob >= self.umbralClassifier else b'0'
-                # if self.arduinoFlag and self.arduino.checkConnection():
-                if ClaseActual == 1: #mano izquierda
-                    self.arduino.sendMessage([b'5'])
-                if ClaseActual == 2: #mano derecha
-                    self.arduino.sendMessage([b'6'])
+            # if max_prob >= self.umbralClassifier:
+            #     index_max_prob = np.where(self.probas[0] == max_prob)[0][0]
+            #     ClaseActual = self.classes[index_max_prob]
+            #     self.comando = str(ClaseActual).encode() if max_prob >= self.umbralClassifier else b'0'
+            #     # if self.arduinoFlag and self.arduino.checkConnection():
+            #     if ClaseActual == 1: #mano izquierda
+            #         self.arduino.sendMessage([b'5'])
+            #     if ClaseActual == 2: #mano derecha
+            #         self.arduino.sendMessage([b'6'])
 
         elif self.typeSesion == 2:
             ##nos quedamos con el máximo valor dentro de self.probas

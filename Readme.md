@@ -25,10 +25,9 @@ El siguiente repositorio será utilizado para almacenar bibliografía, set de da
 
 ## Colaboradores
 
-- [Dra. SALUM Graciela - graciela.salum@utec.edu.uy](https://www.linkedin.com/in/graciela-marisa-salum-5262bb47)
-- [Téc. SUAREZ Tomy - tomy.suarez@utec.edu.uy](https://www.linkedin.com/in/tomy-suarez-a06993162)
-- [Téc. ÁLVAREZ Emiliano - emiliano.alvarez@utec.edu.uy](https://www.linkedin.com/in/emilianoalvarezruiz)
+- [Ing. ÁLVAREZ Emiliano - emiliano.alvarez@utec.edu.uy](https://www.linkedin.com/in/emilianoalvarezruiz)
 - [Téc. MAR Walter - walter.mar@utec.edu.uy](https://www.linkedin.com/in/walter-mar-6b2104195/?originalSubdomain=uy)
+- [Pereira Pablo](pablo.pereira.p@estudiantes.edu.uy)
 
 ### Demo sistema
 

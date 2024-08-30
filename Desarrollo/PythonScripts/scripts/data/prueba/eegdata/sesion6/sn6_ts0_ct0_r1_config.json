@@ -1,7 +1,7 @@
 {
     "typeSesion": 0,
-    "cueType": 1,
-    "ntrials": 5,
+    "cueType": 0,
+    "ntrials": 10,
     "classes": [
         1,
         2
@@ -21,7 +21,7 @@
     "lenForClassifier": 4.0,
     "umbralClassifier": 0.8,
     "numberOfRounds": 4.0,
-    "subjectName": "pruebaG",
+    "subjectName": "prueba",
     "sesionNumber": 6,
     "boardParams": {
         "boardName": "synthetic",
