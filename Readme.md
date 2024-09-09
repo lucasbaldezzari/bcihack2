@@ -217,6 +217,4 @@ Existen 3 GUIs o APPs
 
 ### Dependencias
 
-La versión de python a utilizar será *>= 3.10.1*
-
-- Dependencias necesarias para ejecutar, probar y ejecutar estos scripts (Completar por *Lucas*).
+- Todas las dependencias se encuentran en el archivo _enviroment.txt_
