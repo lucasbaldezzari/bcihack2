@@ -1,14 +1,16 @@
 {
     "typeSesion": 0,
     "cueType": 1,
-    "ntrials": 5,
+    "ntrials": 3,
     "classes": [
         1,
-        2
+        2,
+        3
     ],
     "clasesNames": [
         "Mano Izquierda",
-        "Mano Derecha"
+        "Mano Derecha",
+        "Ambas Manos"
     ],
     "startingTimes": [
         3.0,
@@ -21,17 +23,15 @@
     "lenForClassifier": 4.0,
     "umbralClassifier": 0.8,
     "numberOfRounds": 4.0,
-    "subjectName": "pruebaG",
-    "sesionNumber": 6,
+    "subjectName": "testing",
+    "sesionNumber": 1,
     "boardParams": {
         "boardName": "synthetic",
         "channels": [
             1,
             2,
             3,
-            4,
-            5,
-            8
+            4
         ],
         "serialPort": "COM5"
     },
